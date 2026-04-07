@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "371D4D5F2D1EBFBA0072E829"
-               BuildableName = "Roxane"
-               BlueprintName = "Roxane"
-               ReferencedContainer = "container:Roxane.xcodeproj">
+               BuildableName = "Melody"
+               BlueprintName = "Melody"
+               ReferencedContainer = "container:Melody.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -50,9 +50,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "371D4D5F2D1EBFBA0072E829"
-            BuildableName = "Roxane"
-            BlueprintName = "Roxane"
-            ReferencedContainer = "container:Roxane.xcodeproj">
+            BuildableName = "Melody"
+            BlueprintName = "Melody"
+            ReferencedContainer = "container:Melody.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -141,9 +141,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "371D4D5F2D1EBFBA0072E829"
-            BuildableName = "Roxane"
-            BlueprintName = "Roxane"
-            ReferencedContainer = "container:Roxane.xcodeproj">
+            BuildableName = "Melody"
+            BlueprintName = "Melody"
+            ReferencedContainer = "container:Melody.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
