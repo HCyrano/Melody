@@ -373,7 +373,9 @@ inline int acc_score(const int   stage,
             const Vec_short* __restrict const vEdgeB = maskB ? vEdge1 : vEdge2;
             const Vec_short* __restrict const vEdgeC = maskC ? vEdge1 : vEdge2;
             const Vec_short* __restrict const vEdgeD = maskD ? vEdge1 : vEdge2;
-            
+/*
+            // Defer to the compiler.
+ 
             // CORNER — 4 accès dans 177147 entrées → priorité max, prefetch en premier
             __builtin_prefetch(&vCorner[cp42], 0, 3);
             __builtin_prefetch(&vCorner[cp43], 0, 3);
@@ -395,7 +397,7 @@ inline int acc_score(const int   stage,
             __builtin_prefetch(&vEdge3[cp27], 0, 1);
             __builtin_prefetch(&vEdge3[cp28], 0, 1);
             __builtin_prefetch(&vEdge3[cp29], 0, 1);
-
+*/
             // mobilités
             acc(vMob_P, mob_Player);
             acc(vMob_O, mob_Opponent);

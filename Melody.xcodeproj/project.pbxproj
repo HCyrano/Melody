@@ -103,7 +103,6 @@
 		37A656D62F3F2ED6009E0822 /* RXBBDoFlips_NEON.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBDoFlips_NEON.cpp; sourceTree = "<group>"; };
 		37A671752EE6E80200476E87 /* Melody */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Melody; sourceTree = BUILT_PRODUCTS_DIR; };
 		37BF368C2E268CDC0029C7F6 /* RXSetting.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXSetting.hpp; sourceTree = "<group>"; };
-		37C2DE1E2D1F0B4100B93DBD /* Roxane.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = Roxane.profdata; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -207,7 +206,6 @@
 		37C2DE1F2D1F0B4100B93DBD /* OptimizationProfiles */ = {
 			isa = PBXGroup;
 			children = (
-				37C2DE1E2D1F0B4100B93DBD /* Roxane.profdata */,
 				375698342F854075002D5B9D /* Melody.profdata */,
 			);
 			path = OptimizationProfiles;
@@ -557,7 +555,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu23;
-				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
