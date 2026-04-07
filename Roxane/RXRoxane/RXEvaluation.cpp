@@ -27,7 +27,7 @@ static void check_read(const std::ifstream& stream, const char* filename, unsign
 void RXEvaluation::load() {
 
     // --- weight_v12.bin ---
-    std::ifstream from_w("/Users/caussebruno/Documents/developpement/Roxane/build/weight_v12.bin", std::ios::binary);
+    std::ifstream from_w("/Users/caussebruno/Documents/developpement/Melody/build/weight_v12.bin", std::ios::binary);
     if (!from_w) {
         std::cerr << "CRITICAL ERROR: Impossible de charger weight_v12.bin" << std::endl;
         std::exit(EXIT_FAILURE);
@@ -91,7 +91,7 @@ void RXEvaluation::load() {
     
 #ifdef FACT_MACH
     // --- fm_w0.txt ---
-    std::ifstream from_w0("/Users/caussebruno/Documents/developpement/Roxane/build/fm_w0_v12.txt");
+    std::ifstream from_w0("/Users/caussebruno/Documents/developpement/Melody/build/fm_w0_v12.txt");
     if (!from_w0) {
         std::cerr << "CRITICAL ERROR: Impossible de charger fm_w0_v12.txt" << std::endl;
         std::exit(EXIT_FAILURE);
@@ -109,7 +109,7 @@ void RXEvaluation::load() {
 
 
     // --- fm_V.bin ---
-    std::ifstream from_V("/Users/caussebruno/Documents/developpement/Roxane/build/fm_V_v12.bin", std::ios::binary);
+    std::ifstream from_V("/Users/caussebruno/Documents/developpement/Melody/build/fm_V_v12.bin", std::ios::binary);
     if (!from_V) {
         std::cerr << "CRITICAL ERROR: Impossible de charger fm_V_v12.bin" << std::endl;
         std::exit(EXIT_FAILURE);
