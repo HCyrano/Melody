@@ -1,0 +1,110 @@
+# Créé par https://www.toptal.com/developers/gitignore/api/xcode,macos,c++
+# Modifier sur https://www.toptal.com/developers/gitignore?templates=xcode,macos,c++
+
+### C++ ###
+# Prérequis
+*.d
+
+# Fichiers objets compilés
+*.slo
+*.lo
+*.o
+*.obj
+
+# En-têtes précompilés
+*.gch
+*.pch
+
+# Bibliothèques dynamiques compilées
+*.donc
+*.dylib
+*.dll
+
+# Fichiers de modules Fortran
+*.mod
+*.smod
+
+# Bibliothèques statiques compilées
+*.lai
+*.la
+*.un
+*.lib
+
+# Exécutables
+*.exe
+*.dehors
+*.app
+
+### macOS ###
+# Général
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# L'icône doit se terminer par deux \r
+Icône
+
+
+# Miniatures
+._*
+
+# Fichiers pouvant apparaître à la racine d'un volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.Éléments temporaires
+.Déchets
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Répertoires potentiellement créés sur un partage AFP distant
+.AppleDB
+.AppleDesktop
+Dossier Corbeille réseau
+Articles temporaires
+.apdisk
+
+### Correctif macOS ###
+# Fichiers générés par iCloud
+*.icloud
+
+### Xcode ###
+## Paramètres utilisateur
+xcuserdata/
+
+## Xcode 8 et versions antérieures
+*.xcscmblueprint
+*.xccheckout
+
+### Patch Xcode ###
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+/*.gcno
+**/xcshareddata/WorkspaceSettings.xcsettings
+
+# Fin de https://www.toptal.com/developers/gitignore/api/xcode,macos,c++
+
+# ignorer le dossier build
+build/
+
+# ignorer le dossier scripts
+scripts/
+
+# ignorer le dossier OptimizationProfiles
+OptimizationProfiles/
+
+# ignorer le dossier logs
+logs/
+
+# ignorer le dossier commandes
+commandes/
+
+# ignorer le dossier bug
+bug/
+
+# ignorer le dossier probcut
+probcut/
+
