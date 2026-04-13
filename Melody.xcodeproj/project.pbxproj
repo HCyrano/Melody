@@ -49,6 +49,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		37187A9E2F8CF48900682FAA /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		372326DE2D1FF69D002CFAF4 /* GGSMessage.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GGSMessage.hpp; sourceTree = "<group>"; };
 		372326DF2D1FF69D002CFAF4 /* GGSMessage.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GGSMessage.cpp; sourceTree = "<group>"; };
 		372326E02D1FF69D002CFAF4 /* GGSObjects.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GGSObjects.hpp; sourceTree = "<group>"; };
@@ -195,6 +196,7 @@
 		3723270F2D1FF69D002CFAF4 /* Roxane */ = {
 			isa = PBXGroup;
 			children = (
+				37187A9E2F8CF48900682FAA /* README.md */,
 				37DBEB862EE6E4D9009CA900 /* Std Client */,
 				372326ED2D1FF69D002CFAF4 /* GGS Client */,
 				3723270D2D1FF69D002CFAF4 /* RXRoxane */,
