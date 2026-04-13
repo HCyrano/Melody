@@ -1,6 +1,6 @@
 # ⚪ Melody : IA Othello Performante ⚫
 
-Melody est un moteur de jeu d'Othello (Reversi) de haute performance conçu en C++23. Développée pour la compétition, il combine la puissance de la recherche classique et des modèles prédictifs modernes pour offrir un jeu de haut niveau.
+**Melody** est un moteur de jeu d'Othello (Reversi) de haute performance conçu en C++23. Développée pour la compétition, il combine la puissance de la recherche classique et des modèles prédictifs modernes pour offrir un jeu de haut niveau.
 
 ---
 
@@ -9,14 +9,16 @@ Melody est un moteur de jeu d'Othello (Reversi) de haute performance conçu en C
 L'architecture de Melody repose sur une synergie entre algorithmes de recherche de pointe et une évaluation statistique fine :
 
 * Recherche : Algorithme Minimax avec élagage Alpha-Bêta, complété par ProbCut pour un élagage sélectif basé sur des statistiques de confiance.
-* Évaluation (Patterns & FM) : Utilisation de la Méthode Buro (poids par patterns). Melody ajoute une surcouche basée sur les Factorization Machines (FM) de Rendle pour modéliser les interactions complexes entre les patterns.
-* Optimisation :Table de Transposition globale pour la mise en cache des positions et accélération de la recherche.
+* Optimisation : Table de Transposition globale pour la mise en cache des positions et accélération de la recherche.
+* Multithreading : Exploitation du parallélisme matériel pour optimiser les performances sur les architectures multicœurs modernes (YBWC).
+
+* Évaluation (Patterns & FM) : Implémentation d'une fonction d'évaluation basée sur les patterns ***Michael Buro***, augmentée d'une surcouche de Machines de Factorisation (FM). L'apport de ***Steffen Rendle*** permet de modéliser les corrélations croisées entre patterns, là où l'approche classique repose sur une somme linéaire pondérée.
 
 ---
 
 ## 🔌 Connectivité et Protocoles
 Le rôle principal de Melody est d'affronter d'autres moteurs sur internet. Il supporte :
-* IOStd : (a completer) Pour les tests locaux et l'analyse.
+* IOStd : (Interface expérimentale) Pour les tests locaux et l'analyse.
 * GGS (Internet Othello Server) : Basé sur un ODK (Othello Development Kit) modernisé, permettant une communication stable et rapide avec le serveur de jeu GGS.
 
 ---
@@ -24,8 +26,8 @@ Le rôle principal de Melody est d'affronter d'autres moteurs sur internet. Il s
 ## 🛠️ Développement et Installation
 Le moteur est spécifiquement optimisé pour l'écosystème Apple afin de maximiser le nombre de nœuds calculés par seconde.
 
-* Environnement :**macOS**
-* Architecture : Entièrement optimisé pour les puces Apple Silicon (série M). Utilisation intensive des instructions NEON (ARM) pour accélérer les opérations de bitboard et les calculs de l'évaluation FM.
+* Environnement : **macOS**
+* Architecture : Entièrement optimisé pour les puces **Apple Silicon (série M)**. Utilisation intensive des instructions **NEON (ARM)** pour accélérer les opérations de bitboard et les calculs de l'évaluation FM.
 * Langage : C++ (standard `gnu++23`)
 * Outils : Projet Xcode (`.xcodeproj`) inclus.
 
@@ -38,8 +40,9 @@ Le moteur est spécifiquement optimisé pour l'écosystème Apple afin de maximi
 
 > [!IMPORTANT]
 > Héritage et Crédits
-> Melody intègre des idées et des segments de logique repris du code d'Edax. Un immense respect et des remerciements à Richard Delorme et Toshihiko Okuhara pour leur contribution inestimable à la communauté. 
-> Le support GGS s'appuie sur une modernisation de l'ODK original de C Welty.
+> Melody intègre des idées et des segments de logique repris du code d'Edax. Un immense respect et des remerciements à ***Richard Delorme*** et ***Toshihiko Okuhara*** pour leur contribution inestimable à la communauté. 
+> Le support GGS s'appuie sur une modernisation de l'ODK original de ***C Welty***.
+> Un vif remerciement à la communauté GGS pour ce cadre d'échange d'idées particulièrement stimulant.
 ---
 
 ## ⚖️ Licence
