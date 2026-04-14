@@ -8,11 +8,11 @@
 
 L'architecture de Melody repose sur une synergie entre algorithmes de recherche de pointe et une évaluation statistique fine :
 
-* Recherche : Algorithme Minimax avec élagage Alpha-Bêta, complété par ProbCut pour un élagage sélectif basé sur des statistiques de confiance.
+* Recherche : Algorithme Minimax avec élagage Alpha-Bêta, complété par ProbCut (***Michael Buro***) pour un élagage sélectif basé sur des statistiques de confiance.
 * Optimisation : Table de Transposition globale pour la mise en cache des positions et accélération de la recherche.
 * Multithreading : Exploitation du parallélisme matériel pour optimiser les performances sur les architectures multicœurs modernes (YBWC).
 
-* Évaluation (Patterns & FM) : Implémentation d'une fonction d'évaluation basée sur les patterns ***Michael Buro***, augmentée d'une surcouche de Machines de Factorisation (FM). L'apport de ***Steffen Rendle*** permet de modéliser les corrélations croisées entre patterns, là où l'approche classique repose sur une somme linéaire pondérée.
+* Évaluation (Patterns & FM) : Implémentation d'une fonction d'évaluation basée sur les patterns (***Michael Buro***), augmentée d'une surcouche de Machines de Factorisation (***Steffen Rendle***). L'apport "FM" de permet de modéliser les corrélations croisées entre patterns, là où l'approche classique repose sur une simple somme linéaire.
 
 ---
 
@@ -39,7 +39,7 @@ Le moteur est spécifiquement optimisé pour l'écosystème Apple afin de maximi
 ## 📜 Remerciements et Citations
 
 > [!IMPORTANT]
-> Héritage et Crédits
+> Héritage et Crédits :
 > Melody intègre des idées et des segments de logique repris du code d'Edax. Un immense respect et des remerciements à ***Richard Delorme*** et ***Toshihiko Okuhara*** pour leur contribution inestimable à la communauté. 
 > Le support GGS s'appuie sur une modernisation de l'ODK original de ***C Welty***.
 > Un vif remerciement à la communauté GGS pour ce cadre d'échange d'idées particulièrement stimulant.
