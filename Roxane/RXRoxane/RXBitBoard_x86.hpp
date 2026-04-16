@@ -456,8 +456,8 @@ inline void RXBitBoard::dual_count_legal_moves(int& mob_P, int& mob_O) const {
 }
 
 inline void RXBitBoard::dual_count_legal_moves(const unsigned long long discs_player, const unsigned long long discs_opponent, int& mob_P, int& mob_O) {
-    mob_P = RXBitBoard::get_mobility(discs_player, discs_opponent);
-    mob_O = RXBitBoard::get_mobility(discs_opponent, discs_player);
+    mob_P = RXBitBoard::count_legal_moves(discs_player, discs_opponent);
+    mob_O = RXBitBoard::count_legal_moves(discs_opponent, discs_player);
 }
 
 

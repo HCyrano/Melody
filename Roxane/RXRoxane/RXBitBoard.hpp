@@ -177,6 +177,7 @@ void generate_flips_##pos(RXMove& move) const \
     
     static type_count_flips const count_flips[];
     
+    static inline int count_legal_moves(const unsigned long long discs_player, const unsigned long long discs_opponent);
     inline void dual_count_legal_moves(int& mob_P, int& mob_O) const;
     static inline void dual_count_legal_moves(const unsigned long long discs_player, const unsigned long long discs_opponent, int& mob_P, int& mob_O);
 
@@ -200,7 +201,7 @@ void generate_flips_##pos(RXMove& move) const \
     static void dual_potential_mobility(const unsigned long long p_discs, const unsigned long long o_discs, int &p_pmob, int &o_pmob);
 
     
-    
+
     static inline int get_mobility(const unsigned long long discs_player, const unsigned long long discs_opponent);
     static inline int get_corner_stability(const unsigned long long& discs_player);
     inline int get_edge_stability(const int player) const;
@@ -249,6 +250,21 @@ void generate_flips_##pos(RXMove& move) const \
 #include "RXBitBoard_NEON.hpp"
 #else
 #include "RXBitBoard_x86.hpp"
+
+/*
+ @brief count all legal moves
+ 
+ @param P                    a bitboard representing player
+ @param O                    a bitboard representing opponent
+ @return count all legal moves
+ */
+inline int RXBitBoard::count_legal_moves(const unsigned long long p_discs, const unsigned long long o_discs) {
+    
+    const unsigned long long legals = get_legal_moves(p_discs, o_discs);
+    return __builtin_popcountll(legals);
+    
+}
+
 #endif
 
 
@@ -378,6 +394,7 @@ inline void RXBitBoard::do_pass() {
 inline unsigned long long RXBitBoard::get_legal_moves() const {
     return get_legal_moves(discs[player], discs[player^1]);
 }
+
 
 
 /*

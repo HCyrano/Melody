@@ -16,17 +16,8 @@
 #include "RXRoxane.hpp"
 
 
-#ifdef __ARM_ACLE
-const int RXEngine::CONFIDENCE[]   = {  60,    72,    84,    91,    95,    98, /*   99,*/  100}; // 99
-const float RXEngine::PERCENTILE[] = {1.00f, 1.15f, 1.40f, 1.80f, 2.35f, 3.00f/*, 3.70f*/}; // vs 1.18f
-//const int RXEngine::CONFIDENCE[]   = {  60,    72,    84,    91,    95,    98,  100}; // 99
-//const float RXEngine::PERCENTILE[] = {1.00f, 1.15f, 1.35f, 1.70f, 2.20f, 2.80f}; // vs 1.18f
-
-#else
-//i386
-const int RXEngine::CONFIDENCE[]   = {  60,    72,    84,    91,    95,    98,    99,   100};
-const float RXEngine::PERCENTILE[] = {0.95f, 1.05f, 1.25f, 1.50f, 1.90f, 2.40f, 2.90f}; // standard
-#endif
+const int RXEngine::CONFIDENCE[]   = {  60,    72,    84,    91,    95,    98,   100};
+const float RXEngine::PERCENTILE[] = {1.00f, 1.15f, 1.40f, 1.80f, 2.40f, 3.10f};
 
 const int RXEngine::EG_HIGH_SELECT = 0;
 const int RXEngine::MG_SELECT = 1; //72%
@@ -354,7 +345,7 @@ int RXEngine::probcut(const unsigned int threadID, RXBBPatterns& sBoard, const i
             } else if(depth_probcut <= DEPTH_5) {
                 bestscore = -PVS_last_ply(threadID, sBoard, depth_probcut-1, -upper_probcut, -upper_probcut+1, false);
             } else {
-                bestscore = -MG_NWS_XProbCut(threadID, sBoard, 0, selectivity, depth_probcut-1, -upper_probcut, false); // pvDev = 0
+                bestscore = -MG_NWS_XProbCut(threadID, sBoard, 0, selectivity, depth_probcut-1, -upper_probcut, false); // reset pvDev = 0
             }
             
             sBoard.undo_move(*list1);
@@ -429,7 +420,7 @@ int RXEngine::probcut(const unsigned int threadID, RXBBPatterns& sBoard, const i
                 } else if(depth_probcut <= DEPTH_5) {
                     bestscore = -PVS_last_ply(threadID, sBoard, depth_probcut-1, -upper_probcut, -upper_probcut+1, false);
                 } else {
-                    bestscore = -MG_NWS_XProbCut(threadID, sBoard, 0, selectivity, depth_probcut-1, -upper_probcut, false); // pvDev = 0
+                    bestscore = -MG_NWS_XProbCut(threadID, sBoard, 0, selectivity, depth_probcut-1, -upper_probcut, false); // reset pvDev = 0
                 }
                 
                 sBoard.undo_move(*iter);
@@ -509,7 +500,7 @@ int RXEngine::probcut(const unsigned int threadID, RXBBPatterns& sBoard, const i
                 } else if(depth_probcut <= DEPTH_5) {
                     iter->score = -PVS_last_ply(threadID, sBoard, depth_probcut-1, -lower_probcut-1, -lower_probcut, false);
                 } else {
-                    iter->score = -MG_NWS_XProbCut(threadID, sBoard, 0, selectivity, depth_probcut-1, -lower_probcut-1, false); // pvDev = 1
+                    iter->score = -MG_NWS_XProbCut(threadID, sBoard, 0, selectivity, depth_probcut-1, -lower_probcut-1, false); // reset pvDev = 0
                 }
                 
                 sBoard.undo_move(*iter);

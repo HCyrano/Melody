@@ -44,7 +44,6 @@ class RXRoxane: public Runnable {
 	
 	pthread_mutex_t mutex;
 	
-	//volatile bool resume_flag;
     std::atomic_bool resume_flag;
     
 	//interface GGS server

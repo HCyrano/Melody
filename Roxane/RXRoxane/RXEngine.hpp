@@ -268,10 +268,8 @@ class RXEngine: public Runnable {
     
     int time_move;
     int extratime_move;
-    //volatile int extra_time;
     std::atomic<int> extra_time;
     
-    //volatile bool first_move;
     std::atomic_bool first_move;
     
     bool dependent_time;
@@ -308,7 +306,6 @@ class RXEngine: public Runnable {
     pthread_t pthreadMain[1];
     pthread_mutex_t mutex;
     
-    //volatile bool resume_flag;
     std::atomic_bool resume_flag;
     
     bool use_pv_ext;

@@ -23,6 +23,8 @@ static constexpr unsigned int RANK = 16;
 
 struct alignas(4*RANK) Vec_short {
     short data[RANK];
+    int squares[RANK];  // Precomputed square of each factor:
+
     short& operator[](int i)             { return data[i]; }
     const short& operator[](int i) const { return data[i]; }
 };
@@ -31,15 +33,15 @@ struct alignas(4*RANK) Vec_short {
 
 class alignas(64) RXEvaluation {
     
-    static constexpr unsigned int N_FEATURES = 13;
-    static constexpr unsigned int sizes[N_FEATURES] = {24, 24, 243, 729, 2187, 6561, 59049, 59049, 59049, 6561, 6561, 6561, 177147};
+    static constexpr unsigned int N_FEATURES = 14;
+    static constexpr unsigned int sizes[N_FEATURES] = {24, 24, 243, 729, 2187, 6561, 59049, 59049, 59049, 59049, 6561, 6561, 6561, 177147};
     
     public :
 
     enum Feature {
         MOB_P = 0, MOB_O,
         DIAG5, DIAG6, DIAG7, DIAG8,
-        EDGE2X, EDGE64, EDGE5,
+        EDGE1, EDGE2, EDGE3, EDGE4,
         HV2, HV3, HV4,
         CORNER};
 
@@ -47,14 +49,14 @@ class alignas(64) RXEvaluation {
     static constexpr Feature all_features[] = {
             MOB_P, MOB_O,
             DIAG5, DIAG6, DIAG7, DIAG8,
-            EDGE2X, EDGE64, EDGE5,
+            EDGE1, EDGE2, EDGE3, EDGE4,
             HV2, HV3, HV4,
             CORNER
         };
     
     static constexpr std::string names[] = {
         "MOB_P", "MOB_O", "DIAG5", "DIAG6", "DIAG7", "DIAG8",
-        "EDGE2X", "EDGE64", "EDGE5", "HV2", "HV3", "HV4", "CORNER"
+        "EDGE1", "EDGE2", "EDGE3", "EDGE4", "HV2", "HV3", "HV4", "CORNER"
     };
 
 
@@ -62,12 +64,14 @@ class alignas(64) RXEvaluation {
     static void unload();
     
     static std::string get_version() {
-            return "FM16 2026-04-01";
+            return "FM_R16i16 2026-04-10";
         }
 
     
     alignas(64) static inline short* eval_w[60][N_FEATURES] = {};
+    
 #ifdef FACT_MACH
+    
     alignas(64) static inline int eval_w0[60];
     alignas(64) static inline Vec_short* eval_V[N_FEATURES] = {};
 
@@ -80,7 +84,8 @@ class alignas(64) RXEvaluation {
     static inline const Vec_short* gVDiag8  = nullptr;
     static inline const Vec_short* gVEdge1  = nullptr;  // EDGE2X
     static inline const Vec_short* gVEdge2  = nullptr;  // EDGE64
-    static inline const Vec_short* gVEdge3  = nullptr;  // EDGE5
+    static inline const Vec_short* gVEdge3  = nullptr;  // EDGE2*(3/2)
+    static inline const Vec_short* gVEdge4  = nullptr;  // EDGE2*5
     static inline const Vec_short* gVHv2    = nullptr;
     static inline const Vec_short* gVHv3    = nullptr;
     static inline const Vec_short* gVHv4    = nullptr;

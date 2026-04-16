@@ -156,9 +156,8 @@ inline int acc_score(const int   stage,
                           const int   mob_Player,
                           const int   mob_Opponent,
                           const auto& tab_eval,
-                          const unsigned long long filled,
-
-                          const bool useFM = true)
+                          const unsigned long long filled
+                     )
 {
     using enum RXEvaluation::Feature;
     
@@ -168,14 +167,15 @@ inline int acc_score(const int   stage,
     const short* __restrict const diag6  = tab_eval[DIAG6];
     const short* __restrict const diag7  = tab_eval[DIAG7];
     const short* __restrict const diag8  = tab_eval[DIAG8];
-    const short* __restrict const edge1  = tab_eval[EDGE2X];
-    const short* __restrict const edge2  = tab_eval[EDGE64];
-    const short* __restrict const edge3  = tab_eval[EDGE5];
+    const short* __restrict const edge1  = tab_eval[EDGE1];
+    const short* __restrict const edge2  = tab_eval[EDGE2];
+    const short* __restrict const edge3  = tab_eval[EDGE3];
+    const short* __restrict const edge4  = tab_eval[EDGE4];
     const short* __restrict const hv2    = tab_eval[HV2];
     const short* __restrict const hv3    = tab_eval[HV3];
     const short* __restrict const hv4    = tab_eval[HV4];
     const short* __restrict const corner = tab_eval[CORNER];
-
+    
     // -------------------------------------------------------------------------
     // Precomputed indices (Calculated once, reused by both linear and FM stages)
     // -------------------------------------------------------------------------
@@ -189,18 +189,18 @@ inline int acc_score(const int   stage,
     const short* __restrict const edgeB = maskB? edge1 : edge2;
     const short* __restrict const edgeC = maskC? edge1 : edge2;
     const short* __restrict const edgeD = maskD? edge1 : edge2;
-
+    
     
     const int mask = color >> 31;   // 0x00000000 si color=+1, 0xFFFFFFFF si color=-1
-
+    
 #ifdef __ARM_NEON
     
     // ── Calcul SIMD des (46+2) 48 cp = (patt[i] ^ mask) - mask ────────────────
     // patt[] est int[48], on charge en int32x4, on XOR+SUB vectoriellement
-
+    
     const int32_t* pp = p;
     int32x4_t vmask4  = vdupq_n_s32(mask);
-
+    
     // Charger et transformer les 46 indices (12 groupes de 4, + reste)
     int32x4_t vcp_0__3  = vsubq_s32(veorq_s32(vld1q_s32(pp +  0), vmask4), vmask4);
     int32x4_t vcp_4__7  = vsubq_s32(veorq_s32(vld1q_s32(pp +  4), vmask4), vmask4);
@@ -214,10 +214,12 @@ inline int acc_score(const int   stage,
     int32x4_t vcp36_39  = vsubq_s32(veorq_s32(vld1q_s32(pp + 36), vmask4), vmask4);
     int32x4_t vcp40_43  = vsubq_s32(veorq_s32(vld1q_s32(pp + 40), vmask4), vmask4);
     int32x4_t vcp44_47  = vsubq_s32(veorq_s32(vld1q_s32(pp + 44), vmask4), vmask4);
+    int32x4_t vcp48_51  = vsubq_s32(veorq_s32(vld1q_s32(pp + 48), vmask4), vmask4);
+    
     // pp+44 charge 4 ints mais seuls [44] et [45] sont utilisés — les 2 extras
     // sont lus mais jamais utilisés, inoffensif si patt[46..47] est accessible
     // patt[46..47] sont du padding
-
+    
     // Extraire les scalaires nécessaires
     // (le compilateur les garde en registre — pas d'aller-retour mémoire)
     const int cp0  = vgetq_lane_s32(vcp_0__3,  0), cp1  = vgetq_lane_s32(vcp_0__3,  1);
@@ -245,8 +247,10 @@ inline int acc_score(const int   stage,
     const int cp40 = vgetq_lane_s32(vcp40_43,  0), cp41 = vgetq_lane_s32(vcp40_43,  1);
     const int cp42 = vgetq_lane_s32(vcp40_43,  2), cp43 = vgetq_lane_s32(vcp40_43,  3);
     const int cp44 = vgetq_lane_s32(vcp44_47,  0), cp45 = vgetq_lane_s32(vcp44_47,  1);
-//    const int cp46 = vgetq_lane_s32(vcp44_47,  2), cp47 = vgetq_lane_s32(vcp44_47,  3); //padding
-
+    const int cp46 = vgetq_lane_s32(vcp44_47,  2), cp47 = vgetq_lane_s32(vcp44_47,  3);
+    const int cp48 = vgetq_lane_s32(vcp48_51,  0), cp49 = vgetq_lane_s32(vcp48_51,  1);
+    //    const int cp50 = vgetq_lane_s32(vcp48_51,  2), cp51 = vgetq_lane_s32(vcp48_51,  3); //padding
+    
 #else
     auto cp = [mask, p](int i) __attribute__((always_inline)) -> int {
         return (p[i] ^ mask) - mask;
@@ -257,17 +261,18 @@ inline int acc_score(const int   stage,
     const int cp8  = cp(8),  cp9  = cp(9),  cp10 = cp(10), cp11 = cp(11);
     const int cp12 = cp(12), cp13 = cp(13);
     
-    const int cpA = cp(maskA ? cp(14) : cp(18));
-    const int cpB = cp(maskB ? cp(15) : cp(19));
-    const int cpC = cp(maskC ? cp(16) : cp(20));
-    const int cpD = cp(maskD ? cp(17) : cp(21));
-
+    const int cpA = maskA ? cp(14) : cp(18);
+    const int cpB = maskB ? cp(15) : cp(19);
+    const int cpC = maskC ? cp(16) : cp(20);
+    const int cpD = maskD ? cp(17) : cp(21);
+    
     const int cp22 = cp(22), cp23 = cp(23), cp24 = cp(24), cp25 = cp(25);
     const int cp26 = cp(26), cp27 = cp(27), cp28 = cp(28), cp29 = cp(29);
     const int cp30 = cp(30), cp31 = cp(31), cp32 = cp(32), cp33 = cp(33);
     const int cp34 = cp(34), cp35 = cp(35), cp36 = cp(36), cp37 = cp(37);
     const int cp38 = cp(38), cp39 = cp(39), cp40 = cp(40), cp41 = cp(41);
     const int cp42 = cp(42), cp43 = cp(43), cp44 = cp(44), cp45 = cp(45);
+    const int cp46 = cp(46), cp47 = cp(47), cp48 = cp(48), cp49 = cp(49);
     
 #endif
     
@@ -277,7 +282,7 @@ inline int acc_score(const int   stage,
     int
     eval  = mob_P[mob_Player];
     eval += mob_O[mob_Opponent];
-
+    
     eval += diag5[cp0]  + diag5[cp1]  + diag5[cp2]  + diag5[cp3];
     eval += diag6[cp4]  + diag6[cp5]  + diag6[cp6]  + diag6[cp7];
     eval += diag7[cp8]  + diag7[cp9]  + diag7[cp10] + diag7[cp11];
@@ -285,15 +290,16 @@ inline int acc_score(const int   stage,
     
     eval += edgeA[cpA] + edgeB[cpB] + edgeC[cpC] + edgeD[cpD];
     
-    eval += edge3[cp22] + edge3[cp23] + edge3[cp24] + edge3[cp25]
-          + edge3[cp26] + edge3[cp27] + edge3[cp28] + edge3[cp29];
-
-    eval += hv2[cp30] + hv2[cp31] + hv2[cp32] + hv2[cp33];
-    eval += hv3[cp34] + hv3[cp35] + hv3[cp36] + hv3[cp37];
-    eval += hv4[cp38] + hv4[cp39] + hv4[cp40] + hv4[cp41];
-
-    eval += corner[cp42] + corner[cp43] + corner[cp44] + corner[cp45];
-
+    eval += edge3[cp22] + edge3[cp23] + edge3[cp24] + edge3[cp25];
+    eval += edge4[cp26] + edge4[cp27] + edge4[cp28] + edge4[cp29]
+    + edge4[cp30] + edge4[cp31] + edge4[cp32] + edge4[cp33];
+    
+    eval += hv2[cp34] + hv2[cp35] + hv2[cp36] + hv2[cp37];
+    eval += hv3[cp38] + hv3[cp39] + hv3[cp40] + hv3[cp41];
+    eval += hv4[cp42] + hv4[cp43] + hv4[cp44] + hv4[cp45];
+    
+    eval += corner[cp46] + corner[cp47] + corner[cp48] + corner[cp49];
+    
     // -------------------------------------------------------------------------
     // FM Correction: Captures non-linear interactions between features
     // -------------------------------------------------------------------------
@@ -307,11 +313,17 @@ inline int acc_score(const int   stage,
             
 #ifdef __ARM_NEON
             
-            // Accumulator declaration — 2 lo/hi pairs to cover 16 lanes
-            int32x4_t sum_0 = vdupq_n_s32(0);    // lanes  0..3
-            int32x4_t sum_1 = vdupq_n_s32(0);    // lanes  4..7
-            int32x4_t sum_2 = vdupq_n_s32(0);    // lanes  8..11
-            int32x4_t sum_3 = vdupq_n_s32(0);    // lanes 12..15
+            //            // Accumulator declaration — 2 lo/hi pairs to cover 16 lanes
+            //            int32x4_t sum_0 = vdupq_n_s32(0);    // lanes  0..3
+            //            int32x4_t sum_1 = vdupq_n_s32(0);    // lanes  4..7
+            //            int32x4_t sum_2 = vdupq_n_s32(0);    // lanes  8..11
+            //            int32x4_t sum_3 = vdupq_n_s32(0);    // lanes 12..15
+            
+            // OPTIMIZATION: Total accumulated sum remains within the short integer bounds.
+            // Ensure this holds true after any changes to the latent vectors.
+            int16x8_t sum_lo = vdupq_n_s16(0);   // lanes 0..7
+            int16x8_t sum_hi = vdupq_n_s16(0);   // lanes 8..15
+            
             
             int32x4_t sumsq_0 = vdupq_n_s32(0);
             int32x4_t sumsq_1 = vdupq_n_s32(0);
@@ -319,22 +331,31 @@ inline int acc_score(const int   stage,
             int32x4_t sumsq_3 = vdupq_n_s32(0);
             
             auto acc = [&](const Vec_short* __restrict V, int idx) __attribute__((always_inline)) {
-                const short* base = V[idx].data;
+                const Vec_short& v_ref = V[idx];
                 
-                int16x8_t v_lo = vld1q_s16(base);       // lanes  0..7
-                int16x8_t v_hi = vld1q_s16(base + 8);   // lanes  8..15
+                //                // 1. Somme (Linéaire) : On garde le widening
+                //                int16x8_t v_lo = vld1q_s16(v_ref.data);
+                //                int16x8_t v_hi = vld1q_s16(v_ref.data + 8);
+                //
+                //                sum_0 = vaddw_s16(sum_0, vget_low_s16(v_lo));
+                //                sum_1 = vaddw_s16(sum_1, vget_high_s16(v_lo));
+                //                sum_2 = vaddw_s16(sum_2, vget_low_s16(v_hi));
+                //                sum_3 = vaddw_s16(sum_3, vget_high_s16(v_hi));
                 
-                // Sums: widen and add
-                sum_0 = vaddw_s16(sum_0, vget_low_s16(v_lo));
-                sum_1 = vaddw_s16(sum_1, vget_high_s16(v_lo));
-                sum_2 = vaddw_s16(sum_2, vget_low_s16(v_hi));
-                sum_3 = vaddw_s16(sum_3, vget_high_s16(v_hi));
                 
-                // Squares: Multiply + Accumulate + Direct Widening!
-                sumsq_0 = vmlal_s16(sumsq_0, vget_low_s16(v_lo), vget_low_s16(v_lo));
-                sumsq_1 = vmlal_s16(sumsq_1, vget_high_s16(v_lo), vget_high_s16(v_lo));
-                sumsq_2 = vmlal_s16(sumsq_2, vget_low_s16(v_hi), vget_low_s16(v_hi));
-                sumsq_3 = vmlal_s16(sumsq_3, vget_high_s16(v_hi), vget_high_s16(v_hi));
+                // OPTIMIZATION: Total accumulated sum remains within the short integer bounds.
+                // Ensure this holds true after any changes to the latent vectors.
+                sum_lo = vaddq_s16(sum_lo, vld1q_s16(v_ref.data));
+                sum_hi = vaddq_s16(sum_hi, vld1q_s16(v_ref.data + 8));
+                
+                
+                // --- Partie Carrés (Interaction) ---
+                // On charge les carrés précalculés directement dans les accumulateurs
+                // Plus besoin de vget_low/high ni de vmlal !
+                sumsq_0 = vaddq_s32(sumsq_0, vld1q_s32(&v_ref.squares[0]));
+                sumsq_1 = vaddq_s32(sumsq_1, vld1q_s32(&v_ref.squares[4]));
+                sumsq_2 = vaddq_s32(sumsq_2, vld1q_s32(&v_ref.squares[8]));
+                sumsq_3 = vaddq_s32(sumsq_3, vld1q_s32(&v_ref.squares[12]));
             };
             
 #else
@@ -345,14 +366,15 @@ inline int acc_score(const int   stage,
             auto acc = [&](const Vec_short* V, int idx) __attribute__((always_inline)) {
                 const Vec_short& vec = V[idx];
                 for (unsigned int f = 0; f < RANK; ++f) {
-                    short v = vec[f];
-                    sum_vx[f]    += v;
-                    sum_vx_sq[f] += (int)v * v;
+                    sum_vx[f]    += vec.data[f];    // Addition simple
+                    sum_vx_sq[f] += vec.squares[f]; // Addition simple (plus de multiplication !)
                 }
             };
             
 #endif  // __ARM_NEON
             
+            const Vec_short* const& vMob_P  = RXEvaluation::gVMob_P;
+            const Vec_short* const& vMob_O  = RXEvaluation::gVMob_O;
             const Vec_short* const& vDiag5  = RXEvaluation::gVDiag5;
             const Vec_short* const& vDiag6  = RXEvaluation::gVDiag6;
             const Vec_short* const& vDiag7  = RXEvaluation::gVDiag7;
@@ -360,12 +382,11 @@ inline int acc_score(const int   stage,
             const Vec_short* const& vEdge1  = RXEvaluation::gVEdge1;
             const Vec_short* const& vEdge2  = RXEvaluation::gVEdge2;
             const Vec_short* const& vEdge3  = RXEvaluation::gVEdge3;
+            const Vec_short* const& vEdge4  = RXEvaluation::gVEdge4;
             const Vec_short* const& vHv2    = RXEvaluation::gVHv2;
             const Vec_short* const& vHv3    = RXEvaluation::gVHv3;
             const Vec_short* const& vHv4    = RXEvaluation::gVHv4;
             const Vec_short* const& vCorner = RXEvaluation::gVCorner;
-            const Vec_short* const& vMob_P  = RXEvaluation::gVMob_P;
-            const Vec_short* const& vMob_O  = RXEvaluation::gVMob_O;
             
             
             // Remplacement des 4 appels par une version plus "branch-friendly"
@@ -373,51 +394,63 @@ inline int acc_score(const int   stage,
             const Vec_short* __restrict const vEdgeB = maskB ? vEdge1 : vEdge2;
             const Vec_short* __restrict const vEdgeC = maskC ? vEdge1 : vEdge2;
             const Vec_short* __restrict const vEdgeD = maskD ? vEdge1 : vEdge2;
-/*
-            // Defer to the compiler.
- 
-            // CORNER — 4 accès dans 177147 entrées → priorité max, prefetch en premier
-            __builtin_prefetch(&vCorner[cp42], 0, 3);
-            __builtin_prefetch(&vCorner[cp43], 0, 3);
-            __builtin_prefetch(&vCorner[cp44], 0, 3);
-            __builtin_prefetch(&vCorner[cp45], 0, 3);
             
-            // EDGE2X — 4 accès dans 59049 entrées / EDGE64 — 4 accès
-            __builtin_prefetch(&vEdgeA[cpA], 0, 1);
-            __builtin_prefetch(&vEdgeB[cpB], 0, 1);
-            __builtin_prefetch(&vEdgeC[cpC], 0, 1);
-            __builtin_prefetch(&vEdgeD[cpD], 0, 1);
-
-            // EDGE5 — 8 accès
-            __builtin_prefetch(&vEdge3[cp22], 0, 1);
-            __builtin_prefetch(&vEdge3[cp23], 0, 1);
-            __builtin_prefetch(&vEdge3[cp24], 0, 1);
-            __builtin_prefetch(&vEdge3[cp25], 0, 1);
-            __builtin_prefetch(&vEdge3[cp26], 0, 1);
-            __builtin_prefetch(&vEdge3[cp27], 0, 1);
-            __builtin_prefetch(&vEdge3[cp28], 0, 1);
-            __builtin_prefetch(&vEdge3[cp29], 0, 1);
-*/
+            /*
+             // Defer to the compiler.
+             
+             // CORNER — 4 accès dans 177147 entrées → priorité max, prefetch en premier
+             __builtin_prefetch(&vCorner[cp42], 0, 3);
+             __builtin_prefetch(&vCorner[cp43], 0, 3);
+             __builtin_prefetch(&vCorner[cp44], 0, 3);
+             __builtin_prefetch(&vCorner[cp45], 0, 3);
+             
+             // EDGE2X — 4 accès dans 59049 entrées / EDGE64 — 4 accès
+             __builtin_prefetch(&vEdgeA[cpA], 0, 1);
+             __builtin_prefetch(&vEdgeB[cpB], 0, 1);
+             __builtin_prefetch(&vEdgeC[cpC], 0, 1);
+             __builtin_prefetch(&vEdgeD[cpD], 0, 1);
+             
+             // EDGE5 — 8 accès
+             __builtin_prefetch(&vEdge3[cp22], 0, 1);
+             __builtin_prefetch(&vEdge3[cp23], 0, 1);
+             __builtin_prefetch(&vEdge3[cp24], 0, 1);
+             __builtin_prefetch(&vEdge3[cp25], 0, 1);
+             __builtin_prefetch(&vEdge3[cp26], 0, 1);
+             __builtin_prefetch(&vEdge3[cp27], 0, 1);
+             __builtin_prefetch(&vEdge3[cp28], 0, 1);
+             __builtin_prefetch(&vEdge3[cp29], 0, 1);
+             */
+            
             // mobilités
             acc(vMob_P, mob_Player);
             acc(vMob_O, mob_Opponent);
-
+            
             acc(vDiag5, cp0);  acc(vDiag5, cp1);  acc(vDiag5, cp2);  acc(vDiag5, cp3);
             acc(vDiag6, cp4);  acc(vDiag6, cp5);  acc(vDiag6, cp6);  acc(vDiag6, cp7);
             acc(vDiag7, cp8);  acc(vDiag7, cp9);  acc(vDiag7, cp10); acc(vDiag7, cp11);
             acc(vDiag8, cp12); acc(vDiag8, cp13);
-            acc(vHv2,   cp30); acc(vHv2,   cp31); acc(vHv2,   cp32); acc(vHv2,   cp33);
-            acc(vHv3,   cp34); acc(vHv3,   cp35); acc(vHv3,   cp36); acc(vHv3,   cp37);
-            acc(vHv4,   cp38); acc(vHv4,   cp39); acc(vHv4,   cp40); acc(vHv4,   cp41);
+            acc(vHv2,   cp34); acc(vHv2,   cp35); acc(vHv2,   cp36); acc(vHv2,   cp37);
+            acc(vHv3,   cp38); acc(vHv3,   cp39); acc(vHv3,   cp40); acc(vHv3,   cp41);
+            acc(vHv4,   cp42); acc(vHv4,   cp43); acc(vHv4,   cp44); acc(vHv4,   cp45);
             
             acc(vEdgeA,  cpA); acc(vEdgeB,  cpB); acc(vEdgeC,  cpC); acc(vEdgeD,  cpD);
-
+            
             acc(vEdge3, cp22); acc(vEdge3, cp23); acc(vEdge3, cp24); acc(vEdge3, cp25);
-            acc(vEdge3, cp26); acc(vEdge3, cp27); acc(vEdge3, cp28); acc(vEdge3, cp29);
-            acc(vCorner,cp42); acc(vCorner,cp43); acc(vCorner,cp44); acc(vCorner,cp45);
+            acc(vEdge4, cp26); acc(vEdge4, cp27); acc(vEdge4, cp28); acc(vEdge4, cp29);
+            acc(vEdge4, cp30); acc(vEdge4, cp31); acc(vEdge4, cp32); acc(vEdge4, cp33);
+            
+            acc(vCorner,cp46); acc(vCorner,cp47); acc(vCorner,cp48); acc(vCorner,cp49);
             
             
 #ifdef __ARM_NEON
+            
+            // OPTIMIZATION: Total accumulated sum remains within the short integer bounds.
+            // Ensure this holds true after any changes to the latent vectors.
+            // Widening au moment du calcul final seulement
+            int32x4_t sum_0 = vmovl_s16(vget_low_s16(sum_lo));   // lanes 0..3
+            int32x4_t sum_1 = vmovl_s16(vget_high_s16(sum_lo));  // lanes 4..7
+            int32x4_t sum_2 = vmovl_s16(vget_low_s16(sum_hi));   // lanes 8..11
+            int32x4_t sum_3 = vmovl_s16(vget_high_s16(sum_hi));  // lanes 12..15
             
             // FM = Σ (sum²  - sumsq)
             int32x4_t res0 = vsubq_s32(vmulq_s32(sum_0, sum_0), sumsq_0);
@@ -436,16 +469,20 @@ inline int acc_score(const int   stage,
                 fm_interaction += sum_vx[f] * sum_vx[f] - sum_vx_sq[f];
 #endif
             
-            eval += (fm_interaction+128) / (2 * 256);
-            
+            //eval += ((fm_interaction/2)+128) / 256;
+            eval += (fm_interaction + 256 - ((fm_interaction>>31) & 512)) / 512;
+
         }
     }
 #endif  // FACT_MACH
-
-    if (eval > 0) eval += 128; else eval -= 128;
-    return eval / 256;
+    
+    //if (eval > 0) eval += 128; else eval -= 128;
+    //return eval / 256;
+    
+    // Version la plus rapide — un seul ASR sur ARM
+    return (eval + 128 - ((eval >> 31) & 256)) / 256;
+    
 }
-
 
 // -----------------------------------------------------------------------------
 //  get_score() — position courante

@@ -211,105 +211,104 @@ inline unsigned long long RXBitBoard::get_legal_moves(const unsigned long long p
 }
 
 
-/**
- * Calcule les coups légaux pour les deux joueurs simultanément.
- * Lane 0 : Coups légaux pour p_discs
- * Lane 1 : Coups légaux pour o_discs
- */
+template<int Shift>
+__attribute__((always_inline))
+inline uint64x2_t vshift_u64(uint64x2_t v) {
+    if constexpr (Shift > 0)
+        return vshlq_n_u64(v, Shift);          // logical left shift ✓
+    else
+        return vshrq_n_u64(v, -Shift);         // logical right shift ✓
+}
+
 template<int Shift, bool IsHorizontal>
-inline uint64x2_t propagate_kogge_stone(const uint64x2_t p_vec, const uint64x2_t o_vec, const uint64x2_t mask_inner) {
-    constexpr int S = (Shift > 0) ? Shift : -Shift;
-    
-    // Masque : le M4 fusionne très bien les opérations constantes
-    const uint64x2_t mask = IsHorizontal ? mask_inner : vdupq_n_u64(0xFFFFFFFFFFFFFFFFULL);
+__attribute__((always_inline))
+inline uint64x2_t propagate_kogge_stone(
+        const uint64x2_t p_vec,
+        const uint64x2_t o_vec,
+        const uint64x2_t mask_inner)
+{
+    const uint64x2_t mask = IsHorizontal
+        ? mask_inner
+        : vdupq_n_u64(0xFFFFFFFFFFFFFFFFULL);
     const uint64x2_t prop = vandq_u64(o_vec, mask);
-    
-    if constexpr (Shift > 0) {
-        // Initialisation
-        uint64x2_t g = vandq_u64(vshlq_n_u64(p_vec, S), prop);
-        
-        // CLEF : Calculer TOUS les prop shifts en parallèle (4 ops/cycle)
-        const uint64x2_t g1 = vshlq_n_u64(g, S);
-        const uint64x2_t prop1 = vshlq_n_u64(prop, S);
-        const uint64x2_t prop2 = vandq_u64(prop, prop1);
-        const uint64x2_t prop2_shift = vshlq_n_u64(prop2, 2*S);
-        
-        // Puis les accumulations (dépendances)
-        g = vorrq_u64(g, vandq_u64(g1, prop));
-        
-        const uint64x2_t g2 = vshlq_n_u64(g, 2*S);
-        const uint64x2_t prop4 = vandq_u64(prop2, prop2_shift);
-        g = vorrq_u64(g, vandq_u64(g2, prop2));
-        
-        const uint64x2_t g4 = vshlq_n_u64(g, 4*S);
-        g = vorrq_u64(g, vandq_u64(g4, prop4));
-        
-        return vshlq_n_u64(g, S);
-    } else {
-        uint64x2_t g = vandq_u64(vshrq_n_u64(p_vec, S), prop);
-        
-        const uint64x2_t g1 = vshrq_n_u64(g, S);
-        const uint64x2_t prop1 = vshrq_n_u64(prop, S);
-        const uint64x2_t prop2 = vandq_u64(prop, prop1);
-        const uint64x2_t prop2_shift = vshrq_n_u64(prop2, 2*S);
-        
-        g = vorrq_u64(g, vandq_u64(g1, prop));
-        
-        const uint64x2_t g2 = vshrq_n_u64(g, 2*S);
-        const uint64x2_t prop4 = vandq_u64(prop2, prop2_shift);
-        g = vorrq_u64(g, vandq_u64(g2, prop2));
-        
-        const uint64x2_t g4 = vshrq_n_u64(g, 4*S);
-        g = vorrq_u64(g, vandq_u64(g4, prop4));
-        
-        return vshrq_n_u64(g, S);
-    }
+
+    // Initialisation
+    uint64x2_t g = vandq_u64(vshift_u64<Shift>(p_vec), prop);
+
+    // Pré-calcul des shifts de prop en parallèle (ILP maximal)
+    const uint64x2_t g1      = vshift_u64<  Shift>(g);
+    const uint64x2_t prop1   = vshift_u64<  Shift>(prop);
+    const uint64x2_t prop2   = vandq_u64(prop, prop1);
+    const uint64x2_t prop2s  = vshift_u64<2*Shift>(prop2);
+
+    // Chaîne d'accumulation (dépendances inévitables)
+    g = vorrq_u64(g, vandq_u64(g1, prop));
+
+    const uint64x2_t g2    = vshift_u64<2*Shift>(g);
+    const uint64x2_t prop4 = vandq_u64(prop2, prop2s);
+    g = vorrq_u64(g, vandq_u64(g2, prop2));
+
+    const uint64x2_t g4 = vshift_u64<4*Shift>(g);
+    g = vorrq_u64(g, vandq_u64(g4, prop4));
+
+    return vshift_u64<Shift>(g);
+}
+
+// ============================================================
+// OPTIMISATION 1 : 8 directions → 4 paires ORées
+// Expose plus d'ILP au pipeline OoO du M4 (issue width = 4)
+// Le compilateur peut superposer les 2 Kogge-Stone d'une paire
+// ============================================================
+inline uint64x2_t RXBitBoard::dual_legal_moves(
+        const unsigned long long p,
+        const unsigned long long o)
+{
+    const uint64x2_t p_vec  = {p, o};
+    const uint64x2_t o_vec  = {o, p};
+    const uint64x2_t mask_h = vdupq_n_u64(0x7E7E7E7E7E7E7E7EULL);
+
+    // 4 paires indépendantes → le compilateur les superpose
+    const uint64x2_t l_NS = vorrq_u64(
+        propagate_kogge_stone< 8, false>(p_vec, o_vec, mask_h),  // N
+        propagate_kogge_stone<-8, false>(p_vec, o_vec, mask_h)); // S
+
+    const uint64x2_t l_EW = vorrq_u64(
+        propagate_kogge_stone< 1, true>(p_vec, o_vec, mask_h),   // E
+        propagate_kogge_stone<-1, true>(p_vec, o_vec, mask_h));  // W
+
+    const uint64x2_t l_NE_SW = vorrq_u64(
+        propagate_kogge_stone< 7, true>(p_vec, o_vec, mask_h),   // NE
+        propagate_kogge_stone<-7, true>(p_vec, o_vec, mask_h));  // SW
+
+    const uint64x2_t l_NW_SE = vorrq_u64(
+        propagate_kogge_stone< 9, true>(p_vec, o_vec, mask_h),   // NW
+        propagate_kogge_stone<-9, true>(p_vec, o_vec, mask_h));  // SE
+
+    // Arbre de OR équilibré (profondeur 2 au lieu de 7)
+    const uint64x2_t legals = vorrq_u64(
+        vorrq_u64(l_NS, l_EW),
+        vorrq_u64(l_NE_SW, l_NW_SE));
+
+    return vbicq_u64(legals, vdupq_n_u64(p | o));
 }
 
 inline uint64x2_t RXBitBoard::dual_count_legal_moves() const {
     return dual_count_legal_moves(discs[player], discs[player^1]);
 }
 
-inline uint64x2_t RXBitBoard::dual_count_legal_moves(const unsigned long long p, const unsigned long long o) {
-    
-    uint64x2_t legals = RXBitBoard::dual_legal_moves( p, o);
-    
-    // --- POPCOUNT NEON ---
-    // 1. Compte les bits par octets
-    uint8x16_t cnt8 = vcntq_u8(vreinterpretq_u8_u64(legals));
-    // 2. Sommes horizontales successives (8->16, 16->32, 32->64)
-    uint16x8_t sum16 = vpaddlq_u8(cnt8);
-    uint32x4_t sum32 = vpaddlq_u16(sum16);
-    uint64x2_t mobility = vpaddlq_u32(sum32);
-    
-    return mobility;
+inline uint64x2_t RXBitBoard::dual_count_legal_moves(
+        const unsigned long long p,
+        const unsigned long long o)
+{
+    const uint64x2_t legals = dual_legal_moves(p, o);
+
+    // Popcount NEON : canonique et optimal
+    const uint8x16_t  cnt8  = vcntq_u8(vreinterpretq_u8_u64(legals));
+    const uint16x8_t  sum16 = vpaddlq_u8(cnt8);
+    const uint32x4_t  sum32 = vpaddlq_u16(sum16);
+    return vpaddlq_u32(sum32);
 }
 
-inline uint64x2_t RXBitBoard::dual_legal_moves(const unsigned long long p, const unsigned long long o) {
-    // Préparation des registres 128 bits
-    // Lane 0: P vs O | Lane 1: O vs P
-    uint64x2_t p_vec = {p, o};
-    uint64x2_t o_vec = {o, p};
-    
-    uint64x2_t mask_inner = vdupq_n_u64(0x7E7E7E7E7E7E7E7EULL);
-    uint64x2_t legals = vdupq_n_u64(0);
-    
-    // Calcul des 8 directions en Kogge-Stone
-    legals = vorrq_u64(legals, propagate_kogge_stone< 8, false>(p_vec, o_vec, mask_inner)); // N
-    legals = vorrq_u64(legals, propagate_kogge_stone<-8, false>(p_vec, o_vec, mask_inner)); // S
-    legals = vorrq_u64(legals, propagate_kogge_stone< 1, true >(p_vec, o_vec, mask_inner)); // E
-    legals = vorrq_u64(legals, propagate_kogge_stone<-1, true >(p_vec, o_vec, mask_inner)); // W
-    legals = vorrq_u64(legals, propagate_kogge_stone< 7, true >(p_vec, o_vec, mask_inner)); // NE
-    legals = vorrq_u64(legals, propagate_kogge_stone<-7, true >(p_vec, o_vec, mask_inner)); // SW
-    legals = vorrq_u64(legals, propagate_kogge_stone< 9, true >(p_vec, o_vec, mask_inner)); // NW
-    legals = vorrq_u64(legals, propagate_kogge_stone<-9, true >(p_vec, o_vec, mask_inner)); // SE
-    
-    // Nettoyage final : le coup doit arriver sur une case vide
-    uint64x2_t occupied = vdupq_n_u64(p | o);
-    legals = vbicq_u64(legals, occupied);
-    
-    return legals;
-}
 
 __attribute__((always_inline))
 inline int RXBitBoard::count_flips(const int pos, const unsigned long long P) const
@@ -334,7 +333,6 @@ inline int RXBitBoard::count_flips(const int pos, const unsigned long long P) co
 
     return n_flips;
 }
-
 
 
 //unroll

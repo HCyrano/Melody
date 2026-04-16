@@ -1063,9 +1063,27 @@ int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, 
                 
                 previous->next = nullptr;
                 
-                
-                int score;
-                do {
+                if(bestscore == UNDEF_SCORE) {
+                    move = list->next;
+
+                    if(move->next != nullptr)    //more than 1 move
+                        move = list->pick_next_promising_move();
+
+                    sBoard.do_move(*move);
+
+                    bestscore = -MG_PVS_shallow(threadID, sBoard, pv, depth-1, -upper, -lower, false);
+
+                    sBoard.undo_move(*move);
+
+                    bestmove = move->position;
+                    if (bestscore>lower)
+                        lower = bestscore;
+                    
+                    list = list->next;
+
+                }
+
+                while(lower < upper && list->next != nullptr) {
                     
                     move = list->next;
 
@@ -1074,14 +1092,10 @@ int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, 
                     
                     sBoard.do_move(*move);
                     
-                    if(bestscore == UNDEF_SCORE) {
-                        score = -MG_PVS_shallow(threadID, sBoard, pv, depth-1, -upper, -lower, false);
-                    } else {
-                        score = -MG_PVS_shallow(threadID, sBoard, false, depth-1, -lower-1, -lower, false);
+                    int score = -MG_PVS_shallow(threadID, sBoard, false, depth-1, -lower-1, -lower, false);
                         
-                        if(lower < score && score < upper)
-                            score = -MG_PVS_shallow(threadID, sBoard, pv, depth-1, -upper, -score, false);
-                    }
+                    if(lower < score && score < upper)
+                        score = -MG_PVS_shallow(threadID, sBoard, pv, depth-1, -upper, -score, false);
                     
                     sBoard.undo_move(*move);
                     
@@ -1095,8 +1109,7 @@ int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, 
                     
                     list = list->next;
                     
-                    
-                } while(lower < upper && list->next != nullptr);
+                }
                 
             }
         }

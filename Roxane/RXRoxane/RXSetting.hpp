@@ -9,10 +9,7 @@
 #ifndef RXSETTING_HPP
 #define RXSETTING_HPP
 
-
-#ifdef __ARM_ACLE
-#define NEW_EVAL //-h 18 -t 1 fforum-40-59 -5% midgame-1-10
-#endif
+//#define RELEASE
 
 //login actif / inactif
 #define LOGGING_ON

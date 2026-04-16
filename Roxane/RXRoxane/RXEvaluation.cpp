@@ -15,7 +15,7 @@
 
 
 
-static void check_read(const std::ifstream& stream, const char* filename, unsigned int pattern, unsigned int stage = 0) {
+static void check_read(const std::ifstream& stream, const std::string filename, unsigned int pattern, unsigned int stage = 0) {
     if (!stream) {
         std::cerr << "CRITICAL ERROR: Lecture échouée dans " << filename
                   << " (pattern=" << pattern << ", stage=" << stage << ")" << std::endl;
@@ -25,11 +25,24 @@ static void check_read(const std::ifstream& stream, const char* filename, unsign
 
 
 void RXEvaluation::load() {
+    
+#ifdef RELEASE
+    const std::string path = "./";
+#else
+    const std::string path = "./build/";
+#endif
 
+    // --- weight.bin ---
+    const std::string filename_W = "weight_v11.bin";
+    std::ifstream from_w(path + filename_W, std::ios::binary);
+
+<<<<<<< HEAD
     // --- weight_v12.bin ---
     std::ifstream from_w("/Users/caussebruno/Documents/developpement/Melody/build/weight_v12.bin", std::ios::binary);
+=======
+>>>>>>> dev
     if (!from_w) {
-        std::cerr << "CRITICAL ERROR: Impossible de charger weight_v12.bin" << std::endl;
+        std::cerr << "CRITICAL ERROR: Impossible de charger " << filename_W << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -38,7 +51,7 @@ void RXEvaluation::load() {
 
             eval_w[iStage][f] = new short[sizes[f]];
             from_w.read(reinterpret_cast<char*>(eval_w[iStage][f]), sizeof(short) * sizes[f]);
-            check_read(from_w, "weight_v12.bin", f, iStage);
+            check_read(from_w, filename_W, f, iStage);
 
             if (f != MOB_P && f != MOB_O)
                 eval_w[iStage][f] += sizes[f] / 2;
@@ -90,16 +103,24 @@ void RXEvaluation::load() {
 #endif
     
 #ifdef FACT_MACH
+<<<<<<< HEAD
     // --- fm_w0.txt ---
     std::ifstream from_w0("/Users/caussebruno/Documents/developpement/Melody/build/fm_w0_v12.txt");
+=======
+    
+    // --- weight0.txt ---
+    const std::string filename_W0 = "weight_0_v11.txt";
+    std::ifstream from_w0(path + filename_W0);
+
+>>>>>>> dev
     if (!from_w0) {
-        std::cerr << "CRITICAL ERROR: Impossible de charger fm_w0_v12.txt" << std::endl;
+        std::cerr << "CRITICAL ERROR: Impossible de charger " << filename_W0 << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
     for (unsigned int iStage = 0; iStage < 60; iStage++) {
         if (!(from_w0 >> eval_w0[iStage])) {
-            std::cerr << "CRITICAL ERROR: fm_w0.txt contient moins de 60 entiers (arrêt à l'index "
+            std::cerr << "CRITICAL ERROR: " << filename_W0 << " contient moins de 60 entiers (arrêt à l'index "
                       << iStage << ")" << std::endl;
             std::exit(EXIT_FAILURE);
         }
@@ -108,10 +129,17 @@ void RXEvaluation::load() {
     from_w0.close();
 
 
+<<<<<<< HEAD
     // --- fm_V.bin ---
     std::ifstream from_V("/Users/caussebruno/Documents/developpement/Melody/build/fm_V_v12.bin", std::ios::binary);
+=======
+    // --- weight_V.bin ---
+    const std::string filename_V = "weight_V_v11.bin";
+    std::ifstream from_V(path + filename_V, std::ios::binary);
+    
+>>>>>>> dev
     if (!from_V) {
-        std::cerr << "CRITICAL ERROR: Impossible de charger fm_V_v12.bin" << std::endl;
+        std::cerr << "CRITICAL ERROR: Impossible de charger " << filename_V << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -121,9 +149,15 @@ void RXEvaluation::load() {
         // Lecture donnée par donnée pour ignorer le padding
         for (unsigned int i = 0; i < sizes[f]; ++i) {
             from_V.read(reinterpret_cast<char*>(eval_V[f][i].data), sizeof(short) * RANK);
-        }
-        check_read(from_V, "fm_V.bin", f);
+            check_read(from_V, filename_V, f);
 
+            // Précalculer les carrés
+            for (unsigned int r = 0; r < RANK; ++r) {
+                short v = eval_V[f][i].data[r];
+                eval_V[f][i].squares[r] = static_cast<int>(v) * v;
+            }
+        }
+        
         if (f != MOB_P && f != MOB_O)
             eval_V[f] += sizes[f] / 2;
     }
@@ -137,9 +171,10 @@ void RXEvaluation::load() {
     gVDiag6  = RXEvaluation::eval_V[DIAG6];
     gVDiag7  = RXEvaluation::eval_V[DIAG7];
     gVDiag8  = RXEvaluation::eval_V[DIAG8];
-    gVEdge1  = RXEvaluation::eval_V[EDGE2X];
-    gVEdge2  = RXEvaluation::eval_V[EDGE64];
-    gVEdge3  = RXEvaluation::eval_V[EDGE5];
+    gVEdge1  = RXEvaluation::eval_V[EDGE1];
+    gVEdge2  = RXEvaluation::eval_V[EDGE2];
+    gVEdge3  = RXEvaluation::eval_V[EDGE3];
+    gVEdge4  = RXEvaluation::eval_V[EDGE4];
     gVHv2    = RXEvaluation::eval_V[HV2];
     gVHv3    = RXEvaluation::eval_V[HV3];
     gVHv4    = RXEvaluation::eval_V[HV4];
@@ -235,7 +270,7 @@ void RXEvaluation::unload() {
     // Invalidate FM global pointers
     gVMob_P = gVMob_O = nullptr;
     gVDiag5 = gVDiag6 = gVDiag7 = gVDiag8 = nullptr;
-    gVEdge1 = gVEdge2 = gVEdge3 = nullptr;
+    gVEdge1 = gVEdge2 = gVEdge3 = gVEdge4 = nullptr;
     gVHv2   = gVHv3   = gVHv4   = nullptr;
     gVCorner = nullptr;
     

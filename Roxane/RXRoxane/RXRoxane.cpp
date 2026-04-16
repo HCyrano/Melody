@@ -658,6 +658,7 @@ void RXRoxane::RSME(const int stage) {
             << "  RMSE= " << std::fixed << std::setprecision(4) << rmse
             << "  RMSE FM= " << std::fixed << std::setprecision(4) << rmse_fm
             << "  delta= " << std::fixed << std::setprecision(4) << (rmse-rmse_fm)
+            << "  n positions= " << n_positions
             << std::endl;
         } else {
             std::cout << "  aucune position " << std::endl;
