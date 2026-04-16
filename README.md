@@ -46,12 +46,12 @@ Le moteur est spécifiquement optimisé pour l'écosystème Apple afin de maximi
 > 
 ---
 
-🚀 Détails techniques de la Release
+#### 🚀 Détails techniques de la Release :
 Cette version de Melody est distribuée sous forme de binaire universel (Universal Binary), compatible avec les architectures ARM et x86-64.
 
 Architecture ARM : Le code est optimisé pour utiliser intensivement l'extension NEON (SIMD), garantissant des performances accrues sur les processeurs compatibles (Apple Silicon, Raspberry Pi, etc.).
 
-Architecture x86-64 : Pour l'instant, cette version est générique. Elle ne tire pas profit des instructions SIMD spécifiques (comme l'AVX/AVX2).
+Architecture x86-64 : Pour l'instant, cette version est générique. Elle ne tire pas profit des instructions SIMD spécifiques (comme l'AVX/AVX2 ...).
 
 💡 Appel à la communauté (Extensions SIMD)
 Ne disposant pas actuellement du matériel nécessaire pour tester et implémenter les extensions AVX/AVX2 sur x86-64, je suis ouvert aux retours et contributions :
@@ -60,7 +60,7 @@ Si vous souhaitez aider à l'implémentation de ces optimisations.
 
 Si vous avez les capacités de test pour valider des builds spécifiques.
 
-N'hésitez pas à ouvrir une Issue ou à me contacter pour en discuter !
+#### N'hésitez pas à ouvrir une Issue ou à me contacter pour en discuter !
 ---
 
 
