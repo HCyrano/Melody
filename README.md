@@ -43,7 +43,26 @@ Le moteur est spécifiquement optimisé pour l'écosystème Apple afin de maximi
 > Melody intègre des idées et des segments de logique repris du code d'Edax. Un immense respect et des remerciements à ***Richard Delorme*** et ***Toshihiko Okuhara*** pour leur contribution inestimable à la communauté. 
 > Le support GGS s'appuie sur une modernisation de l'ODK original de ***C Welty***.
 > Un vif remerciement à la communauté GGS pour ce cadre d'échange d'idées particulièrement stimulant.
+> 
 ---
+
+🚀 Détails techniques de la Release
+Cette version de Melody est distribuée sous forme de binaire universel (Universal Binary), compatible avec les architectures ARM et x86-64.
+
+Architecture ARM : Le code est optimisé pour utiliser intensivement l'extension NEON (SIMD), garantissant des performances accrues sur les processeurs compatibles (Apple Silicon, Raspberry Pi, etc.).
+
+Architecture x86-64 : Pour l'instant, cette version est générique. Elle ne tire pas profit des instructions SIMD spécifiques (comme l'AVX/AVX2).
+
+💡 Appel à la communauté (Extensions SIMD)
+Ne disposant pas actuellement du matériel nécessaire pour tester et implémenter les extensions AVX/AVX2 sur x86-64, je suis ouvert aux retours et contributions :
+
+Si vous souhaitez aider à l'implémentation de ces optimisations.
+
+Si vous avez les capacités de test pour valider des builds spécifiques.
+
+N'hésitez pas à ouvrir une Issue ou à me contacter pour en discuter !
+---
+
 
 ## ⚖️ Licence
 Distribué sous licence MIT.
