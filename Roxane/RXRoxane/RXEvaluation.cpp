@@ -36,11 +36,6 @@ void RXEvaluation::load() {
     const std::string filename_W = "weight_v11.bin";
     std::ifstream from_w(path + filename_W, std::ios::binary);
 
-<<<<<<< HEAD
-    // --- weight_v12.bin ---
-    std::ifstream from_w("/Users/caussebruno/Documents/developpement/Melody/build/weight_v12.bin", std::ios::binary);
-=======
->>>>>>> dev
     if (!from_w) {
         std::cerr << "CRITICAL ERROR: Impossible de charger " << filename_W << std::endl;
         std::exit(EXIT_FAILURE);
@@ -103,16 +98,11 @@ void RXEvaluation::load() {
 #endif
     
 #ifdef FACT_MACH
-<<<<<<< HEAD
-    // --- fm_w0.txt ---
-    std::ifstream from_w0("/Users/caussebruno/Documents/developpement/Melody/build/fm_w0_v12.txt");
-=======
     
     // --- weight0.txt ---
     const std::string filename_W0 = "weight_0_v11.txt";
     std::ifstream from_w0(path + filename_W0);
 
->>>>>>> dev
     if (!from_w0) {
         std::cerr << "CRITICAL ERROR: Impossible de charger " << filename_W0 << std::endl;
         std::exit(EXIT_FAILURE);
@@ -129,15 +119,10 @@ void RXEvaluation::load() {
     from_w0.close();
 
 
-<<<<<<< HEAD
-    // --- fm_V.bin ---
-    std::ifstream from_V("/Users/caussebruno/Documents/developpement/Melody/build/fm_V_v12.bin", std::ios::binary);
-=======
     // --- weight_V.bin ---
     const std::string filename_V = "weight_V_v11.bin";
     std::ifstream from_V(path + filename_V, std::ios::binary);
     
->>>>>>> dev
     if (!from_V) {
         std::cerr << "CRITICAL ERROR: Impossible de charger " << filename_V << std::endl;
         std::exit(EXIT_FAILURE);
