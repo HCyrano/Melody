@@ -153,10 +153,8 @@ const int RXBitBoard::QUADRANT_ID[] = {
 };
 
 
-alignas(64) unsigned long long RXBitBoard::hashcodeTable_lines1_2[2][65536];
-alignas(64) unsigned long long RXBitBoard::hashcodeTable_lines3_4[2][65536];
-alignas(64) unsigned long long RXBitBoard::hashcodeTable_lines5_6[2][65536];
-alignas(64) unsigned long long RXBitBoard::hashcodeTable_lines7_8[2][65536];
+alignas(64) unsigned long long RXBitBoard::hashByte[2][8][256];
+
 
 unsigned char RXBitBoard::EDGE_STABILITY[256*256]; //unsigned char
 
@@ -203,37 +201,19 @@ alignas(64) const unsigned long long RXBitBoard::FLIPPED_4_H[19] = {    // ...cb
 
 
 void RXBitBoard::init_hashcodeTable() {
-        
-    for(unsigned int row = 0; row < 65536; row++) {
-        
-        hashcodeTable_lines1_2[BLACK][row] = 0;
-        hashcodeTable_lines3_4[BLACK][row] = 0;
-        hashcodeTable_lines5_6[BLACK][row] = 0;
-        hashcodeTable_lines7_8[BLACK][row] = 0;
-        
-        hashcodeTable_lines1_2[WHITE][row] = 0;
-        hashcodeTable_lines3_4[WHITE][row] = 0;
-        hashcodeTable_lines5_6[WHITE][row] = 0;
-        hashcodeTable_lines7_8[WHITE][row] = 0;
-
-        for (unsigned int bit = 0; bit<16; bit++) {
-            
-            if(row & 1<<bit) {
-                
-               
-                hashcodeTable_lines1_2[BLACK][row] ^= hashSquare[bit+48][BLACK];
-                hashcodeTable_lines3_4[BLACK][row] ^= hashSquare[bit+32][BLACK];
-                hashcodeTable_lines5_6[BLACK][row] ^= hashSquare[bit+16][BLACK];
-                hashcodeTable_lines7_8[BLACK][row] ^= hashSquare[bit   ][BLACK];
-                
-                hashcodeTable_lines1_2[WHITE][row] ^= hashSquare[bit+48][WHITE];
-                hashcodeTable_lines3_4[WHITE][row] ^= hashSquare[bit+32][WHITE];
-                hashcodeTable_lines5_6[WHITE][row] ^= hashSquare[bit+16][WHITE];
-                hashcodeTable_lines7_8[WHITE][row] ^= hashSquare[bit   ][WHITE];
-                
+    for (int p = 0; p < 2; p++) {
+        for (int i = 0; i < 8; i++) { // Pour chaque octet (de 0 à 7)
+            for (int v = 0; v < 256; v++) { // Pour chaque valeur (0 à 255)
+                unsigned long long h = 0;
+                for (int bit = 0; bit < 8; bit++) {
+                    if (v & (1 << bit)) {
+                        // (i * 8) + bit recrée l'index de 0 à 63
+                        h ^= hashSquare[(i * 8) + bit][p];
+                    }
+                }
+                hashByte[p][i][v] = h;
             }
         }
-        
     }
 }
 

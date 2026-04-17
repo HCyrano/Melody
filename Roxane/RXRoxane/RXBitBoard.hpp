@@ -43,10 +43,8 @@ class alignas(32) RXBitBoard {
     private :
     static const unsigned long long hashSquare[64][2];
     
-    static unsigned long long hashcodeTable_lines1_2[2][65536];
-    static unsigned long long hashcodeTable_lines3_4[2][65536];
-    static unsigned long long hashcodeTable_lines5_6[2][65536];
-    static unsigned long long hashcodeTable_lines7_8[2][65536];
+    // 2 camps, 8 octets par board, 256 valeurs possibles
+    static unsigned long long hashByte[2][8][256];
     
     static unsigned char EDGE_STABILITY[256*256]; //unsigned char
     static int find_edge_stable(const int old_P, const int old_O, int stable);
@@ -350,6 +348,60 @@ inline void RXBitBoard::moves_producing(RXMove* start, unsigned long long exclud
     }
     
     previous->next = nullptr;
+}
+
+__attribute__((always_inline))
+inline unsigned long long RXBitBoard::hashcode() const {
+    const unsigned long long p = discs[player];
+    const unsigned long long o = discs[player ^ 1];
+
+    // Joueur actuel
+    unsigned long long h = hashByte[PLAYER][0][p & 0xFF]
+                         ^ hashByte[PLAYER][1][(p >> 8) & 0xFF]
+                         ^ hashByte[PLAYER][2][(p >> 16) & 0xFF]
+                         ^ hashByte[PLAYER][3][(p >> 24) & 0xFF]
+                         ^ hashByte[PLAYER][4][(p >> 32) & 0xFF]
+                         ^ hashByte[PLAYER][5][(p >> 40) & 0xFF]
+                         ^ hashByte[PLAYER][6][(p >> 48) & 0xFF]
+                         ^ hashByte[PLAYER][7][(p >> 56) & 0xFF];
+
+    // Adversaire
+    h ^= hashByte[OPPONENT][0][o & 0xFF]
+       ^ hashByte[OPPONENT][1][(o >> 8) & 0xFF]
+       ^ hashByte[OPPONENT][2][(o >> 16) & 0xFF]
+       ^ hashByte[OPPONENT][3][(o >> 24) & 0xFF]
+       ^ hashByte[OPPONENT][4][(o >> 32) & 0xFF]
+       ^ hashByte[OPPONENT][5][(o >> 40) & 0xFF]
+       ^ hashByte[OPPONENT][6][(o >> 48) & 0xFF]
+       ^ hashByte[OPPONENT][7][(o >> 56) & 0xFF];
+
+    return h;
+}
+
+__attribute__((always_inline))
+inline unsigned long long RXBitBoard::hashcode_after_move(RXMove* move) const {
+    const unsigned long long o = discs[player] | (move->flipped | move->square);
+    const unsigned long long p = discs[player ^ 1] ^ move->flipped;
+
+    unsigned long long h = hashByte[PLAYER][0][p & 0xFF]
+                         ^ hashByte[PLAYER][1][(p >> 8) & 0xFF]
+                         ^ hashByte[PLAYER][2][(p >> 16) & 0xFF]
+                         ^ hashByte[PLAYER][3][(p >> 24) & 0xFF]
+                         ^ hashByte[PLAYER][4][(p >> 32) & 0xFF]
+                         ^ hashByte[PLAYER][5][(p >> 40) & 0xFF]
+                         ^ hashByte[PLAYER][6][(p >> 48) & 0xFF]
+                         ^ hashByte[PLAYER][7][(p >> 56) & 0xFF];
+
+    h ^= hashByte[OPPONENT][0][o & 0xFF]
+       ^ hashByte[OPPONENT][1][(o >> 8) & 0xFF]
+       ^ hashByte[OPPONENT][2][(o >> 16) & 0xFF]
+       ^ hashByte[OPPONENT][3][(o >> 24) & 0xFF]
+       ^ hashByte[OPPONENT][4][(o >> 32) & 0xFF]
+       ^ hashByte[OPPONENT][5][(o >> 40) & 0xFF]
+       ^ hashByte[OPPONENT][6][(o >> 48) & 0xFF]
+       ^ hashByte[OPPONENT][7][(o >> 56) & 0xFF];
+
+    return h;
 }
 
 
