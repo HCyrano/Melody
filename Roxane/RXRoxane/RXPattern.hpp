@@ -14,10 +14,10 @@
 
 
 
-class alignas(16) RXPattern {
+class alignas(64) RXPattern {
     
     static constexpr unsigned int N_PATTERNS     = 50;  // logique métier
-    static constexpr unsigned int N_PATTERNS_PAD = 52;  // allocation réelle
+    static constexpr unsigned int N_PATTERNS_PAD = 64;  // allocation réelle 64*4 = 256 bytes
 
 public:
     

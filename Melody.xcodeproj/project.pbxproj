@@ -19,7 +19,7 @@
 		372327192D1FF69D002CFAF4 /* RXBBDoFlips.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326F02D1FF69D002CFAF4 /* RXBBDoFlips.cpp */; };
 		3723271B2D1FF69D002CFAF4 /* RXBBGenerateFlips.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326F22D1FF69D002CFAF4 /* RXBBGenerateFlips.cpp */; };
 		3723271C2D1FF69D002CFAF4 /* RXBBGenerateFlips_NEON.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326F32D1FF69D002CFAF4 /* RXBBGenerateFlips_NEON.cpp */; };
-		3723271D2D1FF69D002CFAF4 /* RXBBPatterns.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326F52D1FF69D002CFAF4 /* RXBBPatterns.cpp */; settings = {COMPILER_FLAGS = "-O3 -ffast-math"; }; };
+		3723271D2D1FF69D002CFAF4 /* RXBBPatterns.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326F52D1FF69D002CFAF4 /* RXBBPatterns.cpp */; };
 		3723271E2D1FF69D002CFAF4 /* RXBitBoard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326F72D1FF69D002CFAF4 /* RXBitBoard.cpp */; };
 		3723271F2D1FF69D002CFAF4 /* RXEndGame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326F92D1FF69D002CFAF4 /* RXEndGame.cpp */; };
 		372327202D1FF69D002CFAF4 /* RXEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326FB2D1FF69D002CFAF4 /* RXEngine.cpp */; };

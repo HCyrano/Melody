@@ -444,19 +444,28 @@ inline int acc_score(const int   stage,
             
 #ifdef __ARM_NEON
             
+//            // FM = Σ (sum²  - sumsq)
+//            int32x4_t res0 = vsubq_s32(vmulq_s32(sum_0, sum_0), sumsq_0);
+//            int32x4_t res1 = vsubq_s32(vmulq_s32(sum_1, sum_1), sumsq_1);
+//            int32x4_t res2 = vsubq_s32(vmulq_s32(sum_2, sum_2), sumsq_2);
+//            int32x4_t res3 = vsubq_s32(vmulq_s32(sum_3, sum_3), sumsq_3);
+            
             // OPTIMIZATION: Total accumulated sum remains within the short integer bounds.
             // Ensure this holds true after any changes to the latent vectors.
             // Widening au moment du calcul final seulement
-            int32x4_t sum_0 = vmovl_s16(vget_low_s16(sum_lo));   // lanes 0..3
-            int32x4_t sum_1 = vmovl_s16(vget_high_s16(sum_lo));  // lanes 4..7
-            int32x4_t sum_2 = vmovl_s16(vget_low_s16(sum_hi));   // lanes 8..11
-            int32x4_t sum_3 = vmovl_s16(vget_high_s16(sum_hi));  // lanes 12..15
-            
-            // FM = Σ (sum²  - sumsq)
-            int32x4_t res0 = vsubq_s32(vmulq_s32(sum_0, sum_0), sumsq_0);
-            int32x4_t res1 = vsubq_s32(vmulq_s32(sum_1, sum_1), sumsq_1);
-            int32x4_t res2 = vsubq_s32(vmulq_s32(sum_2, sum_2), sumsq_2);
-            int32x4_t res3 = vsubq_s32(vmulq_s32(sum_3, sum_3), sumsq_3);
+
+            // Initialise res = -sumsq (une instruction)
+            int32x4_t res0 = vnegq_s32(sumsq_0);
+            int32x4_t res1 = vnegq_s32(sumsq_1);
+            int32x4_t res2 = vnegq_s32(sumsq_2);
+            int32x4_t res3 = vnegq_s32(sumsq_3);
+
+            // Puis widening multiply-accumulate depuis int16 (si sum est encore int16x8_t)
+            // vmlal_s16 : res += (int16 * int16) avec widening automatique
+            res0 = vmlal_s16(res0, vget_low_s16(sum_lo),  vget_low_s16(sum_lo));
+            res1 = vmlal_s16(res1, vget_high_s16(sum_lo), vget_high_s16(sum_lo));
+            res2 = vmlal_s16(res2, vget_low_s16(sum_hi),  vget_low_s16(sum_hi));
+            res3 = vmlal_s16(res3, vget_high_s16(sum_hi), vget_high_s16(sum_hi));
             
             int fm_interaction = vaddvq_s32(
                                             vaddq_s32(vaddq_s32(res0, res1),
