@@ -355,7 +355,6 @@ inline unsigned long long RXBitBoard::hashcode() const {
     const unsigned long long p = discs[player];
     const unsigned long long o = discs[player ^ 1];
 
-    // Joueur actuel
     unsigned long long h = hashByte[PLAYER][0][p & 0xFF]
                          ^ hashByte[PLAYER][1][(p >> 8) & 0xFF]
                          ^ hashByte[PLAYER][2][(p >> 16) & 0xFF]
@@ -365,7 +364,6 @@ inline unsigned long long RXBitBoard::hashcode() const {
                          ^ hashByte[PLAYER][6][(p >> 48) & 0xFF]
                          ^ hashByte[PLAYER][7][(p >> 56) & 0xFF];
 
-    // Adversaire
     h ^= hashByte[OPPONENT][0][o & 0xFF]
        ^ hashByte[OPPONENT][1][(o >> 8) & 0xFF]
        ^ hashByte[OPPONENT][2][(o >> 16) & 0xFF]
