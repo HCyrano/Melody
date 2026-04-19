@@ -848,12 +848,13 @@ inline float RXEngine::sigma(const int n_empty, const int depth, const int depth
 
 inline int RXEngine::probcut_bounds(const RXBitBoard& board, const int selectivity, const int depth, const int depth_probcut,  const int pvDev, const int alpha, const int beta, int& lower_bound, int& upper_bound) const {
     
-    float coeff_pv = 1.15f/(1.0f + 0.05*pvDev);
+//    float coeff_pv = 1.15f/(1.0f + 0.05*pvDev);
+//
+//    //error evaluation with lower bound at 3
+//    int eval_error = std::round(sigma(board.n_empty, depth, depth_probcut) * coeff_pv * PERCENTILE[selectivity]);
     
-//    float coeff_pv = std::max(0.90f, (115-3*pvDev)/100.0f);
-        
-    //error evaluation with lower bound at 3
-    int eval_error = std::round(sigma(board.n_empty, depth, depth_probcut) * coeff_pv * PERCENTILE[selectivity]);
+    int eval_error = std::round(sigma(board.n_empty, depth, depth_probcut) * PERCENTILE[selectivity]);
+
     
     lower_bound = std::max(-MAX_SCORE, alpha - eval_error);
     upper_bound = std::min(+MAX_SCORE, beta  + eval_error);
