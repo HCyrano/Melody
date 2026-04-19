@@ -105,6 +105,7 @@
 		37A656D62F3F2ED6009E0822 /* RXBBDoFlips_NEON.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBDoFlips_NEON.cpp; sourceTree = "<group>"; };
 		37A671752EE6E80200476E87 /* Melody */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Melody; sourceTree = BUILT_PRODUCTS_DIR; };
 		37BF368C2E268CDC0029C7F6 /* RXSetting.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXSetting.hpp; sourceTree = "<group>"; };
+		37FF9AF02F952E7E006338A1 /* COMPILATION.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = COMPILATION.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,6 +120,7 @@
 		371D4D572D1EBFBA0072E829 = {
 			isa = PBXGroup;
 			children = (
+				37FF9AF02F952E7E006338A1 /* COMPILATION.md */,
 				37187AA02F8CF9D300682FAA /* LICENSE.md */,
 				37187A9C2F8CF2DB00682FAA /* README.md */,
 				3723270F2D1FF69D002CFAF4 /* Roxane */,

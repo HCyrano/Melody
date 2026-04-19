@@ -60,6 +60,13 @@ Si vous souhaitez aider à l'implémentation de ces optimisations.
 
 Si vous avez les capacités de test pour valider des builds spécifiques.
 
+🐧 Compatibilité Linux
+Contrairement à macOS, aucune version binaire n'est fournie pour Linux afin d'éviter les problèmes de dépendances entre distributions.
+
+Procédure : Veuillez télécharger le Code Source et suivre les instructions de 🛠️ Compilation.md.
+
+Cela garantit que le binaire sera parfaitement optimisé pour votre distribution (Ubuntu, Debian, Arch, etc.) et votre processeur.
+
 #### N'hésitez pas à ouvrir une Issue ou à me contacter pour en discuter !
 ---
 
