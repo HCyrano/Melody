@@ -43,7 +43,7 @@ Exécutez un script `.command`
 | `make cleanobj` | Supprime les .o et .d mais garde le binaire |
 | `make info` | Affiche la configuration détectée |
 
->[!Tip]
+>[!Astuce]
 ```
 make 2>&1 | tee build.log   	# compile et sauvegarde les erreurs
 cat build.log               	# consulter le log

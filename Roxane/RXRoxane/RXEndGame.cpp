@@ -1252,8 +1252,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                         int eval_move;
                         if((board.n_empty & 1) == 0) {
                             if(board.n_empty >= 28) {
-                                // Near the root: Use Factorization Machine to improve ranking accuracy without sacrificing inference speed.
-                                eval_move = -PVS_last_ply(threadID, sBoard, DEPTH_6, -MAX_SCORE, -lower_probcut, false);
+                                eval_move = -PVS_last_ply<WITHOUT_FM>(threadID, sBoard, DEPTH_6, -MAX_SCORE, -lower_probcut, false);
                             } else if(board.n_empty >= 24) {
                                 eval_move = -PVS_last_ply<WITHOUT_FM>(threadID, sBoard, DEPTH_4, -MAX_SCORE, -lower_probcut, false);
                             } else {
@@ -1261,8 +1260,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                             }
                         } else {
                             if(board.n_empty >= 27) {
-                                // Near the root: Use Factorization Machine to improve ranking accuracy without sacrificing inference speed.
-                                eval_move = -PVS_last_ply(threadID, sBoard, DEPTH_5, -MAX_SCORE, -lower_probcut, false);
+                                eval_move = -PVS_last_ply<WITHOUT_FM>(threadID, sBoard, DEPTH_5, -MAX_SCORE, -lower_probcut, false);
                             } else if(board.n_empty >= 23) {
                                 eval_move = -alphabeta_last_three_ply<WITHOUT_FM>(threadID, sBoard, -MAX_SCORE, -lower_probcut, false);
                             } else {

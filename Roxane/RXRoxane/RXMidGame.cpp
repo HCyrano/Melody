@@ -631,12 +631,11 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                                 sBoard.do_move(*iter);
                                 
                                 if(depth >= 26) {
-                                    // Near the root: Use Factorization Machine to improve ranking accuracy without sacrificing inference speed.
                                     
                                     if((board.n_empty & 1) == 0)
-                                        iter->score += PVS_last_ply(threadID, sBoard, DEPTH_6, -upper_probcut , -lower_probcut, false); //without FM for sort
+                                        iter->score += PVS_last_ply<WITHOUT_FM>(threadID, sBoard, DEPTH_6, -upper_probcut , -lower_probcut, false); //without FM for sort
                                     else
-                                        iter->score += PVS_last_ply(threadID, sBoard, DEPTH_5, -upper_probcut , -lower_probcut, false); //without FM for sort
+                                        iter->score += PVS_last_ply<WITHOUT_FM>(threadID, sBoard, DEPTH_5, -upper_probcut , -lower_probcut, false); //without FM for sort
                                     
                                 } else if(depth >= 20) {
                                     

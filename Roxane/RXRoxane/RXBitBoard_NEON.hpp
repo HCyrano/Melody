@@ -114,9 +114,8 @@ inline int RXBitBoard::get_stability(const unsigned long long discs_player, cons
     
 }
 
-
-
 inline unsigned long long RXBitBoard::get_legal_moves(const unsigned long long p_discs, const unsigned long long o_discs) {
+    
     constexpr int64x2_t S_H  = { -1,  1}, S2_H  = { -2,  2}, S4_H  = { -4,  4};
     constexpr int64x2_t S_V  = { -8,  8}, S2_V  = {-16, 16}, S4_V  = {-32, 32};
     constexpr int64x2_t S_D7 = { -7,  7}, S2_D7 = {-14, 14}, S4_D7 = {-28, 28};
@@ -124,6 +123,8 @@ inline unsigned long long RXBitBoard::get_legal_moves(const unsigned long long p
     
     const uint64x2_t P = vdupq_n_u64(p_discs);
     const uint64x2_t O = vdupq_n_u64(o_discs);
+    const uint64x2_t occupied = vdupq_n_u64(p_discs | o_discs);
+    
     const uint64x2_t O_inner = vdupq_n_u64(o_discs & 0x7E7E7E7E7E7E7E7EULL);
     
     auto kogge_stone_step = [](uint64x2_t& flip, int64x2_t shift, uint64x2_t mask) {
@@ -161,95 +162,78 @@ inline unsigned long long RXBitBoard::get_legal_moves(const unsigned long long p
     kogge_stone_step(fD9, S4_D9, a2D9);
     
     const uint64x2_t legals = vorrq_u64(
-        vorrq_u64(vshlq_u64(fH, S_H), vshlq_u64(fV, S_V)),
-        vorrq_u64(vshlq_u64(fD7, S_D7), vshlq_u64(fD9, S_D9))
-    );
+                                        vorrq_u64(vshlq_u64(fH, S_H), vshlq_u64(fV, S_V)),
+                                        vorrq_u64(vshlq_u64(fD7, S_D7), vshlq_u64(fD9, S_D9))
+                                        );
     
     uint64x2_t result = vorrq_u64(legals, vextq_u64(legals, legals, 1));
-    return (vgetq_lane_u64(result, 0) & ~(p_discs | o_discs));
+    result = vbicq_u64(result, occupied);  // BIC = AND NOT, instruction native ARM
+    return vgetq_lane_u64(result, 0);
 }
 
 
-template<int Shift>
+// ============================================================
+// Kogge-Stone helpers — fonctions libres, shift positif
+// ============================================================
+template<int S>
 __attribute__((always_inline))
-inline uint64x2_t vshift_u64(uint64x2_t v) {
-    if constexpr (Shift > 0)
-        return vshlq_n_u64(v, Shift);          // logical left shift ✓
-    else
-        return vshrq_n_u64(v, -Shift);         // logical right shift ✓
-}
-
-template<int Shift, bool IsHorizontal>
-__attribute__((always_inline))
-inline uint64x2_t propagate_kogge_stone(
-        const uint64x2_t p_vec,
-        const uint64x2_t o_vec,
-        const uint64x2_t mask_inner)
+static inline uint64x2_t ks_pos(uint64x2_t P, uint64x2_t mask)
 {
-    const uint64x2_t mask = IsHorizontal
-        ? mask_inner
-        : vdupq_n_u64(0xFFFFFFFFFFFFFFFFULL);
-    const uint64x2_t prop = vandq_u64(o_vec, mask);
+    const uint64x2_t a  = vandq_u64(mask, vshlq_n_u64(mask, S));
+    const uint64x2_t a2 = vandq_u64(a,    vshlq_n_u64(a,    S * 2));
 
-    // Initialisation
-    uint64x2_t g = vandq_u64(vshift_u64<Shift>(p_vec), prop);
-
-    // Pré-calcul des shifts de prop en parallèle (ILP maximal)
-    const uint64x2_t g1      = vshift_u64<  Shift>(g);
-    const uint64x2_t prop1   = vshift_u64<  Shift>(prop);
-    const uint64x2_t prop2   = vandq_u64(prop, prop1);
-    const uint64x2_t prop2s  = vshift_u64<2*Shift>(prop2);
-
-    // Chaîne d'accumulation (dépendances inévitables)
-    g = vorrq_u64(g, vandq_u64(g1, prop));
-
-    const uint64x2_t g2    = vshift_u64<2*Shift>(g);
-    const uint64x2_t prop4 = vandq_u64(prop2, prop2s);
-    g = vorrq_u64(g, vandq_u64(g2, prop2));
-
-    const uint64x2_t g4 = vshift_u64<4*Shift>(g);
-    g = vorrq_u64(g, vandq_u64(g4, prop4));
-
-    return vshift_u64<Shift>(g);
+    uint64x2_t f = vandq_u64(vshlq_n_u64(P, S), mask);
+    f = vorrq_u64(f, vandq_u64(vshlq_n_u64(f, S),     mask));
+    f = vorrq_u64(f, vandq_u64(vshlq_n_u64(f, S * 2), a));
+    f = vorrq_u64(f, vandq_u64(vshlq_n_u64(f, S * 4), a2));
+    return vshlq_n_u64(f, S);
 }
 
 // ============================================================
-// OPTIMISATION 1 : 8 directions → 4 paires ORées
-// Expose plus d'ILP au pipeline OoO du M4 (issue width = 4)
-// Le compilateur peut superposer les 2 Kogge-Stone d'une paire
+// Kogge-Stone helpers — fonctions libres, shift négatif
+// ============================================================
+template<int S>
+__attribute__((always_inline))
+static inline uint64x2_t ks_neg(uint64x2_t P, uint64x2_t mask)
+{
+    const uint64x2_t a  = vandq_u64(mask, vshrq_n_u64(mask, S));
+    const uint64x2_t a2 = vandq_u64(a,    vshrq_n_u64(a,    S * 2));
+
+    uint64x2_t f = vandq_u64(vshrq_n_u64(P, S), mask);
+    f = vorrq_u64(f, vandq_u64(vshrq_n_u64(f, S),     mask));
+    f = vorrq_u64(f, vandq_u64(vshrq_n_u64(f, S * 2), a));
+    f = vorrq_u64(f, vandq_u64(vshrq_n_u64(f, S * 4), a2));
+    return vshrq_n_u64(f, S);
+}
+
+// ============================================================
+// Calcule les coups légaux des deux joueurs en une seule passe
+// lane0 = légaux de p_discs (noir)
+// lane1 = légaux de o_discs (blanc)
 // ============================================================
 inline uint64x2_t RXBitBoard::dual_legal_moves(
-        const unsigned long long p,
-        const unsigned long long o)
+        const unsigned long long p_discs,
+        const unsigned long long o_discs)
 {
-    const uint64x2_t p_vec  = {p, o};
-    const uint64x2_t o_vec  = {o, p};
-    const uint64x2_t mask_h = vdupq_n_u64(0x7E7E7E7E7E7E7E7EULL);
+    // lane0 = noir, lane1 = blanc
+    const uint64x2_t P        = {p_discs, o_discs};
+    const uint64x2_t O        = {o_discs, p_discs};
+    const uint64x2_t O_inner  = vandq_u64(O, vdupq_n_u64(0x7E7E7E7E7E7E7E7EULL));
+    const uint64x2_t occupied = vorrq_u64(P, O);
 
-    // 4 paires indépendantes → le compilateur les superpose
-    const uint64x2_t l_NS = vorrq_u64(
-        propagate_kogge_stone< 8, false>(p_vec, o_vec, mask_h),  // N
-        propagate_kogge_stone<-8, false>(p_vec, o_vec, mask_h)); // S
-
-    const uint64x2_t l_EW = vorrq_u64(
-        propagate_kogge_stone< 1, true>(p_vec, o_vec, mask_h),   // E
-        propagate_kogge_stone<-1, true>(p_vec, o_vec, mask_h));  // W
-
-    const uint64x2_t l_NE_SW = vorrq_u64(
-        propagate_kogge_stone< 7, true>(p_vec, o_vec, mask_h),   // NE
-        propagate_kogge_stone<-7, true>(p_vec, o_vec, mask_h));  // SW
-
-    const uint64x2_t l_NW_SE = vorrq_u64(
-        propagate_kogge_stone< 9, true>(p_vec, o_vec, mask_h),   // NW
-        propagate_kogge_stone<-9, true>(p_vec, o_vec, mask_h));  // SE
-
-    // Arbre de OR équilibré (profondeur 2 au lieu de 7)
+    // 8 chaînes indépendantes — ILP maximal sur les 2 unités SIMD du M4
     const uint64x2_t legals = vorrq_u64(
-        vorrq_u64(l_NS, l_EW),
-        vorrq_u64(l_NE_SW, l_NW_SE));
+        vorrq_u64(
+            vorrq_u64(ks_pos<1>(P, O_inner), ks_neg<1>(P, O_inner)),  // E  / W
+            vorrq_u64(ks_pos<8>(P, O),       ks_neg<8>(P, O))),        // N  / S
+        vorrq_u64(
+            vorrq_u64(ks_pos<7>(P, O_inner), ks_neg<7>(P, O_inner)),  // NE / SW
+            vorrq_u64(ks_pos<9>(P, O_inner), ks_neg<9>(P, O_inner)))); // NW / SE
 
-    return vbicq_u64(legals, vdupq_n_u64(p | o));
+    // vbicq_u64 = AND NOT natif ARM (BIC) — masque occupied sans transition GPR
+    return vbicq_u64(legals, occupied);
 }
+
 
 inline uint64x2_t RXBitBoard::dual_count_legal_moves() const {
     return dual_count_legal_moves(discs[player], discs[player^1]);

@@ -216,9 +216,9 @@ inline int acc_score(const int   stage,
     int32x4_t vcp44_47  = vsubq_s32(veorq_s32(vld1q_s32(pp + 44), vmask4), vmask4);
     int32x4_t vcp48_51  = vsubq_s32(veorq_s32(vld1q_s32(pp + 48), vmask4), vmask4);
     
-    // pp+44 charge 4 ints mais seuls [44] et [45] sont utilisés — les 2 extras
-    // sont lus mais jamais utilisés, inoffensif si patt[46..47] est accessible
-    // patt[46..47] sont du padding
+    // pp+48 charge 4 ints mais seuls [48] et [49] sont utilisés — les 2 extras
+    // sont lus mais jamais utilisés, inoffensif si patt[50..51] est accessible
+    // patt[50..51] sont du padding
     
     // Extraire les scalaires nécessaires
     // (le compilateur les garde en registre — pas d'aller-retour mémoire)
@@ -462,11 +462,12 @@ inline int acc_score(const int   stage,
 
             // Puis widening multiply-accumulate depuis int16 (si sum est encore int16x8_t)
             // vmlal_s16 : res += (int16 * int16) avec widening automatique
-            res0 = vmlal_s16(res0, vget_low_s16(sum_lo),  vget_low_s16(sum_lo));
-            res1 = vmlal_s16(res1, vget_high_s16(sum_lo), vget_high_s16(sum_lo));
-            res2 = vmlal_s16(res2, vget_low_s16(sum_hi),  vget_low_s16(sum_hi));
-            res3 = vmlal_s16(res3, vget_high_s16(sum_hi), vget_high_s16(sum_hi));
-            
+            // Optimisation : vmlal_high_s16 évite les vget_high
+            res0 = vmlal_s16     (res0, vget_low_s16(sum_lo), vget_low_s16(sum_lo));
+            res1 = vmlal_high_s16(res1, sum_lo, sum_lo);   // ← smlal2
+            res2 = vmlal_s16     (res2, vget_low_s16(sum_hi), vget_low_s16(sum_hi));
+            res3 = vmlal_high_s16(res3, sum_hi, sum_hi);   // ← smlal2
+
             int fm_interaction = vaddvq_s32(
                                             vaddq_s32(vaddq_s32(res0, res1),
                                                       vaddq_s32(res2, res3))

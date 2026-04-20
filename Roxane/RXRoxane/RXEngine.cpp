@@ -17,7 +17,7 @@
 
 
 const int RXEngine::CONFIDENCE[]   = {  60,    72,    84,    91,    95,    98,   100};
-const float RXEngine::PERCENTILE[] = {1.00f, 1.10f, 1.40f, 1.80f, 2.40f, 3.10f};
+const float RXEngine::PERCENTILE[] = {1.00f, 1.15f, 1.40f, 1.80f, 2.40f, 3.10f};
 
 const int RXEngine::EG_HIGH_SELECT = 0;
 const int RXEngine::MG_SELECT = 1; //72%
