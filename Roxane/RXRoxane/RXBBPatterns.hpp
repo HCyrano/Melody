@@ -460,7 +460,7 @@ inline int acc_score(const int   stage,
             int32x4_t res2 = vnegq_s32(sumsq_2);
             int32x4_t res3 = vnegq_s32(sumsq_3);
 
-            // Puis widening multiply-accumulate depuis int16 (si sum est encore int16x8_t)
+            // Puis widening multiply-accumulate depuis int16 (sum est encore int16x8_t)
             // vmlal_s16 : res += (int16 * int16) avec widening automatique
             // Optimisation : vmlal_high_s16 évite les vget_high
             res0 = vmlal_s16     (res0, vget_low_s16(sum_lo), vget_low_s16(sum_lo));

@@ -1,75 +1,75 @@
-# ⚪ Melody : IA Othello Performante ⚫
+# ⚪ Melody: High-Performance Othello AI ⚫
 
-**Melody** est un moteur de jeu d'Othello (Reversi) de haute performance conçu en C++23. Développée pour la compétition, il combine la puissance de la recherche classique et des modèles prédictifs modernes pour offrir un jeu de haut niveau.
-
----
-
-## 🧠 L'Intelligence de Melody
-
-L'architecture de Melody repose sur une synergie entre algorithmes de recherche de pointe et une évaluation statistique fine :
-
-* Recherche : Algorithme Minimax avec élagage Alpha-Bêta, complété par ProbCut (***Michael Buro***) pour un élagage sélectif basé sur des statistiques de confiance.
-* Optimisation : Table de Transposition globale pour la mise en cache des positions et accélération de la recherche.
-* Multithreading : Exploitation du parallélisme matériel pour optimiser les performances sur les architectures multicœurs modernes (YBWC).
-
-* Évaluation (Patterns & FM) : Implémentation d'une fonction d'évaluation basée sur les patterns (***Michael Buro***), augmentée d'une surcouche de Machines de Factorisation (***Steffen Rendle***). L'apport "FM" de permet de modéliser les corrélations croisées entre patterns, là où l'approche classique repose sur une simple somme linéaire.
+**Melody** is a high-performance Othello (Reversi) engine written in C++23. Designed for competition, it combines the power of classical search algorithms with modern predictive models to deliver top-level gameplay.
 
 ---
 
-## 🔌 Connectivité et Protocoles
-Le rôle principal de Melody est d'affronter d'autres moteurs sur internet. Il supporte :
-* IOStd : (Interface expérimentale) Pour les tests locaux et l'analyse.
-* GGS (Internet Othello Server) : Basé sur un ODK (Othello Development Kit) modernisé, permettant une communication stable et rapide avec le serveur de jeu GGS.
+## 🧠 Melody's Intelligence
+
+Melody's architecture is built on a synergy between cutting-edge search algorithms and fine-grained statistical evaluation:
+
+* Search: Minimax algorithm with Alpha-Beta pruning, enhanced by ProbCut (***Michael Buro***) for selective pruning based on confidence statistics.
+* Optimization: Global Transposition Table for position caching and search acceleration.
+* Multithreading: Leverages hardware parallelism to optimize performance on modern multi-core architectures (YBWC).
+
+* Evaluation (Patterns & FM): Implementation of a pattern-based evaluation function (***Michael Buro***), augmented with a Factorization Machines layer (***Steffen Rendle***). The "FM" contribution enables modeling of cross-correlations between patterns, where the classical approach relies on a simple linear sum.
 
 ---
 
-## 🛠️ Développement et Installation
-Le moteur est spécifiquement optimisé pour l'écosystème Apple afin de maximiser le nombre de nœuds calculés par seconde.
+## 🔌 Connectivity and Protocols
+Melody's primary role is to compete against other engines online. It supports:
+* IOStd: (Experimental interface) For local testing and analysis.
+* GGS (Internet Othello Server): Based on a modernized ODK (Othello Development Kit), enabling stable and fast communication with the GGS game server.
 
-* Environnement : **macOS**
-* Architecture : Entièrement optimisé pour les puces **Apple Silicon (série M)**. Utilisation intensive des instructions **NEON (ARM)** pour accélérer les opérations de bitboard et les calculs de l'évaluation FM.
-* Langage : C++ (standard `gnu++23`)
-* Outils : Projet Xcode (`.xcodeproj`) inclus.
+---
+
+## 🛠️ Development and Installation
+The engine is specifically optimized for the Apple ecosystem to maximize nodes computed per second.
+
+* Environment: **macOS**
+* Architecture: Fully optimized for **Apple Silicon (M-series)** chips. Intensive use of **NEON (ARM)** instructions to accelerate bitboard operations and FM evaluation computations.
+* Language: C++ (standard `gnu++23`)
+* Tooling: Xcode project (`.xcodeproj`) included.
 
 > [!TIP]
-> Note de compilation : Pour tirer pleinement parti des optimisations ARM/NEON, compilez impérativement en mode Release via Xcode.
+> Compilation note: To fully benefit from ARM/NEON optimizations, always compile in Release mode via Xcode.
 
 ---
 
-## 📜 Remerciements et Citations
+## 📜 Acknowledgements and Credits
 
 > [!IMPORTANT]
-> Héritage et Crédits :
-> Melody intègre des idées et des segments de logique repris du code d'Edax. Un immense respect et des remerciements à ***Richard Delorme*** et ***Toshihiko Okuhara*** pour leur contribution inestimable à la communauté. 
-> Le support GGS s'appuie sur une modernisation de l'ODK original de ***C Welty***.
-> Un vif remerciement à la communauté GGS pour ce cadre d'échange d'idées particulièrement stimulant.
-> 
+> Heritage and Credits:
+> Melody integrates ideas and logic segments from the Edax codebase. Immense respect and thanks to ***Richard Delorme*** and ***Toshihiko Okuhara*** for their invaluable contribution to the community.
+> GGS support is based on a modernization of the original ODK by ***C Welty***.
+> A warm thank-you to the GGS community for providing such a stimulating environment for exchanging ideas.
+
 ---
 
-#### 🚀 Détails techniques de la Release :
-Cette version de Melody est distribuée sous forme de binaire universel (Universal Binary), compatible avec les architectures ARM et x86-64.
+#### 🚀 Release Technical Details:
+This version of Melody is distributed as a Universal Binary, compatible with both ARM and x86-64 architectures.
 
-Architecture ARM : Le code est optimisé pour utiliser intensivement l'extension NEON (SIMD), garantissant des performances accrues sur les processeurs compatibles (Apple Silicon, Raspberry Pi, etc.).
+ARM Architecture: The code is optimized to make intensive use of the NEON (SIMD) extension, ensuring increased performance on compatible processors (Apple Silicon, Raspberry Pi, etc.).
 
-Architecture x86-64 : Pour l'instant, cette version est générique. Elle ne tire pas profit des instructions SIMD spécifiques (comme l'AVX/AVX2 ...).
+x86-64 Architecture: For now, this version is generic. It does not take advantage of specific SIMD instructions (such as AVX/AVX2 ...).
 
-💡 Appel à la communauté (Extensions SIMD)
-Ne disposant pas actuellement du matériel nécessaire pour tester et implémenter les extensions AVX/AVX2 sur x86-64, je suis ouvert aux retours et contributions :
+💡 Community Call (SIMD Extensions)
+As I currently lack the hardware needed to test and implement AVX/AVX2 extensions on x86-64, I am open to feedback and contributions:
 
-Si vous souhaitez aider à l'implémentation de ces optimisations.
+If you would like to help implement these optimizations.
 
-Si vous avez les capacités de test pour valider des builds spécifiques.
+If you have the testing capabilities to validate specific builds.
 
-🐧 Compatibilité Linux
-Contrairement à macOS, aucune version binaire n'est fournie pour Linux afin d'éviter les problèmes de dépendances entre distributions.
+🐧 Linux Compatibility
+Unlike macOS, no binary is provided for Linux to avoid dependency issues across distributions.
 
-Procédure : Veuillez télécharger le Code Source et suivre les instructions de 🛠️ Compilation.md.
+Procedure: Please download the Source Code and follow the instructions in 🛠️ Compilation.md.
 
-Cela garantit que le binaire sera parfaitement optimisé pour votre distribution (Ubuntu, Debian, Arch, etc.) et votre processeur.
+This ensures the binary will be perfectly optimized for your distribution (Ubuntu, Debian, Arch, etc.) and your processor.
 
-#### N'hésitez pas à ouvrir une Issue ou à me contacter pour en discuter !
+#### Feel free to open an Issue or contact me to discuss!
 ---
 
 
-## ⚖️ Licence
-Distribué sous licence MIT.
+## ⚖️ License
+Distributed under the MIT License.

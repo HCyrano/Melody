@@ -1,50 +1,50 @@
-### 🚀 Mode d'installation rapide
+### 🚀 Quick Install
 
-Téléchargez `Melody.zip`.
-Décompressez l'archive.
+Download `Melody.zip`.
+Extract the archive.
 
 >[note]
->Le binaire inclus est un Universal Binary (compatible Intel & Apple Silicon) pour macOS.
->Utilisateurs Linux : Une compilation est nécessaire pour votre architecture (voir section ci-dessous).
+>The included binary is a Universal Binary (compatible with Intel & Apple Silicon) for macOS.
+>Linux users: Compilation is required for your architecture (see section below).
 
-#### 🛠️ Compilation (Sources)
+#### 🛠️ Compilation (From Source)
 
- **- Prérequis**
+ **- Prerequisites**
 > ##### macOS `xcode-select --install` 
   
 > ##### Linux (Ubuntu/Debian) `sudo apt install g++ make`
 
-**- Procédure**
+**- Procedure**
 
-Téléchargez et décompressez le Code source
+Download and extract the source code.
 
-Ouvrez un terminal et lancez la compilation :
+Open a terminal and run the build:
 ```
-cd /chemin/vers/Melody-x.y.z       # se placer dans le dossier
-make                               # compiler
+cd /path/to/Melody-x.y.z       # navigate to the folder
+make                            # compile
 ```
-Résultat attendu :
+Expected output:
 ✅ Build OK → build/Melody  [Darwin/arm64]
 
-Le binaire généré se trouve dans le dossier `build/`
+The generated binary is located in the `build/` folder.
 
-**- Finalisation**
+**- Finalization**
 
-Deplacez le binaire dans Melody/build/Release/
-vérifiez les permissions d'exécution.
-Exécutez un script `.command`
+Move the binary to `Melody/build/Release/`.
+Check execution permissions.
+Run a `.command` script.
 
-#### ⚙️ Options de compilation (Make)
-| Commande | Action |
+#### ⚙️ Build Options (Make)
+| Command | Action |
 | :--- | :--- |
-| `make` | Compile (seulement les fichiers modifiés) |
-| `make rebuild` | Recompile tout from scratch |
-| `make clean` | Supprime tout le dossier build/ |
-| `make cleanobj` | Supprime les .o et .d mais garde le binaire |
-| `make info` | Affiche la configuration détectée |
+| `make` | Compile (only modified files) |
+| `make rebuild` | Recompile everything from scratch |
+| `make clean` | Delete the entire build/ folder |
+| `make cleanobj` | Delete .o and .d files but keep the binary |
+| `make info` | Display detected configuration |
 
->[!Astuce]
+>[!Tip]
 ```
-make 2>&1 | tee build.log   	# compile et sauvegarde les erreurs
-cat build.log               	# consulter le log
+make 2>&1 | tee build.log   	# compile and save errors to a log
+cat build.log               	# view the log
 ```
