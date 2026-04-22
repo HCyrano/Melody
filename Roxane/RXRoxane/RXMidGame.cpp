@@ -1166,7 +1166,6 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
                 
         if(entry.selectivity >= selectivity && entry.depth >= depth) {
             
-            
             if(entry.lower > alpha)
                 return entry.lower;
             
@@ -1394,7 +1393,6 @@ void RXEngine::MG_SP_search_XProbcut(RXSplitPoint* sp, const unsigned int thread
         sp->list = move;
         
         pthread_mutex_unlock(&(sp->lock));
-        
         //deverouillage de splitpoint
         
         const int alpha = sp->alpha; //local copy

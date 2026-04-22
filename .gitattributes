@@ -1,1 +1,8 @@
-*.md linguist-language=French
+* text=auto
+*.cpp text eol=lf
+*.h text eol=lf
+*.md text eol=lf
+*.command text eol=lf
+*.png binary
+*.zip binary
+*.md linguist-documentation 

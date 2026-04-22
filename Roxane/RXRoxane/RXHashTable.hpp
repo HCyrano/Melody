@@ -25,62 +25,99 @@
 #endif
 
 
+//class RXHashValue {
+//    
+//public:
+//    
+//    short lower;               // 16 bits
+//    short upper;               // 16 bits
+//    unsigned char move;        //  8 bits
+//    unsigned char selectivity; //  8 bits
+//    unsigned char depth;       //  8 bits
+//    unsigned char date;        //  8 bits
+//    // = 64 bits
+//    
+//    RXHashValue(const unsigned long long packed = 0);
+//    
+//    inline unsigned long long wide_2_compact() const {
+//        
+//        unsigned long long packed = date;
+//        packed <<= 8;
+//        packed |= depth;
+//        packed <<= 8;
+//        packed |= selectivity;
+//        packed <<= 8;
+//        packed |= move;
+//        packed <<= 16;
+//        packed |= (static_cast<long long>(upper) & 0x000000000000FFFFULL);
+//        packed <<= 16;
+//        packed |= (static_cast<long long>(lower) & 0x000000000000FFFFULL);
+//        
+//        return packed;
+//    }
+//    
+//    inline void compact_2_wide(unsigned long long packed) {
+//        
+//        lower = static_cast<short>(packed & 0x000000000000FFFFULL);
+//        packed >>= 16;
+//        upper = static_cast<short>(packed & 0x000000000000FFFFULL);
+//        packed >>= 16;
+//        move = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
+//        packed >>= 8;
+//        selectivity = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
+//        packed >>= 8;
+//        depth = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
+//        packed >>= 8;
+//        date = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
+//        
+//    }
+//    
+//};
 
 
-
-
+// ⚠️  AVERTISSEMENT : ordre des membres critiques
+//
+// Les fonctions wide_2_compact() / compact_2_wide() reposent sur un memcpy
+// direct entre le layout mémoire de la classe et un uint64_t.
+//
+// Sur x86 (little-endian), le layout est :
+//
+//   offset 0 → lower       → bits  0-15  du uint64
+//   offset 2 → upper       → bits 16-31  du uint64
+//   offset 4 → move        → bits 32-39  du uint64
+//   offset 5 → selectivity → bits 40-47  du uint64
+//   offset 6 → depth       → bits 48-55  du uint64
+//   offset 7 → date        → bits 56-63  du uint64
+//
+// ⛔ Ne jamais :
+//   - Réordonner les membres
+//   - Ajouter un membre ou du padding
+//   - Porter ce code sur une architecture big-endian sans adaptation
+//
+// La version équivalente "lisible" utilisant des shifts explicites
+// est commentée, et fait foi en cas de doute sur le format du uint64.
 class RXHashValue {
-	
-	public:
-	
-		unsigned char date;				//	  8 bits
-		unsigned char depth;			//	  8 bits
-		unsigned char selectivity;		//	  8 bits
-		unsigned char move;				//	  8 bits
-		short lower;					//	 16 bits
-		short upper;					//	 16 bits
-		// = 64 bits
-		
-		RXHashValue(const unsigned long long packed = 0);
-		
-		unsigned long long wide_2_compact() const;
-		void compact_2_wide(unsigned long long packed);
-	
+public:
+    short lower;               // offset 0 → bits  0-15
+    short upper;               // offset 2 → bits 16-31
+    unsigned char move;        // offset 4 → bits 32-39
+    unsigned char selectivity; // offset 5 → bits 40-47
+    unsigned char depth;       // offset 6 → bits 48-55
+    unsigned char date;        // offset 7 → bits 56-63
+
+
+    RXHashValue(const uint64_t packed = 0);
+
+    inline uint64_t wide_2_compact() const {
+        uint64_t packed;
+        std::memcpy(&packed, this, sizeof(uint64_t));
+        return packed;
+    }
+
+    inline void compact_2_wide(uint64_t packed) {
+        std::memcpy(this, &packed, sizeof(uint64_t));
+    }
 };
-
-
-inline unsigned long long RXHashValue::wide_2_compact() const {
-	
-	unsigned long long packed = date;
-	packed <<= 8;
-	packed 	|= depth;
-	packed <<= 8;
-	packed 	|= selectivity;
-	packed <<= 8;
-	packed 	|= move;
-	packed <<= 16;
-	packed 	|= (static_cast<long long>(upper) & 0x000000000000FFFFULL);
-	packed <<= 16;
-	packed 	|= (static_cast<long long>(lower) & 0x000000000000FFFFULL);
-	
-	return packed;
-}
-
-inline void RXHashValue::compact_2_wide(unsigned long long packed) {
-	
-	lower = static_cast<short>(packed & 0x000000000000FFFFULL);
-	packed >>= 16;
-	upper = static_cast<short>(packed & 0x000000000000FFFFULL);
-	packed >>= 16;
-	move = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
-	packed >>= 8;	
-	selectivity = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
-	packed >>= 8;	
-	depth = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
-	packed >>= 8;	
-	date = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
-	
-}
 
 class RXHashRecord {
 	

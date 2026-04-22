@@ -14,20 +14,24 @@
 #include "RXHashTable.hpp"
 #include "RXEngine.hpp"
 
-RXHashValue::RXHashValue(unsigned long long packed) {
-	
-	lower = static_cast<short>(packed & 0x000000000000FFFFULL);
-	packed >>= 16;
-	upper = static_cast<short>(packed & 0x000000000000FFFFULL);
-	packed >>= 16;
-	move = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
-	packed >>= 8;	
-	selectivity = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
-	packed >>= 8;	
-	depth = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
-	packed >>= 8;	
-	date = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
-	
+//RXHashValue::RXHashValue(unsigned long long packed) {
+//	
+//	lower = static_cast<short>(packed & 0x000000000000FFFFULL);
+//	packed >>= 16;
+//	upper = static_cast<short>(packed & 0x000000000000FFFFULL);
+//	packed >>= 16;
+//	move = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
+//	packed >>= 8;	
+//	selectivity = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
+//	packed >>= 8;	
+//	depth = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
+//	packed >>= 8;	
+//	date = static_cast<unsigned char>(packed & 0x00000000000000FFULL);
+//	
+//}
+
+RXHashValue::RXHashValue(uint64_t packed) {
+    std::memcpy(this, &packed, sizeof(uint64_t));
 }
 
 
@@ -92,7 +96,8 @@ void RXHashTable::update(const unsigned long long hash_code, const t_hash type_h
 	
 	RXHashValue deepest_value(deepest_packed);
 	
-	unsigned int _date = date[type_hashtable == HASH_WHITE? WHITE:BLACK];
+	const unsigned int base_date = date[type_hashtable == HASH_WHITE? WHITE:BLACK];
+    unsigned int _date = base_date;
     
 	if(alpha < score && score < beta)
 		++_date; //bonus for exact score
@@ -127,7 +132,7 @@ void RXHashTable::update(const unsigned long long hash_code, const t_hash type_h
             deepest_value.move = move;
             
 		} else if(deepest_value.lower == deepest_value.upper) {
-            if(_date == date[type_hashtable == HASH_WHITE? WHITE:BLACK])
+            if(_date == base_date)
                 ++_date;
         }
 		
@@ -173,7 +178,7 @@ void RXHashTable::update(const unsigned long long hash_code, const t_hash type_h
                 newest_value.move =  move;
 
 			} else if(newest_value.lower == newest_value.upper) {
-                if(_date == date[type_hashtable == HASH_WHITE? WHITE:BLACK])
+                if(_date == base_date)
                     ++_date;
             }
 

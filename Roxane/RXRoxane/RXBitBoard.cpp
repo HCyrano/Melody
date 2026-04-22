@@ -105,7 +105,6 @@ const unsigned long long RXBitBoard::NEIGHBOR[] = {
 };
 
 /* order JWC */
-
 const int RXBitBoard::PRESORTED_POSITION[] = {
 	A1, A8, H1, H8,						// Corner
 	A3, A6, C1, C8, F1, F8, H3, H6,		// A 
