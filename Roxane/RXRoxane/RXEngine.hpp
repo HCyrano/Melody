@@ -573,6 +573,7 @@ inline int RXEngine::time_limit() const {
 
 #ifdef __ARM_NEON
 
+//borner sur [2.7f : 30.0f]
 inline float RXEngine::sigma(const int n_empty, const int depth, const int depth_probcut) const {
     // Indices des zones
     constexpr int early = 0;
@@ -632,7 +633,7 @@ inline float RXEngine::sigma(const int n_empty, const int depth, const int depth
                 results[mid] * w_mid +
                 results[end] * w_end;
     
-    return std::max(2.7f, res);
+    return std::min(30.0f, std::max(2.7f, res));
 }
 
 

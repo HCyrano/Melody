@@ -123,12 +123,12 @@ void RXEngine::iterative_deepening(RXBBPatterns& sBoard, RXMove* list, int selec
             }
         
         //stop conditions EndGame
-        if(fabs(list->next->score) >= ((MAX_SCORE-1) - 64)) {
+        if(std::abs(list->next->score) >= ((MAX_SCORE-1) - 64)) {
             break;
         }
         
         
-        if(fabs(list->next->score)>48 && depth>=18 && sBoard.board.n_empty<38)
+        if(std::abs(list->next->score)>48 && depth>=18 && sBoard.board.n_empty<38)
             break;
         
         
