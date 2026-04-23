@@ -577,9 +577,6 @@ int RXEngine::PVS_last_ply(const unsigned int threadID, RXBBPatterns& sBoard, in
         
     }
     
-    
-    
-    
     int bestscore = UNDEF_SCORE;
     
     if(bestmove != PASS) {
@@ -628,11 +625,6 @@ int RXEngine::PVS_last_ply(const unsigned int threadID, RXBBPatterns& sBoard, in
                             
                             // [endgame n_empty >= 30 -> n_empty/4 * 2]
                             
-                            iter->score = alphabeta_last_two_ply<WITHOUT_FM>(threadID, sBoard, -MAX_SCORE, +MAX_SCORE, false); //without FM for sort
-                            
-                        } else if (depth == DEPTH_5) {
-                            
-                            
                             int bestscore1 = UNDEF_SCORE;
                             
                             unsigned long long legal_movesBB = board.get_legal_moves();
@@ -664,6 +656,10 @@ int RXEngine::PVS_last_ply(const unsigned int threadID, RXBBPatterns& sBoard, in
                             }
                             
                             iter->score = bestscore1;
+
+                        } else if (depth == DEPTH_5) {
+                            
+                            iter->score = sBoard.get_score<WITHOUT_FM>();
                             
                         } else { //DEPTH_4
                             
@@ -862,7 +858,7 @@ int RXEngine::alphabeta_last_two_ply(const unsigned int threadID, RXBBPatterns& 
     RXMove& lastMove = threads[threadID]._move[board.n_empty - 1][1];
 
     // Factorisation du "last ply"
-    auto last_ply = [&sBoard, &lastMove, &board](int beta_inner) __attribute__((always_inline)) -> int {
+    auto last_ply = [&sBoard, &lastMove, &board](const int beta_inner, const bool passed) __attribute__((always_inline)) -> int {
         int bestscore_1 = UNDEF_SCORE;
         unsigned long long legal_movesBB_1 = board.get_legal_moves();
 
@@ -887,9 +883,13 @@ int RXEngine::alphabeta_last_two_ply(const unsigned int threadID, RXBBPatterns& 
 
         } else {
             // PASS
-            sBoard.board.do_pass();
-            bestscore_1 = -sBoard.get_score<UseFM>();
-            sBoard.board.do_pass();
+            if(passed) {
+                return sBoard.final_score();
+            } else {
+                sBoard.board.do_pass();
+                bestscore_1 = -sBoard.get_score<UseFM>();
+                sBoard.board.do_pass();
+            }
         }
 
         return bestscore_1;
@@ -922,7 +922,7 @@ int RXEngine::alphabeta_last_two_ply(const unsigned int threadID, RXBBPatterns& 
                 move.undo_pattern = sBoard.pattern;
                 sBoard.pattern    = move.pattern;
 
-                int score = -last_ply(-alpha);
+                int score = -last_ply(-alpha, false);
 
                 sBoard.pattern = move.undo_pattern;
                 
@@ -949,7 +949,7 @@ int RXEngine::alphabeta_last_two_ply(const unsigned int threadID, RXBBPatterns& 
             bestscore = sBoard.final_score();
         } else {
             board.do_pass();
-            bestscore = -last_ply(-alpha);
+            bestscore = -last_ply(-alpha, true);
             board.do_pass();
         }
     }

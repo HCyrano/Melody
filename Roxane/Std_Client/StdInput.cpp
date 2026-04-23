@@ -99,7 +99,7 @@ int StdInput::ReadInput() {
     
     // Vérification de la taille avant de copier
     if (end - cmd_buffer_ + bytes < BUFFER_SIZE) {
-        memcpy(end, buffer, bytes);
+        std::memcpy(end, buffer, bytes);
         *(end + bytes) = 0;
     } else {
         // Gérer le dépassement de tampon

@@ -798,36 +798,15 @@ inline float RXEngine::sigma(const int n_empty, const int depth, const int depth
     
 #else
     //polynome 3d
-
-    /*
-    // version 115 694 019
-    //const float RXEngine::PERCENTILE[] = {1.00f, 1.10f, 1.35f, 1.70f, 2.20f, 2.80f, 3.60f};
-    // s8r14 3:00 Edmond vs Rostand
-    // w27 d66 l37
-    // s8r14 3:00 Edmond vs edax
-    // w42 d52 l31
-    // version tournament november 2025
-    constexpr double probcut_a = -0.0010379521160583595;
-    constexpr double probcut_b = 0.03864157929092302;
-    constexpr double probcut_c = -0.012813733660428612;
-    constexpr double probcut_d = -13.88994753874693;
-    constexpr double probcut_e = 23.77203236686711;
-    constexpr double probcut_f = -12.021232747834466;
-    constexpr double probcut_g = 4.377396934700955;
-    */
     
     
-    //version 3 (113 590 954)
-    //const float RXEngine::PERCENTILE[] = {1.00f, 1.10f, 1.35f, 1.70f, 2.20f, 2.80f, 3.60f};
-    //s8r14 2:00 Edmond vs edax
-    //w75 d118 l62
     constexpr float probcut_a = -0.0017319169860170334;
     constexpr float probcut_b = 0.046028020390195414;
     constexpr float probcut_c = -0.02121182792010099;
     constexpr float probcut_d = -5.248427428319801;
     constexpr float probcut_e = 10.287391794385476;
     constexpr float probcut_f = -5.173813504774759;
-    constexpr float probcut_g = 3.3344983118071387;
+    constexpr float probcut_g = 3.8344983118071387;
     
     
     

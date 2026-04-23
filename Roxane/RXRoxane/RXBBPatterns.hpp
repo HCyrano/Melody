@@ -313,17 +313,20 @@ inline int acc_score(const int   stage,
             
 #ifdef __ARM_NEON
             
-            //            // Accumulator declaration — 2 lo/hi pairs to cover 16 lanes
-            //            int32x4_t sum_0 = vdupq_n_s32(0);    // lanes  0..3
-            //            int32x4_t sum_1 = vdupq_n_s32(0);    // lanes  4..7
-            //            int32x4_t sum_2 = vdupq_n_s32(0);    // lanes  8..11
-            //            int32x4_t sum_3 = vdupq_n_s32(0);    // lanes 12..15
+            // OPTIMIZATION
+            // Version 1
+            // sumsq += x²   (48×)
+            // res = -sumsq + sum²
+            //    = -Σx² + sum²
+            // Version 2
+            //sumsq -= x²   (48×)  →  sumsq = -Σx²
+            //res = sumsq + sum² /*4 instructions de moins (vnegq_s32 éliminées)*/
+            //    = -Σx² + sum²
             
             // OPTIMIZATION: Total accumulated sum remains within the short integer bounds.
             // Ensure this holds true after any changes to the latent vectors.
             int16x8_t sum_lo = vdupq_n_s16(0);   // lanes 0..7
             int16x8_t sum_hi = vdupq_n_s16(0);   // lanes 8..15
-            
             
             int32x4_t sumsq_0 = vdupq_n_s32(0);
             int32x4_t sumsq_1 = vdupq_n_s32(0);
@@ -333,29 +336,16 @@ inline int acc_score(const int   stage,
             auto acc = [&](const Vec_short* __restrict V, int idx) __attribute__((always_inline)) {
                 const Vec_short& v_ref = V[idx];
                 
-                //                // 1. Somme (Linéaire) : On garde le widening
-                //                int16x8_t v_lo = vld1q_s16(v_ref.data);
-                //                int16x8_t v_hi = vld1q_s16(v_ref.data + 8);
-                //
-                //                sum_0 = vaddw_s16(sum_0, vget_low_s16(v_lo));
-                //                sum_1 = vaddw_s16(sum_1, vget_high_s16(v_lo));
-                //                sum_2 = vaddw_s16(sum_2, vget_low_s16(v_hi));
-                //                sum_3 = vaddw_s16(sum_3, vget_high_s16(v_hi));
-                
-                
                 // OPTIMIZATION: Total accumulated sum remains within the short integer bounds.
                 // Ensure this holds true after any changes to the latent vectors.
                 sum_lo = vaddq_s16(sum_lo, vld1q_s16(v_ref.data));
                 sum_hi = vaddq_s16(sum_hi, vld1q_s16(v_ref.data + 8));
                 
-                
-                // --- Partie Carrés (Interaction) ---
-                // On charge les carrés précalculés directement dans les accumulateurs
-                // Plus besoin de vget_low/high ni de vmlal !
-                sumsq_0 = vaddq_s32(sumsq_0, vld1q_s32(&v_ref.squares[0]));
-                sumsq_1 = vaddq_s32(sumsq_1, vld1q_s32(&v_ref.squares[4]));
-                sumsq_2 = vaddq_s32(sumsq_2, vld1q_s32(&v_ref.squares[8]));
-                sumsq_3 = vaddq_s32(sumsq_3, vld1q_s32(&v_ref.squares[12]));
+                // accumulation (48 fois) :
+                sumsq_0 = vsubq_s32(sumsq_0, vld1q_s32(&v_ref.squares[0]));
+                sumsq_1 = vsubq_s32(sumsq_1, vld1q_s32(&v_ref.squares[4]));
+                sumsq_2 = vsubq_s32(sumsq_2, vld1q_s32(&v_ref.squares[8]));
+                sumsq_3 = vsubq_s32(sumsq_3, vld1q_s32(&v_ref.squares[12]));
             };
             
 #else
@@ -444,29 +434,14 @@ inline int acc_score(const int   stage,
             
 #ifdef __ARM_NEON
             
-//            // FM = Σ (sum²  - sumsq)
-//            int32x4_t res0 = vsubq_s32(vmulq_s32(sum_0, sum_0), sumsq_0);
-//            int32x4_t res1 = vsubq_s32(vmulq_s32(sum_1, sum_1), sumsq_1);
-//            int32x4_t res2 = vsubq_s32(vmulq_s32(sum_2, sum_2), sumsq_2);
-//            int32x4_t res3 = vsubq_s32(vmulq_s32(sum_3, sum_3), sumsq_3);
-            
-            // OPTIMIZATION: Total accumulated sum remains within the short integer bounds.
-            // Ensure this holds true after any changes to the latent vectors.
-            // Widening au moment du calcul final seulement
 
-            // Initialise res = -sumsq (une instruction)
-            int32x4_t res0 = vnegq_s32(sumsq_0);
-            int32x4_t res1 = vnegq_s32(sumsq_1);
-            int32x4_t res2 = vnegq_s32(sumsq_2);
-            int32x4_t res3 = vnegq_s32(sumsq_3);
-
-            // Puis widening multiply-accumulate depuis int16 (sum est encore int16x8_t)
+            // widening multiply-accumulate depuis int16 (sum est encore int16x8_t)
             // vmlal_s16 : res += (int16 * int16) avec widening automatique
             // Optimisation : vmlal_high_s16 évite les vget_high
-            res0 = vmlal_s16     (res0, vget_low_s16(sum_lo), vget_low_s16(sum_lo));
-            res1 = vmlal_high_s16(res1, sum_lo, sum_lo);   // ← smlal2
-            res2 = vmlal_s16     (res2, vget_low_s16(sum_hi), vget_low_s16(sum_hi));
-            res3 = vmlal_high_s16(res3, sum_hi, sum_hi);   // ← smlal2
+            int32x4_t res0 = vmlal_s16     (sumsq_0, vget_low_s16(sum_lo), vget_low_s16(sum_lo));
+            int32x4_t res1 = vmlal_high_s16(sumsq_1, sum_lo, sum_lo);   // ← smlal2
+            int32x4_t res2 = vmlal_s16     (sumsq_2, vget_low_s16(sum_hi), vget_low_s16(sum_hi));
+            int32x4_t res3 = vmlal_high_s16(sumsq_3, sum_hi, sum_hi);   // ← smlal2
 
             int fm_interaction = vaddvq_s32(
                                             vaddq_s32(vaddq_s32(res0, res1),
