@@ -230,7 +230,6 @@ int RXEngine::EG_alphabeta_hash_mobility(const unsigned int threadID, RXBitBoard
     const unsigned long long  hash_code = board.hashcode();
     
     
-    hTable->entry_prefetch(hash_code, type_hashtable);
     
 #ifdef USE_STABILITY
     
@@ -417,9 +416,7 @@ int RXEngine::EG_PVS_hash_mobility(const unsigned int threadID, RXBitBoard& boar
     
     const unsigned long long  hash_code = board.hashcode();
     
-    
-    hTable->entry_prefetch(hash_code, type_hashtable);
-    
+        
 #ifdef USE_STABILITY
     
     /*
@@ -637,7 +634,6 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
     int upper = beta;
     
     const unsigned long long  hash_code = board.hashcode();
-    //hTable->entry_prefetch(hash_code, type_hashtable);
     
     RXHashValue entry;
     if(hTable->get(hash_code, type_hashtable, entry)) {
@@ -710,10 +706,6 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
             ((board).*(board.generate_flips[bestmove]))(*move);
             ++board.n_nodes;
             
-#ifdef USE_ETC
-            hashcode_after_move = board.hashcode_after_move(move);
-            hTable->entry_prefetch(hashcode_after_move, type_hashtable);
-#endif
             
 #ifdef USE_ENHANCED_STABLILITY
             if (lower <= -stability_threshold[board.n_empty-1]  ) {
@@ -726,6 +718,8 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
 #endif
             
 #ifdef USE_ETC
+            hashcode_after_move = board.hashcode_after_move(move);
+
             //synchronized acces
             if(!pv && hTable->get(hashcode_after_move, type_hashtable, entry) && entry.selectivity == NO_SELECT && entry.depth>=(board.n_empty-1)) {
                 
@@ -755,10 +749,6 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
                 ((board).*(board.generate_flips[pos]))(*move);
                 ++board.n_nodes;
                 
-#ifdef USE_ETC
-                hashcode_after_move = board.hashcode_after_move(move);
-                hTable->entry_prefetch(hashcode_after_move, type_hashtable);
-#endif
                 
 #ifdef USE_ENHANCED_STABLILITY
                 if (lower <= -stability_threshold[board.n_empty-1]  ) {
@@ -773,6 +763,8 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
                 move->score = 0; //not in Hash
                 
 #ifdef USE_ETC
+                hashcode_after_move = board.hashcode_after_move(move);
+
                 //synchronized acces
                 if(hTable->get(hashcode_after_move, type_hashtable, entry) && entry.depth>=(board.n_empty-1)) {
                     
@@ -1624,10 +1616,6 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
             ((board).*(board.generate_flips[bestmove]))(*move);
             ++board.n_nodes;
             
-#ifdef USE_ETC
-            hashcode_after_move = board.hashcode_after_move(move);
-            hTable->entry_prefetch(hashcode_after_move, type_hashtable);
-#endif
             
 #ifdef USE_ENHANCED_STABLILITY
             if (alpha <= -stability_threshold[board.n_empty-1]  ) {
@@ -1641,7 +1629,8 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
             
             //synchronized acces
 #ifdef USE_ETC
-            
+            hashcode_after_move = board.hashcode_after_move(move);
+
             if(hTable->get(hashcode_after_move, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth >= (board.n_empty-1)) {
                 
                 if(-entry.upper > alpha) {
@@ -1671,10 +1660,6 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
                 ((board).*(board.generate_flips[pos]))(*move);
                 ++board.n_nodes;
                 
-#ifdef USE_ETC
-                hashcode_after_move = board.hashcode_after_move(move);
-                hTable->entry_prefetch(hashcode_after_move, type_hashtable);
-#endif
                 
 #ifdef USE_ENHANCED_STABLILITY
                 if (alpha <= -stability_threshold[board.n_empty-1]  ) {
@@ -1690,7 +1675,8 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
                 
                 //synchronized acces
 #ifdef USE_ETC
-                
+                hashcode_after_move = board.hashcode_after_move(move);
+
                 if(hTable->get(hashcode_after_move, type_hashtable, entry) && entry.depth>=(board.n_empty-1)) {
                     
                     move->score = -3;

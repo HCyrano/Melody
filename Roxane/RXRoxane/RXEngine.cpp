@@ -545,7 +545,6 @@ int RXEngine::PVS_last_ply(const unsigned int threadID, RXBBPatterns& sBoard, in
 
     RXBitBoard& board = sBoard.board;
     const unsigned long long  hash_code = board.hashcode();
-    //hTable_shallow->entry_prefetch(hash_code);
     
     unsigned int bestmove = NOMOVE;
     
@@ -742,7 +741,6 @@ int RXEngine::alphabeta_last_three_ply(const unsigned int threadID, RXBBPatterns
     
     RXBitBoard& board = sBoard.board;
     const unsigned long long  hash_code = board.hashcode();
-    //hTable_shallow->entry_prefetch(hash_code);
     
     
     unsigned int bestmove = NOMOVE;

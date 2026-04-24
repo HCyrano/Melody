@@ -21,11 +21,11 @@
 
 static constexpr unsigned int RANK = 16;
 
-struct alignas(4*RANK) Vec_short {
+struct alignas(64) Vec_short {
+    int squares[RANK]; // Precomputed square of each factor:
     short data[RANK];
-    int squares[RANK];  // Precomputed square of each factor:
-
-    short& operator[](int i)             { return data[i]; }
+    
+    //short& operator[](int i)             { return data[i]; }
     const short& operator[](int i) const { return data[i]; }
 };
 

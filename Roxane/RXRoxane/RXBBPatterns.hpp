@@ -316,12 +316,13 @@ inline int acc_score(const int   stage,
             // OPTIMIZATION
             // Version 1
             // sumsq += x²   (48×)
-            // res = -sumsq + sum²
-            //    = -Σx² + sum²
+            // res = -sumsq + sum² /* 4 instructions vnegq_s32 */
+            //     = -Σx² + sum²
+            
             // Version 2
-            //sumsq -= x²   (48×)  →  sumsq = -Σx²
-            //res = sumsq + sum² /*4 instructions de moins (vnegq_s32 éliminées)*/
-            //    = -Σx² + sum²
+            // sumsq -= x²   (48×)  →  sumsq = -Σx²
+            // res = sumsq + sum²
+            //     = -Σx² + sum²
             
             // OPTIMIZATION: Total accumulated sum remains within the short integer bounds.
             // Ensure this holds true after any changes to the latent vectors.
@@ -336,16 +337,17 @@ inline int acc_score(const int   stage,
             auto acc = [&](const Vec_short* __restrict V, int idx) __attribute__((always_inline)) {
                 const Vec_short& v_ref = V[idx];
                 
+                // accumulation (48 fois) :
+                sumsq_0 = vsubq_s32(sumsq_0, vld1q_s32(v_ref.squares    ));
+                sumsq_1 = vsubq_s32(sumsq_1, vld1q_s32(v_ref.squares + 4));
+                sumsq_2 = vsubq_s32(sumsq_2, vld1q_s32(v_ref.squares + 8));
+                sumsq_3 = vsubq_s32(sumsq_3, vld1q_s32(v_ref.squares +12));
+
                 // OPTIMIZATION: Total accumulated sum remains within the short integer bounds.
                 // Ensure this holds true after any changes to the latent vectors.
-                sum_lo = vaddq_s16(sum_lo, vld1q_s16(v_ref.data));
+                sum_lo = vaddq_s16(sum_lo, vld1q_s16(v_ref.data    ));
                 sum_hi = vaddq_s16(sum_hi, vld1q_s16(v_ref.data + 8));
                 
-                // accumulation (48 fois) :
-                sumsq_0 = vsubq_s32(sumsq_0, vld1q_s32(&v_ref.squares[0]));
-                sumsq_1 = vsubq_s32(sumsq_1, vld1q_s32(&v_ref.squares[4]));
-                sumsq_2 = vsubq_s32(sumsq_2, vld1q_s32(&v_ref.squares[8]));
-                sumsq_3 = vsubq_s32(sumsq_3, vld1q_s32(&v_ref.squares[12]));
             };
             
 #else
