@@ -9,7 +9,7 @@
 #ifndef RXSETTING_HPP
 #define RXSETTING_HPP
 
-//#define RELEASE
+#define RELEASE
 
 //login actif / inactif
 #define LOGGING_ON

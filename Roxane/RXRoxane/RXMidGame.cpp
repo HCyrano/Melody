@@ -1174,7 +1174,6 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
             
         }
         
-        //if(entry.depth >= depth-2)
         if(board.isValid_square(entry.move))
             bestmove = entry.move;
 
@@ -1206,31 +1205,31 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
     
     if(bestmove != PASS) {
         
-          if(depth > (bestmove == NOMOVE ? 9 : 8)) {
-//        if(bestmove != NOMOVE || depth > 9) {
 
-            RXMove* move = list + 1;
-            RXMove* previous = list;
+        RXMove* move = list + 1;
+        RXMove* previous = list;
+        
+        //ENHANCED TRANSPOSITION CUTOFF
+        if(bestmove != NOMOVE) {
             
-            //ENHANCED TRANSPOSITION CUTOFF
-            if(bestmove != NOMOVE) {
-                
-                ((board).*(board.generate_flips[bestmove]))(*move);
-                ++board.n_nodes;
-                
+            ((board).*(board.generate_flips[bestmove]))(*move);
+            ++board.n_nodes;
+            
 #ifdef USE_ETC
+            
+            if(hTable->get(board.hashcode_after_move(move), type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth >= depth-1) {
                 
-                if(hTable->get(board.hashcode_after_move(move), type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth >= depth-1) {
-                    
-                    if(-entry.upper > alpha) {
-                        return -entry.upper ;
-                    }
+                if(-entry.upper > alpha) {
+                    return -entry.upper ;
                 }
-#endif
-                
-                previous = previous->next = move++;
-                
             }
+#endif
+            
+            previous = previous->next = move++;
+            
+        }
+        
+        if(depth > 9 ) {
             
             //for all empty square
             unsigned long long legal_movesBB = board.get_legal_moves();
@@ -1271,9 +1270,10 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
             
         } else {
             
-            board.moves_producing(list);
-            if(bestmove != NOMOVE)
-                list->sort_bestmove(bestmove);
+            if(bestmove == NOMOVE)
+                board.moves_producing(list);
+            else
+                board.moves_producing(previous, previous->square);
         }
         
     }

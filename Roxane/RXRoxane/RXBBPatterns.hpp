@@ -185,6 +185,7 @@ inline int acc_score(const int   stage,
     const unsigned long long maskC = filled & 0x0000000000004281ULL;
     const unsigned long long maskD = filled & 0x8040000000004080ULL;
     
+    // Selection of branch-friendly table
     const short* __restrict const edgeA = maskA? edge1 : edge2;
     const short* __restrict const edgeB = maskB? edge1 : edge2;
     const short* __restrict const edgeC = maskC? edge1 : edge2;
@@ -292,7 +293,7 @@ inline int acc_score(const int   stage,
     
     eval += edge3[cp22] + edge3[cp23] + edge3[cp24] + edge3[cp25];
     eval += edge4[cp26] + edge4[cp27] + edge4[cp28] + edge4[cp29]
-    + edge4[cp30] + edge4[cp31] + edge4[cp32] + edge4[cp33];
+          + edge4[cp30] + edge4[cp31] + edge4[cp32] + edge4[cp33];
     
     eval += hv2[cp34] + hv2[cp35] + hv2[cp36] + hv2[cp37];
     eval += hv3[cp38] + hv3[cp39] + hv3[cp40] + hv3[cp41];
@@ -381,7 +382,7 @@ inline int acc_score(const int   stage,
             const Vec_short* const& vCorner = RXEvaluation::gVCorner;
             
             
-            // Remplacement des 4 appels par une version plus "branch-friendly"
+            // Selection of branch-friendly table
             const Vec_short* __restrict const vEdgeA = maskA ? vEdge1 : vEdge2;
             const Vec_short* __restrict const vEdgeB = maskB ? vEdge1 : vEdge2;
             const Vec_short* __restrict const vEdgeC = maskC ? vEdge1 : vEdge2;
