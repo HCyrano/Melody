@@ -908,7 +908,7 @@ int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, 
     int bestscore = UNDEF_SCORE;
     
     if(depth == DEPTH_0) {
-        
+                
         return sBoard.get_score();
         
     } else if(depth == DEPTH_1) {
@@ -1229,7 +1229,7 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
             
         }
         
-        if(depth > 9 ) {
+        if(depth > (bestmove == NOMOVE ? 9 : 8) ) {
             
             //for all empty square
             unsigned long long legal_movesBB = board.get_legal_moves();
@@ -1256,8 +1256,7 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
                               return -entry.upper ;
                           }
                           
-                          move->score = ((-entry.lower<=alpha)*5-2);
-                          
+                          move->score = ((-entry.lower<=alpha)*6-2); // bonus= -2 : malus= +4
                       }
 #endif
                       

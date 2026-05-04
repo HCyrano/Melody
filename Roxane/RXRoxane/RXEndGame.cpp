@@ -724,15 +724,15 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
             //synchronized acces
             if(!pv && hTable->get(hashcode_after_move, type_hashtable, entry) && entry.selectivity == NO_SELECT && entry.depth>=(board.n_empty-1)) {
                 
-                // Coupure beta
+                // beta cut
                 if(-entry.upper > lower) {
                     if(-entry.upper >= upper)
                         return -entry.upper;  // fail high
-                    lower = -entry.upper;     // resserrement alpha
+                    lower = -entry.upper;     // Alpha narrowing
                     bestscore = -entry.upper;
                 }
                 
-                // Elimination : borne haute sous alpha
+                // Remove from list : upper bound under alpha
                 else if(-entry.lower <= lower) {
                     if(bestscore < -entry.lower)
                         bestscore = -entry.lower;
@@ -782,7 +782,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
                     
                     if (!pv && entry.selectivity == NO_SELECT) {
                         
-                        // Coupure beta
+                        // beta cut
                         if(-entry.upper > lower) {
                             if(-entry.upper >= upper)
                                 return -entry.upper;
@@ -790,7 +790,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
                             bestscore = -entry.upper;
                         }
                         
-                        // Elimination
+                        // Remove fron list
                         else if(-entry.lower <= lower) {
                             if(bestscore < -entry.lower)
                                 bestscore = -entry.lower;
@@ -798,7 +798,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
                         }
                     }
 
-                    move->score = -2;  //in hash
+                    move->score = -2;  //in hash : bonus
                     
                 }
 #endif
@@ -1197,12 +1197,14 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                 //synchronized acces
                 if(hTable->get(board.hashcode_after_move(move), type_hashtable, entry) && entry.depth>=(board.n_empty-1)) {
                     
-                    
-                    if(!pv && entry.selectivity >= selectivity && -entry.upper >= upper) {
-                        return -entry.upper ;
+                    move->score = -3;    //in hash
+
+                    if ( -entry.upper >= upper) {
+                        if(!pv && entry.selectivity >= selectivity)
+                            return -entry.upper;
+                        move->score = -16;
                     }
                     
-                    move->score = -3;    //in hash
                     
                 }
 #endif
@@ -1672,7 +1674,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
                     return -entry.upper;
                 }
 
-                // Elimination : borne haute sous alpha
+                // Remove from list : upper bound under alpha
                 else if(-entry.lower <= alpha) {
                     if(bestscore < -entry.lower)
                         bestscore = -entry.lower;
@@ -1734,7 +1736,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
                         
                     }
                     
-                    // Elimination
+                    // Remove from list
                      else if(entry.selectivity >= selectivity && -entry.lower <= alpha) {
                           if(bestscore < -entry.lower)
                               bestscore = -entry.lower;
@@ -1850,12 +1852,12 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
     
 }
 
-// EG_SP_search_XEndcut() is used to search from a PV split point.  This function
+// EG_SP_search_XEndcut() is used to search from a split point.  This function
 // is called by each thread working at the split point.  It is similar to
 // the normal EG_NWS_XEndCut() function, but simpler.  Because we have already
 // probed the hash table and searched the first move before splitting, we
 // don't have to repeat all this work in EG_SP_search_XEndcut().  We also don't
-// need to store anything to the hash table here:  This is taken care of
+// need to store anything to the hash table here: This is taken care of
 // after we return from the split point.
 
 void RXEngine::EG_SP_search_XEndcut(RXSplitPoint* sp, const unsigned int threadID) {
