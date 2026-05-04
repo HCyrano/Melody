@@ -247,7 +247,7 @@ int RXEngine::EG_alphabeta_hash_mobility(const unsigned int threadID, RXBitBoard
     
     
     RXHashValue entry;
-    if(!pv && hTable->get(hash_code, type_hashtable, entry)) {
+    if(hTable->get(hash_code, type_hashtable, entry)) {
         
         if(entry.selectivity == NO_SELECT && entry.depth >= board.n_empty) { //
             
@@ -256,7 +256,7 @@ int RXEngine::EG_alphabeta_hash_mobility(const unsigned int threadID, RXBitBoard
                 if (upper <= lower)
                     return upper;
             }
-            if (lower < entry.lower) {
+            if (!pv && lower < entry.lower) {
                 lower = entry.lower;
                 if (lower >= upper)
                     return lower;
@@ -443,7 +443,7 @@ int RXEngine::EG_PVS_hash_mobility(const unsigned int threadID, RXBitBoard& boar
     
     
     RXHashValue entry;
-    if(!pv && hTable->get(hash_code, type_hashtable, entry)) {
+    if(hTable->get(hash_code, type_hashtable, entry)) {
         
         if(entry.selectivity == NO_SELECT && entry.depth >= board.n_empty) { //
             
@@ -453,7 +453,7 @@ int RXEngine::EG_PVS_hash_mobility(const unsigned int threadID, RXBitBoard& boar
                 if (upper <= lower)
                     return upper;
             }
-            if (lower < entry.lower) {
+            if (!pv && lower < entry.lower) {
                 lower = entry.lower;
                 if (lower >= upper)
                     return lower;
@@ -638,7 +638,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
     RXHashValue entry;
     if(hTable->get(hash_code, type_hashtable, entry)) {
         
-        if(!pv && entry.selectivity == NO_SELECT && entry.depth >= board.n_empty) {
+        if( entry.selectivity == NO_SELECT && entry.depth >= board.n_empty) {
             
             if (upper > entry.upper) {
                 upper = entry.upper;
@@ -646,7 +646,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
                     return upper;
                 }
             }
-            if (lower < entry.lower) {
+            if (!pv && lower < entry.lower) {
                 lower = entry.lower;
                 if (lower >= upper) {
                     return lower;
@@ -719,19 +719,31 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
             
 #ifdef USE_ETC
             hashcode_after_move = board.hashcode_after_move(move);
+            bool bestmove_eliminated = false;
 
             //synchronized acces
             if(!pv && hTable->get(hashcode_after_move, type_hashtable, entry) && entry.selectivity == NO_SELECT && entry.depth>=(board.n_empty-1)) {
                 
-                if(-entry.upper >= upper) {
-                    return -entry.upper ;
+                // Coupure beta
+                if(-entry.upper > lower) {
+                    if(-entry.upper >= upper)
+                        return -entry.upper;  // fail high
+                    lower = -entry.upper;     // resserrement alpha
+                    bestscore = -entry.upper;
                 }
                 
+                // Elimination : borne haute sous alpha
+                else if(-entry.lower <= lower) {
+                    if(bestscore < -entry.lower)
+                        bestscore = -entry.lower;
+                    bestmove_eliminated = true;
+                }
             }
+            
+            if(!bestmove_eliminated)
 #endif
             
-            
-            previous = previous->next = move++;
+                previous = previous->next = move++;
         }
         
         //for all empty square
@@ -768,9 +780,24 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
                 //synchronized acces
                 if(hTable->get(hashcode_after_move, type_hashtable, entry) && entry.depth>=(board.n_empty-1)) {
                     
-                    if (!pv && entry.selectivity == NO_SELECT && -entry.upper >= upper )
-                        return -entry.upper ;
-                    
+                    if (!pv && entry.selectivity == NO_SELECT) {
+                        
+                        // Coupure beta
+                        if(-entry.upper > lower) {
+                            if(-entry.upper >= upper)
+                                return -entry.upper;
+                            lower = -entry.upper;
+                            bestscore = -entry.upper;
+                        }
+                        
+                        // Elimination
+                        else if(-entry.lower <= lower) {
+                            if(bestscore < -entry.lower)
+                                bestscore = -entry.lower;
+                            continue;
+                        }
+                    }
+
                     move->score = -2;  //in hash
                     
                 }
@@ -782,8 +809,13 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
         }
         
         previous->next = nullptr;
-        
+
+        // Tous les coups éliminés par ETC
+        if(previous == list && bestscore != UNDEF_SCORE)
+            return bestscore;
+
     }
+    
     
     if (list->next == nullptr) {
         if (passed) {
@@ -1600,7 +1632,9 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
     
     RXMove* list = threads[threadID]._move[board.n_empty];
     list->next = nullptr;
-    
+
+    int bestscore = UNDEF_SCORE;
+
     if(bestmove != PASS) {
         
         RXMove* move = list + 1;
@@ -1630,18 +1664,27 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
             //synchronized acces
 #ifdef USE_ETC
             hashcode_after_move = board.hashcode_after_move(move);
+            bool bestmove_eliminated = false;
 
             if(hTable->get(hashcode_after_move, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth >= (board.n_empty-1)) {
                 
                 if(-entry.upper > alpha) {
                     return -entry.upper;
                 }
-                
+
+                // Elimination : borne haute sous alpha
+                else if(-entry.lower <= alpha) {
+                    if(bestscore < -entry.lower)
+                        bestscore = -entry.lower;
+                    bestmove_eliminated = true;
+                }
+
             }
+            if(!bestmove_eliminated)
+
 #endif
             
-            
-            previous = previous->next = move++;
+                previous = previous->next = move++;
             
         }
         
@@ -1691,6 +1734,14 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
                         
                     }
                     
+                    // Elimination
+                     else if(entry.selectivity >= selectivity && -entry.lower <= alpha) {
+                          if(bestscore < -entry.lower)
+                              bestscore = -entry.lower;
+                          continue;
+                      }
+
+                    
                 }
 #endif
                 
@@ -1701,10 +1752,12 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
         
         previous->next = nullptr;
         
-        
+        // Tous les coups éliminés par ETC
+        if(previous == list && bestscore != UNDEF_SCORE)
+            return bestscore;
+
     }
     
-    int bestscore = UNDEF_SCORE;
     
     if(list->next == nullptr) {
         //PASS
