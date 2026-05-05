@@ -1621,11 +1621,11 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
     if(bestmove != NOMOVE && entry.selectivity >= selectivity && entry.depth>=depth_probcut) {
         
         if(entry.lower >= upper_probcut) {
-            return alpha + 1; //9/02/2025
+            return alpha+2 -(alpha & 1); //05/05/2026
         }
 #ifdef USE_PROBCUT_ALPHA
         if(entry.upper <= lower_probcut) {
-            return alpha;
+            alpha -(alpha & 1);
         }
 #endif
         
@@ -1778,11 +1778,11 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
         //XProbcut
         int type_probcut = probcut(threadID, sBoard, selectivity, alpha, board.n_empty, depth_probcut, lower_probcut, upper_probcut, list, bestmove != NOMOVE);
         if( type_probcut == BETA_CUT) {
-            return alpha + 1; //9/02/2025
+            return alpha+2 -(alpha & 1); //5/05/2026
         }
 #ifdef USE_PROBCUT_ALPHA
         if(type_probcut == ALPHA_CUT) {
-            return alpha;
+            return alpha -(alpha & 1);
         }
 #endif
         

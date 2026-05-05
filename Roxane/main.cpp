@@ -28,8 +28,10 @@ int main (int argc, char * const argv[]) {
         
 #ifdef __ARM_NEON
     std::cout << "ARM NEON available" << std::endl;
+#elif __AVX2__
+    std::cout << "AVX2 available" << std::endl;
 #else
-    std::cout << "ARM NEON unavailable" << std::endl;
+    std::cout << "version X86-64" << std::endl;
 #endif
 
 
@@ -79,7 +81,7 @@ int main (int argc, char * const argv[]) {
 		}
 	}
 
-    std::string version = "dev-2026-05-04 20h00";
+    std::string version = "dev-2026-05-05 16h20";
     std::string vers_eval = RXEvaluation::get_version();
 
 	std::cout << "Version Melody " << version << std::endl;

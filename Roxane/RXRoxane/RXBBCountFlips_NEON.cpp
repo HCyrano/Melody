@@ -14,7 +14,7 @@
 #include <arm_neon.h>
 
 /** precomputed count flip array */
-const unsigned char RXBitBoard::COUNT_FLIP[8][256] = {
+alignas(64) const unsigned char RXBitBoard::COUNT_FLIP[8][256] = {
     {
          0,  0,  0,  0,  2,  2,  0,  0,  4,  4,  0,  0,  2,  2,  0,  0,  6,  6,  0,  0,  2,  2,  0,  0,  4,  4,  0,  0,  2,  2,  0,  0,
          8,  8,  0,  0,  2,  2,  0,  0,  4,  4,  0,  0,  2,  2,  0,  0,  6,  6,  0,  0,  2,  2,  0,  0,  4,  4,  0,  0,  2,  2,  0,  0,
@@ -98,7 +98,7 @@ const unsigned char RXBitBoard::COUNT_FLIP[8][256] = {
 };
 
 /* bit masks for diagonal lines (interleaved) */
-const uint64x2_t RXBitBoard::mask_dvhd[64][2] = {
+alignas(16) const uint64x2_t RXBitBoard::mask_dvhd[64][2] = {
     {{ 0x000000000000ff01, 0x0000000000000000 }, { 0x0801040102010101, 0x8001400120011001 }},
     {{ 0x000000000001ff02, 0x0000000000000000 }, { 0x1002080204020202, 0x0002800240022002 }},
     {{ 0x000000010002ff04, 0x0000000000000000 }, { 0x2004100408040404, 0x0004000480044004 }},
