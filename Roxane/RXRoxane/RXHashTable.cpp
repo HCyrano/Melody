@@ -452,7 +452,7 @@ void RXHashTable::mainVariation(std::vector<unsigned char>& pv, RXBitBoard& boar
 				board.do_pass();
 			} else {
 				RXMove& move = _move[board.n_empty][type_hashtable==HASH_WHITE? WHITE:BLACK]; //multithread, for shared use BLACK
-				((board).*(board.generate_flips[entry.move]))(move);
+                board.generate_flips(entry.move, move);
 				board.do_move(move);
 				mainVariation(pv, board, type_hashtable, depth-1);
 				board.undo_move(move);
@@ -490,7 +490,7 @@ void RXHashTable::copyPV(RXHashTable* from_hash, const t_hash from_type_hash, RX
 				board.do_pass();
 			} else {
 				RXMove& move = _move[board.n_empty][to_type_hash]; //SHARED 3/02/2025
-				((board).*(board.generate_flips[square]))(move);
+                board.generate_flips(square, move);
 				board.do_move(move);
 				copyPV(from_hash, from_type_hash, board, to_type_hash);
 				board.undo_move(move);
@@ -561,7 +561,7 @@ void RXHashTable::copyPV(RXBitBoard& board, const t_hash from_hashtable, const t
 				board.do_pass();
 			} else {
 				RXMove& move = _move[board.n_empty][to_hashtable]; //SHARED 03/02/2025
-				((board).*(board.generate_flips[square]))(move);
+                board.generate_flips(square, move);
 				board.do_move(move);
 				copyPV(board, from_hashtable, to_hashtable);
 				board.undo_move(move);
@@ -616,7 +616,7 @@ void RXHashTable::mergePV(RXBitBoard& board) {
 			board.do_pass();
 		} else {
 			RXMove& move = _move[board.n_empty][SHARED];						//shared
-			((board).*(board.generate_flips[square]))(move);
+            board.generate_flips(square, move);
 			board.do_move(move);
 			mergePV(board);
 			board.undo_move(move);
@@ -686,7 +686,7 @@ void RXHashTable::protectPV(RXBitBoard& board, const t_hash	type_hashtable, cons
 				}
 			} else {
 				RXMove& move = _move[board.n_empty][type_hashtable == HASH_WHITE? WHITE:BLACK]; //multithread BLACK or SHARED
-				((board).*(board.generate_flips[square]))(move);
+                board.generate_flips(square, move);
 				board.do_move(move);
 				protectPV(board, type_hashtable, false);
 				board.undo_move(move);

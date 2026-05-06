@@ -159,42 +159,6 @@ unsigned char RXBitBoard::EDGE_STABILITY[256*256]; //unsigned char
 
 
 
-#ifdef __ARM_NEON
-
-/** rotated outflank array (indexed with inner 6 bits) */
-alignas(64) const unsigned char RXBitBoard::OUTFLANK_3[64] = {    // ...bahgf
-    0x00, 0x00, 0x10, 0x08, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x11, 0x09, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x10, 0x08, 0x00, 0x00, 0x00, 0x00, 0x02, 0x02, 0x12, 0x0a, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x10, 0x08, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x11, 0x09, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x10, 0x08, 0x00, 0x00, 0x00, 0x00, 0x04, 0x04, 0x14, 0x0c, 0x00, 0x00, 0x00, 0x00
-};
-
-alignas(64) const unsigned char RXBitBoard::OUTFLANK_4[64] = {    // ...cbahg
-    0x00, 0x00, 0x00, 0x00, 0x10, 0x10, 0x08, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x01, 0x01, 0x01, 0x01, 0x11, 0x11, 0x09, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x10, 0x10, 0x08, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x02, 0x02, 0x02, 0x02, 0x12, 0x12, 0x0a, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-
-/** flip array (indexed with rotated outflank) */
-alignas(64) const unsigned long long RXBitBoard::FLIPPED_3_H[21] = {    // ...bahgf
-    0x0000000000000000, 0x1010101010101010, 0x3030303030303030, 0x0000000000000000,
-    0x7070707070707070, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
-    0x0606060606060606, 0x1616161616161616, 0x3636363636363636, 0x0000000000000000,
-    0x7676767676767676, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
-    0x0404040404040404, 0x1414141414141414, 0x3434343434343434, 0x0000000000000000,
-    0x7474747474747474
-};
-
-alignas(64) const unsigned long long RXBitBoard::FLIPPED_4_H[19] = {    // ...cbahg
-    0x0000000000000000, 0x2020202020202020, 0x6060606060606060, 0x0000000000000000,
-    0x0e0e0e0e0e0e0e0e, 0x2e2e2e2e2e2e2e2e, 0x6e6e6e6e6e6e6e6e, 0x0000000000000000,
-    0x0c0c0c0c0c0c0c0c, 0x2c2c2c2c2c2c2c2c, 0x6c6c6c6c6c6c6c6c, 0x0000000000000000,
-    0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
-    0x0808080808080808, 0x2828282828282828, 0x6868686868686868
-};
-
-#endif
 
 
 
@@ -298,7 +262,7 @@ void RXBitBoard::static_init() {
 }
 
 
-#ifdef __ARM_NEON
+#if ARCH == ARCH_ARM_NEON
 
 
 //not very efficient
@@ -354,23 +318,6 @@ void RXBitBoard::dual_potential_mobility(const unsigned long long p_discs, const
     o_pmob = __builtin_popcountll(vgetq_lane_u64(final_pot, 1));
 }
 
-int RXBitBoard::final_score_1 () const {
-    int score = 63-2*__builtin_popcountll(discs[player^1]);
-    
-    const int pos = empties_list->next->position;
-    int nFlips;
-    
-    if((nFlips = count_flips(pos, discs[player]))>0) {
-        score += nFlips+1;
-    } else if((nFlips = count_flips(pos, discs[player^1]))>0) {
-        score -= nFlips+1;
-    } else if(score<0)
-        --score;
-    else if (score>0)
-        ++score;
-    
-    return score;
-}
 
 
 #else
@@ -393,24 +340,6 @@ int RXBitBoard::count_potential_moves(const unsigned long long p_discs, const un
     
     return __builtin_popcountll(pot_moves);
 
-}
-
-int RXBitBoard::final_score_1 () const {
-    int score = 63-2*__builtin_popcountll(discs[player^1]);
-    
-    const int pos = empties_list->next->position;
-    int nFlips;
-    
-    if((nFlips = count_flips[pos](discs[player]))>0) {
-        score += nFlips+1;
-    } else if((nFlips = count_flips[pos](discs[player^1]))>0) {
-        score -= nFlips+1;
-    } else if(score<0)
-        --score;
-    else if (score>0)
-        ++score;
-    
-    return score;
 }
 
 
@@ -446,9 +375,7 @@ RXBitBoard::RXBitBoard(): player(BLACK), n_empty(60), n_nodes(0), parity(0xF){
     iEmpties->previous = iEmpties - 1;
     iEmpties->next = 0;                         //nullptr
     
-    
-    init_generate_flips();
-    
+        
 
 }
 
@@ -536,7 +463,6 @@ RXBitBoard::RXBitBoard(const RXBitBoard& src) {
 	empties_list[61].previous = previous;
 	previous->next = &empties_list[61];
 	
-	init_generate_flips();
 }
 
 

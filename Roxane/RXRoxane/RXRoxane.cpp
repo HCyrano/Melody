@@ -234,9 +234,9 @@ RXEngine* RXRoxane::getEngine(const int color) const {
 //					
 //					int position = wthor2BitBoard[moves[iMove++]];
 //					
-//					if(board.squareIsEmpty(position) && ((board).*(board.generate_flips[position]))(move)) {
-//						((sBoard).*(sBoard.update_patterns[position][board.player]))(move);
-//						
+//					if(board.squareIsEmpty(position) && board.generate_flips(position, move)) {
+//						sBoard.patterns_update(move);
+//
 //						board.do_move(move);
 //						*(sBoard.pattern) = *(move.pattern); //copy
 //					} else {
@@ -944,8 +944,8 @@ void RXRoxane::rawdata(const std::string& dir_name, const int offset_start, cons
                 if(pos == PASS) {
                     board.do_pass();
                 } else {
-                    ((board).*(board.generate_flips[pos]))(move);
-                    ((sBoard).*(sBoard.update_patterns[pos][board.player]))(move);
+                    board.generate_flips(pos, move);
+                    sBoard.patterns_update(move);
                     
                     sBoard.do_move(move);
                 }
@@ -1087,7 +1087,7 @@ void RXRoxane::imposed_opening(const std::string& line) {
 				
 				int square = (('8' - ordonne)*8 + ('H' - abscise));
 				
-                ((board).*(board.generate_flips[square]))(move);
+                board.generate_flips(square, move);
                 
 				if(move.flipped) {
 					hash_opening[60-board.n_empty] = board.hashcode();

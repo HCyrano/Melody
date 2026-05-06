@@ -5,9 +5,9 @@
 //  Created by Causse Bruno on 15/08/2024.
 //  Copyleft © 2025 personnel.
 //
+#include "RXSetting.hpp"
 
-
-#ifdef __ARM_NEON
+#if ARCH == ARCH_ARM_NEON
 
 #include <stdio.h>
 

@@ -1,6 +1,6 @@
 
 /*
- *  RXBBCountFlips.cpp
+ *  RXBBCountFlips_X86.cpp
  *  Roxane
  *
  *  Created by Bruno Causse on 27/06/05.
@@ -8,12 +8,14 @@
  *
  */
 
-#ifndef __ARM_NEON
+#include "RXSetting.hpp"
+
+#if ARCH != ARCH_ARM_NEON
 
 #include "RXBitBoard.hpp"
 
 
-const unsigned char RXBitBoard::COUNT_H[256] = {
+const unsigned char COUNT_H[256] = {
  0,  0,  0,  0,  2,  0,  0,  0,  4,  0,  0,  0,  2,  0,  0,  0, 
  6,  0,  0,  0,  2,  0,  0,  0,  4,  0,  0,  0,  2,  0,  0,  0, 
  8,  0,  0,  0,  2,  0,  0,  0,  4,  0,  0,  0,  2,  0,  0,  0, 
@@ -32,7 +34,7 @@ const unsigned char RXBitBoard::COUNT_H[256] = {
  6,  0,  0,  0,  2,  0,  0,  0,  4,  0,  0,  0,  2,  0,  0,  0, 
 };
 
-const unsigned char RXBitBoard::COUNT_G[256] = {
+const unsigned char COUNT_G[256] = {
  0,  0,  0,  0,  0,  0,  0,  0,  2,  2,  0,  0,  0,  0,  0,  0, 
  4,  4,  0,  0,  0,  0,  0,  0,  2,  2,  0,  0,  0,  0,  0,  0, 
  6,  6,  0,  0,  0,  0,  0,  0,  2,  2,  0,  0,  0,  0,  0,  0, 
@@ -51,7 +53,7 @@ const unsigned char RXBitBoard::COUNT_G[256] = {
  4,  4,  0,  0,  0,  0,  0,  0,  2,  2,  0,  0,  0,  0,  0,  0, 
 };
 
-const unsigned char RXBitBoard::COUNT_F[256] = {
+const unsigned char COUNT_F[256] = {
 0,  2,  0,  0,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0, 
 2,  4,  2,  2,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0, 
 4,  6,  4,  4,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0, 
@@ -70,7 +72,7 @@ const unsigned char RXBitBoard::COUNT_F[256] = {
 2,  4,  2,  2,  0,  0,  0,  0,  0,  2,  0,  0,  0,  0,  0,  0, 
 };
 
-const unsigned char RXBitBoard::COUNT_E[256] = {
+const unsigned char COUNT_E[256] = {
 0,  4,  2,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
 0,  4,  2,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
 2,  6,  4,  4,  2,  2,  2,  2,  0,  0,  0,  0,  0,  0,  0,  0, 
@@ -89,7 +91,7 @@ const unsigned char RXBitBoard::COUNT_E[256] = {
 0,  4,  2,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
 };
 
-const unsigned char RXBitBoard::COUNT_D[256] = {
+const unsigned char COUNT_D[256] = {
 0,  6,  4,  4,  2,  2,  2,  2,  0,  0,  0,  0,  0,  0,  0,  0, 
 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
 0,  6,  4,  4,  2,  2,  2,  2,  0,  0,  0,  0,  0,  0,  0,  0, 
@@ -108,7 +110,7 @@ const unsigned char RXBitBoard::COUNT_D[256] = {
 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
 };
 
-const unsigned char RXBitBoard::COUNT_C[256] = {
+const unsigned char COUNT_C[256] = {
 0,  8,  6,  6,  4,  4,  4,  4,  2,  2,  2,  2,  2,  2,  2,  2, 
 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
@@ -127,7 +129,7 @@ const unsigned char RXBitBoard::COUNT_C[256] = {
 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
 };
 
-const unsigned char RXBitBoard::COUNT_B[256] = {
+const unsigned char COUNT_B[256] = {
 0, 10,  8,  8,  6,  6,  6,  6,  4,  4,  4,  4,  4,  4,  4,  4, 
 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
@@ -146,7 +148,7 @@ const unsigned char RXBitBoard::COUNT_B[256] = {
 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
 };
 
-const unsigned char RXBitBoard::COUNT_A[256] = {
+const unsigned char COUNT_A[256] = {
 0, 12, 10, 10,  8,  8,  8,  8,  6,  6,  6,  6,  6,  6,  6,  6, 
 4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4, 
 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 
@@ -659,12 +661,7 @@ int RXBitBoard::count_flips_H8(const unsigned long long& discs_player) {
 }
 
 
-
-
-
-
-
-RXBitBoard::type_count_flips const RXBitBoard::count_flips[] = {
+RXBitBoard::type_count_flips const RXBitBoard::count_flips_X86[] = {
 RXBitBoard::count_flips_H8, RXBitBoard::count_flips_G8, RXBitBoard::count_flips_F8, RXBitBoard::count_flips_E8, RXBitBoard::count_flips_D8, RXBitBoard::count_flips_C8, RXBitBoard::count_flips_B8, RXBitBoard::count_flips_A8,
 RXBitBoard::count_flips_H7, RXBitBoard::count_flips_G7, RXBitBoard::count_flips_F7, RXBitBoard::count_flips_E7, RXBitBoard::count_flips_D7, RXBitBoard::count_flips_C7, RXBitBoard::count_flips_B7, RXBitBoard::count_flips_A7,
 RXBitBoard::count_flips_H6, RXBitBoard::count_flips_G6, RXBitBoard::count_flips_F6, RXBitBoard::count_flips_E6, RXBitBoard::count_flips_D6, RXBitBoard::count_flips_C6, RXBitBoard::count_flips_B6, RXBitBoard::count_flips_A6,

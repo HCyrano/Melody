@@ -11,15 +11,16 @@
 #define RXBBPATTERN_HPP
 
 #include <cmath>
-#ifdef __ARM_NEON
-    #include <arm_neon.h>
-#endif
 #include <atomic>
 
 #include "RXConstantes.hpp"
 #include "RXBitBoard.hpp"
 #include "RXPattern.hpp"
 #include "RXEvaluation.hpp"
+
+#if ARCH ==  ARCH_ARM_NEON
+    #include <arm_neon.h>
+#endif
 
 
 class RXBBPatterns {
@@ -40,6 +41,10 @@ void update_patterns_WHITE_##pos(RXMove& move) const
     func(A7); func(B7); func(C7); func(D7); func(E7); func(F7); func(G7); func(H7);
     func(A8); func(B8); func(C8); func(D8); func(E8); func(F8); func(G8); func(H8);
 #undef func
+    
+    void (RXBBPatterns::*update_patterns[64][2])(RXMove& move) const;
+    void init_update_patterns();
+
 
     public :
 
@@ -63,8 +68,9 @@ void update_patterns_WHITE_##pos(RXMove& move) const
     
     
     
-    void (RXBBPatterns::*update_patterns[64][2])(RXMove& move) const;
-    void init_update_patterns();
+    
+    inline void patterns_update(RXMove& move) const;
+
     
     void reset();
     
@@ -118,6 +124,10 @@ inline RXBBPatterns& RXBBPatterns::operator=(const RXBBPatterns& src) {
     return *this;
 }
 
+__attribute__((always_inline))
+inline void RXBBPatterns::patterns_update(RXMove& move) const {
+    ((this)->*(update_patterns[move.position][board.player]))(move);
+}
 
 __attribute__((always_inline))
 inline void RXBBPatterns::do_move(RXMove& move) {
@@ -194,7 +204,7 @@ inline int acc_score(const int   stage,
     
     const int mask = color >> 31;   // 0x00000000 si color=+1, 0xFFFFFFFF si color=-1
     
-#ifdef __ARM_NEON
+#if ARCH ==  ARCH_ARM_NEON
     
     // ── Calcul SIMD des (46+2) 48 cp = (patt[i] ^ mask) - mask ────────────────
     // patt[] est int[48], on charge en int32x4, on XOR+SUB vectoriellement
@@ -312,7 +322,7 @@ inline int acc_score(const int   stage,
             
             eval += RXEvaluation::eval_w0[stage];
             
-#ifdef __ARM_NEON
+#if ARCH == ARCH_ARM_NEON
             
             // OPTIMIZATION
             // Version 1
@@ -435,7 +445,7 @@ inline int acc_score(const int   stage,
             acc(vCorner,cp46); acc(vCorner,cp47); acc(vCorner,cp48); acc(vCorner,cp49);
             
             
-#ifdef __ARM_NEON
+#if ARCH == ARCH_ARM_NEON
             
 
             // widening multiply-accumulate depuis int16 (sum est encore int16x8_t)
@@ -494,7 +504,7 @@ inline int RXBBPatterns::get_score() const
     
     const unsigned long long filled = board.discs[board.player] | board.discs[board.player^1];
 
-#ifdef __ARM_NEON
+#if ARCH == ARCH_ARM_NEON
 
     uint64x2_t mob  = board.dual_count_legal_moves();
     const int mob_P = std::min(23, (int)vgetq_lane_u64(mob, 0));
@@ -540,7 +550,7 @@ inline int RXBBPatterns::get_score(const RXMove& move) const
     
     const unsigned long long filled = discs_player | discs_opponent;
 
-#ifdef __ARM_NEON
+#if ARCH == ARCH_ARM_NEON
 
     uint64x2_t mob  = RXBitBoard::dual_count_legal_moves(discs_player, discs_opponent);
     const int mob_P = std::min(23, (int)vgetq_lane_u64(mob, 0));

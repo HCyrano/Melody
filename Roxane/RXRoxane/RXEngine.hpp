@@ -571,7 +571,7 @@ inline int RXEngine::time_limit() const {
 
 #ifdef SIGMA_3ZONES
 
-#ifdef __ARM_NEON
+#if ARCH == ARCH_ARM_NEON
 
 //borner sur [2.7f : 30.0f]
 inline float RXEngine::sigma(const int n_empty, const int depth, const int depth_probcut) const {

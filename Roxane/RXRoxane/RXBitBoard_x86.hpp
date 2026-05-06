@@ -5,6 +5,20 @@
 //  Created by Causse Bruno on 13/02/2026.
 //
 
+/*
+ @brief count all legal moves
+ 
+ @param P                    a bitboard representing player
+ @param O                    a bitboard representing opponent
+ @return count all legal moves
+ */
+inline int RXBitBoard::count_legal_moves(const unsigned long long p_discs, const unsigned long long o_discs) {
+    
+    const unsigned long long legals = get_legal_moves(p_discs, o_discs);
+    return __builtin_popcountll(legals);
+    
+}
+
 
 /// retourne un pseudo (sous evalué) score de pions stables
 /// - Parameters:
@@ -218,169 +232,6 @@ inline unsigned long long RXBitBoard::get_legal_moves(const unsigned long long p
     
 }
 
-
-
-
-inline int RXBitBoard::final_score_2(const unsigned long long discs_player, const unsigned long long discs_opponent, const int alpha, const int beta, const int idSquare1, const int idSquare2) const {
-    
-    unsigned long long flipped;
-    unsigned long long n_player;
-    unsigned long long n_opponent;
-    
-    int n_flips, bestscore = UNDEF_SCORE;
-    ++n_nodes;
-    
-    // try to play on the first available square
-    if((discs_opponent & NEIGHBOR[idSquare1]) && (flipped = do_flips[idSquare1](discs_player, discs_opponent))) {
-        ++n_nodes;
-        
-        n_opponent = discs_opponent ^ flipped;
-        
-        bestscore = 62 - 2*__builtin_popcountll(n_opponent);
-        
-        n_flips = count_flips[idSquare2](n_opponent);
-        if(n_flips !=0) {
-            bestscore -= n_flips;
-        } else {
-            
-            if(bestscore >= 0) {
-                bestscore += 2;
-                if(bestscore < beta) {
-                    bestscore += count_flips[idSquare2](~n_opponent);
-                }
-            } else {
-                if(bestscore < beta) {
-                    n_flips = count_flips[idSquare2](~n_opponent);
-                    
-                    if(n_flips != 0)
-                        bestscore += n_flips + 2;
-                }
-            }
-        }
-        
-        if(bestscore >= beta)
-            return bestscore;
-        
-        
-    }
-    
-    // if needed, try to play on the second & last available square
-    if((discs_opponent & NEIGHBOR[idSquare2]) && (flipped = do_flips[idSquare2](discs_player, discs_opponent))) {
-        ++n_nodes;
-        
-        n_opponent = discs_opponent ^ flipped;
-        
-        int score = 62 - 2*__builtin_popcountll(n_opponent);
-        
-        
-        n_flips = count_flips[idSquare1](n_opponent);
-        if(n_flips !=0) {
-            score -= n_flips;
-        } else {
-            
-            if(score >= 0) {
-                score += 2;
-                if(score < beta) {
-                    score += count_flips[idSquare1](~n_opponent);
-                }
-            } else {
-                if(score < beta) {
-                    n_flips = count_flips[idSquare1](~n_opponent);
-                    if(n_flips != 0)
-                        score += n_flips + 2;
-                }
-            }
-        }
-        
-        if(score > bestscore)
-            return score;
-        
-        return bestscore;
-        
-    }
-    
-    // if no move were available
-    if(bestscore == UNDEF_SCORE) {
-        
-        if((flipped = do_flips[idSquare1](discs_opponent, discs_player))) {
-            ++n_nodes;
-            
-            n_player = discs_player ^ flipped;
-            
-            bestscore = 62 - 2*__builtin_popcountll(n_player);
-            
-            n_flips = count_flips[idSquare2](n_player);
-            if(n_flips !=0) {
-                bestscore -= n_flips;
-            } else {
-                
-                if(bestscore >= 0) {
-                    bestscore += 2;
-                    if(bestscore < -alpha) {
-                        bestscore += count_flips[idSquare2](~n_player);
-                    }
-                } else {
-                    if(bestscore < -alpha) {
-                        n_flips = count_flips[idSquare2](~n_player);
-                        
-                        if(n_flips != 0)
-                            bestscore += n_flips + 2;
-                    }
-                }
-            }
-            
-            if(bestscore >= -alpha)
-                return -bestscore;
-            
-            
-        }
-        
-        // if needed, try to play on the second & last available square
-        if((flipped = do_flips[idSquare2](discs_opponent, discs_player))) {
-            ++n_nodes;
-            
-            n_player = discs_player ^ flipped;
-            
-            int score = 62 - 2*__builtin_popcountll(n_player);
-            
-            n_flips = count_flips[idSquare1](n_player);
-            if(n_flips !=0) {
-                score -= n_flips;
-            } else {
-                
-                if(score >= 0) {
-                    score += 2;
-                    if(score < -alpha) {
-                        score += count_flips[idSquare1](~n_player);
-                    }
-                } else {
-                    if(score < -alpha) {
-                        n_flips = count_flips[idSquare1](~n_player);
-                        if(n_flips != 0)
-                            score += n_flips + 2;
-                    }
-                }
-            }
-            
-            if(score > bestscore)
-                return -score;
-            
-        }
-        
-        if(bestscore == UNDEF_SCORE) {
-            bestscore = 62 - 2*__builtin_popcountll(discs_player);
-            if(bestscore>0)
-                bestscore+=2;
-            else if (bestscore<0)
-                bestscore-=2;
-        }
-        
-        bestscore = -bestscore;
-        
-    }
-    
-    return bestscore;
-}
 
 inline void RXBitBoard::dual_count_legal_moves(int& mob_P, int& mob_O) const {
     return RXBitBoard::dual_count_legal_moves(discs[player], discs[player^1], mob_P, mob_O);

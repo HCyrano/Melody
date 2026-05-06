@@ -9,7 +9,22 @@
 #ifndef RXSETTING_HPP
 #define RXSETTING_HPP
 
-#define RELEASE
+//#define RELEASE
+
+#define ARCH_X86_GENERIC 0
+#define ARCH_X86_AVX2    1
+#define ARCH_ARM_NEON    2
+
+#ifndef ARCH
+    #ifdef __AVX2__
+        #define ARCH ARCH_X86_AVX2
+    #elif defined __ARM_NEON
+        #define ARCH ARCH_ARM_NEON
+    #else
+        #define ARCH ARCH_X86_GENERIC
+    #endif
+#endif
+
 
 //login actif / inactif
 #define LOGGING_ON

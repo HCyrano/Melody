@@ -5,14 +5,62 @@
 //  adapter by Causse Bruno on 15/08/2024.
 //  Copyleft © 2025 personnel.
 //
+#include "RXSetting.hpp"
 
 
-#ifdef __ARM_NEON
+
+#if ARCH == ARCH_ARM_NEON
 
 #include <stdio.h>
 
 #include "RXBitBoard.hpp"
 #include "RXTools.hpp"
+
+
+/** rotated outflank array (indexed with inner 6 bits) */
+alignas(64) const unsigned char OUTFLANK_3[64] = {    // ...bahgf
+    0x00, 0x00, 0x10, 0x08, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x11, 0x09, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x10, 0x08, 0x00, 0x00, 0x00, 0x00, 0x02, 0x02, 0x12, 0x0a, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x10, 0x08, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x11, 0x09, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x10, 0x08, 0x00, 0x00, 0x00, 0x00, 0x04, 0x04, 0x14, 0x0c, 0x00, 0x00, 0x00, 0x00
+};
+
+alignas(64) const unsigned char OUTFLANK_4[64] = {    // ...cbahg
+    0x00, 0x00, 0x00, 0x00, 0x10, 0x10, 0x08, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x01, 0x01, 0x01, 0x01, 0x11, 0x11, 0x09, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x10, 0x10, 0x08, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x02, 0x02, 0x02, 0x02, 0x12, 0x12, 0x0a, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+
+/** flip array (indexed with rotated outflank) */
+alignas(64) const unsigned long long FLIPPED_3_H[21] = {    // ...bahgf
+    0x0000000000000000, 0x1010101010101010, 0x3030303030303030, 0x0000000000000000,
+    0x7070707070707070, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
+    0x0606060606060606, 0x1616161616161616, 0x3636363636363636, 0x0000000000000000,
+    0x7676767676767676, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
+    0x0404040404040404, 0x1414141414141414, 0x3434343434343434, 0x0000000000000000,
+    0x7474747474747474
+};
+
+alignas(64) const unsigned long long FLIPPED_4_H[19] = {    // ...cbahg
+    0x0000000000000000, 0x2020202020202020, 0x6060606060606060, 0x0000000000000000,
+    0x0e0e0e0e0e0e0e0e, 0x2e2e2e2e2e2e2e2e, 0x6e6e6e6e6e6e6e6e, 0x0000000000000000,
+    0x0c0c0c0c0c0c0c0c, 0x2c2c2c2c2c2c2c2c, 0x6c6c6c6c6c6c6c6c, 0x0000000000000000,
+    0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
+    0x0808080808080808, 0x2828282828282828, 0x6868686868686868
+};
+
+
+
+void RXBitBoard::generate_flips_NEON(const int pos, RXMove& move) const {
+    
+    move.flipped = do_flips_NEON[pos](discs[player], discs[player^1]);
+    move.square = 0X1ULL << pos;
+    move.position = pos;
+
+    
+}
+
 
 unsigned long long RXBitBoard::do_flips_A1(const unsigned long long& P, const unsigned long long& O) {
     
@@ -1366,12 +1414,12 @@ unsigned long long RXBitBoard::do_flips_H8(const unsigned long long& P, const un
 
 
 
-RXBitBoard::type_do_flips const RXBitBoard::do_flips[] = {
+RXBitBoard::type_do_flips const RXBitBoard::do_flips_NEON[] = {
     RXBitBoard::do_flips_H8, RXBitBoard::do_flips_G8, RXBitBoard::do_flips_F8, RXBitBoard::do_flips_E8, RXBitBoard::do_flips_D8, RXBitBoard::do_flips_C8, RXBitBoard::do_flips_B8, RXBitBoard::do_flips_A8,
     RXBitBoard::do_flips_H7, RXBitBoard::do_flips_G7, RXBitBoard::do_flips_F7, RXBitBoard::do_flips_E7, RXBitBoard::do_flips_D7, RXBitBoard::do_flips_C7, RXBitBoard::do_flips_B7, RXBitBoard::do_flips_A7,
     RXBitBoard::do_flips_H6, RXBitBoard::do_flips_G6, RXBitBoard::do_flips_F6, RXBitBoard::do_flips_E6, RXBitBoard::do_flips_D6, RXBitBoard::do_flips_C6, RXBitBoard::do_flips_B6, RXBitBoard::do_flips_A6,
-    RXBitBoard::do_flips_H5, RXBitBoard::do_flips_G5, RXBitBoard::do_flips_F5,                    nullptr,                    nullptr, RXBitBoard::do_flips_C5, RXBitBoard::do_flips_B5, RXBitBoard::do_flips_A5,
-    RXBitBoard::do_flips_H4, RXBitBoard::do_flips_G4, RXBitBoard::do_flips_F4,                    nullptr,                    nullptr, RXBitBoard::do_flips_C4, RXBitBoard::do_flips_B4, RXBitBoard::do_flips_A4,
+    RXBitBoard::do_flips_H5, RXBitBoard::do_flips_G5, RXBitBoard::do_flips_F5,                 nullptr,                 nullptr, RXBitBoard::do_flips_C5, RXBitBoard::do_flips_B5, RXBitBoard::do_flips_A5,
+    RXBitBoard::do_flips_H4, RXBitBoard::do_flips_G4, RXBitBoard::do_flips_F4,                 nullptr,                 nullptr, RXBitBoard::do_flips_C4, RXBitBoard::do_flips_B4, RXBitBoard::do_flips_A4,
     RXBitBoard::do_flips_H3, RXBitBoard::do_flips_G3, RXBitBoard::do_flips_F3, RXBitBoard::do_flips_E3, RXBitBoard::do_flips_D3, RXBitBoard::do_flips_C3, RXBitBoard::do_flips_B3, RXBitBoard::do_flips_A3,
     RXBitBoard::do_flips_H2, RXBitBoard::do_flips_G2, RXBitBoard::do_flips_F2, RXBitBoard::do_flips_E2, RXBitBoard::do_flips_D2, RXBitBoard::do_flips_C2, RXBitBoard::do_flips_B2, RXBitBoard::do_flips_A2,
     RXBitBoard::do_flips_H1, RXBitBoard::do_flips_G1, RXBitBoard::do_flips_F1, RXBitBoard::do_flips_E1, RXBitBoard::do_flips_D1, RXBitBoard::do_flips_C1, RXBitBoard::do_flips_B1, RXBitBoard::do_flips_A1

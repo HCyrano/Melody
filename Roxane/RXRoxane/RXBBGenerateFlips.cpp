@@ -7,8 +7,10 @@
  *  Copyleft 2005-2025 personnel.
  *
  */
+#include "RXSetting.hpp"
 
-#ifndef __ARM_NEON
+
+#if ARCH != ARCH_ARM_NEON
 
 #include "RXBitBoard.hpp"
 #include "RXTools.hpp"

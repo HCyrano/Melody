@@ -6,15 +6,17 @@
  *  Copyleft 2005-2025 personnel.
  *
  */
+#include "RXSetting.hpp"
 
-#ifdef __ARM_NEON
+
+#if ARCH == ARCH_ARM_NEON
 
 #include "RXBitBoard.hpp"
 
 #include <arm_neon.h>
 
 /** precomputed count flip array */
-alignas(64) const unsigned char RXBitBoard::COUNT_FLIP[8][256] = {
+alignas(64) const unsigned char COUNT_FLIP[8][256] = {
     {
          0,  0,  0,  0,  2,  2,  0,  0,  4,  4,  0,  0,  2,  2,  0,  0,  6,  6,  0,  0,  2,  2,  0,  0,  4,  4,  0,  0,  2,  2,  0,  0,
          8,  8,  0,  0,  2,  2,  0,  0,  4,  4,  0,  0,  2,  2,  0,  0,  6,  6,  0,  0,  2,  2,  0,  0,  4,  4,  0,  0,  2,  2,  0,  0,
@@ -98,7 +100,7 @@ alignas(64) const unsigned char RXBitBoard::COUNT_FLIP[8][256] = {
 };
 
 /* bit masks for diagonal lines (interleaved) */
-alignas(16) const uint64x2_t RXBitBoard::mask_dvhd[64][2] = {
+alignas(16) const uint64x2_t mask_dvhd[64][2] = {
     {{ 0x000000000000ff01, 0x0000000000000000 }, { 0x0801040102010101, 0x8001400120011001 }},
     {{ 0x000000000001ff02, 0x0000000000000000 }, { 0x1002080204020202, 0x0002800240022002 }},
     {{ 0x000000010002ff04, 0x0000000000000000 }, { 0x2004100408040404, 0x0004000480044004 }},
@@ -164,6 +166,30 @@ alignas(16) const uint64x2_t RXBitBoard::mask_dvhd[64][2] = {
     {{ 0x0000000000000000, 0xff40008000000000 }, { 0x0440024001400040, 0x4040204010400840 }},
     {{ 0x0000000000000000, 0xff80000000000000 }, { 0x0880048002800180, 0x8080408020801080 }}
 };
+
+int RXBitBoard::count_flips_NEON(const int pos, const unsigned long long P)
+{
+    unsigned int    n_flips;
+    const unsigned char *COUNT_FLIP_X = COUNT_FLIP[pos & 7];
+    const unsigned char *COUNT_FLIP_Y = COUNT_FLIP[pos >> 3];
+    uint64x2_t    PP = vdupq_n_u64(P);
+    uint64x2_t    II;
+    unsigned int t;
+    const uint64x2_t dmask = { 0x0808040402020101, 0x8080404020201010 };
+
+    PP = vreinterpretq_u64_u8(vzip1q_u8(vreinterpretq_u8_u64(PP), vreinterpretq_u8_u64(PP)));
+    II = vandq_u64(PP, mask_dvhd[pos][0]);    // 2 dirs interleaved
+    t = vaddvq_u16(vreinterpretq_u16_u64(II));
+    n_flips  = COUNT_FLIP_X[t >> 8];
+    n_flips += COUNT_FLIP_X[t & 0xFF];
+    II = vandq_u64(vreinterpretq_u64_u8(vtstq_u8(vreinterpretq_u8_u64(PP), vreinterpretq_u8_u64(mask_dvhd[pos][1]))), dmask);
+    t = vaddvq_u16(vreinterpretq_u16_u64(II));
+    n_flips += COUNT_FLIP_Y[t >> 8];
+    n_flips += COUNT_FLIP_Y[t & 0xFF];
+
+    return n_flips;
+}
+
 
 
 #endif

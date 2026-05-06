@@ -91,7 +91,7 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                     if (movesBB & bit) {
                         movesBB ^= bit;
                         
-                        ((board).*(board.generate_flips[pos]))(move);
+                        board.generate_flips(pos, move);
                         
                         // board.do_move(move);
                         // optimized 5 empties
@@ -148,7 +148,7 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                     if (legal_movesBB & bit) {
                         legal_movesBB ^= bit;
                         
-                        ((board).*(board.generate_flips[pos]))(move);
+                        board.generate_flips(pos, move);
                         
                         board.do_move(move);
                         score = -EG_alphabeta_parity(threadID, board, -beta, -alpha, false);
@@ -180,7 +180,7 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                         if (movesBB & bit) {
                             movesBB ^= bit;
                             
-                            ((board).*(board.generate_flips[pos]))(move);
+                            board.generate_flips(pos, move);
                             
                             board.do_move(move);
                             score = -EG_alphabeta_parity(threadID, board, -beta, -alpha, false);
@@ -278,7 +278,7 @@ int RXEngine::EG_alphabeta_hash_mobility(const unsigned int threadID, RXBitBoard
         
         if(bestmove != NOMOVE) {
             
-            ((board).*(board.generate_flips[bestmove]))(*move);
+            board.generate_flips(bestmove, *move);
             
             // first move
             board.do_move(*move);
@@ -310,7 +310,7 @@ int RXEngine::EG_alphabeta_hash_mobility(const unsigned int threadID, RXBitBoard
                     if(legal_movesBB & bit) {
                         legal_movesBB ^= bit;
                         
-                        ((board).*(board.generate_flips[pos]))(*move);
+                        board.generate_flips(pos, *move);
                         
                         previous = previous->next = move++;
                     }
@@ -475,7 +475,7 @@ int RXEngine::EG_PVS_hash_mobility(const unsigned int threadID, RXBitBoard& boar
         
         if(bestmove != NOMOVE) {
             
-            ((board).*(board.generate_flips[bestmove]))(*move);
+            board.generate_flips(bestmove, *move);
             
             /* first move */
             board.do_move(*move);
@@ -510,7 +510,7 @@ int RXEngine::EG_PVS_hash_mobility(const unsigned int threadID, RXBitBoard& boar
                     if(legal_movesBB & bit) {
                         legal_movesBB ^= bit;
                         
-                        ((board).*(board.generate_flips[empties->position]))(*move);
+                        board.generate_flips(empties->position, *move);
                         previous = previous->next = move++;
                     }
                 } while(legal_movesBB);
@@ -703,7 +703,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
         //ENHANCED TRANSPOSITION CUTOFF
         if(bestmove != NOMOVE) {
             
-            ((board).*(board.generate_flips[bestmove]))(*move);
+            board.generate_flips(bestmove, *move);
             ++board.n_nodes;
             
             
@@ -758,7 +758,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
             if(legal_movesBB & bit){
                 legal_movesBB ^= bit;
                 
-                ((board).*(board.generate_flips[pos]))(*move);
+                board.generate_flips(pos, *move);
                 ++board.n_nodes;
                 
                 
@@ -1136,7 +1136,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
         //ENHANCED TRANSPOSITION CUTOFF
         if(bestmove != NOMOVE) {
             
-            ((board).*(board.generate_flips[bestmove]))(*move);
+            board.generate_flips(bestmove, *move);
             ++board.n_nodes;
             
 #ifdef USE_ENHANCED_STABLILITY
@@ -1177,7 +1177,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
             if(legal_movesBB & bit){
                 legal_movesBB ^= bit;
                 
-                ((board).*(board.generate_flips[pos]))(*move);
+                board.generate_flips(pos, *move);
                 ++board.n_nodes;
                 
 #ifdef USE_ENHANCED_STABLILITY
@@ -1241,7 +1241,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
             list = list->next;
             
             
-            ((sBoard).*(sBoard.update_patterns[list->position][board.player]))(*list);
+            sBoard.patterns_update(*list);
             
             sBoard.do_move(*list);
             bestscore = -EG_PVS_deep(threadID, sBoard, pv, selectivity , -upper, -lower, false);
@@ -1270,7 +1270,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                     
                      for(RXMove* iter = list->next; iter!=nullptr; iter = iter->next) {
                         
-                        ((sBoard).*(sBoard.update_patterns[iter->position][board.player]))(*iter);
+                         sBoard.patterns_update(*iter);
                         
                         sBoard.do_move(*iter);
                         
@@ -1306,8 +1306,8 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                                         if (legal_movesBB & bit){
                                             legal_movesBB ^= bit;
                                             
-                                            ((board).*(board.generate_flips[pos]))(lastMove);
-                                            ((sBoard).*(sBoard.update_patterns[pos][o]))(lastMove);
+                                            board.generate_flips(pos, lastMove);
+                                            sBoard.patterns_update(lastMove);
                                             ++board.n_nodes;
                                             
                                             int score_1 = -sBoard.get_score<WITHOUT_FM>(lastMove);
@@ -1366,7 +1366,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                     //empties<=EG_DEEP_TO_MEDIUM;
                     
                     for(RXMove* iter = list->next; iter!=nullptr; iter = iter->next) {
-                        ((sBoard).*(sBoard.update_patterns[iter->position][board.player]))(*iter);
+                        sBoard.patterns_update(*iter);
                         
                         ++board.n_nodes;
                         const unsigned long long p_discs = board.discs[p] | (iter->flipped | iter->square);
@@ -1379,7 +1379,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                 
                 
             } else {
-                ((sBoard).*(sBoard.update_patterns[list->next->position][board.player]))(*(list->next));
+                sBoard.patterns_update(*(list->next));
             }
             
             
@@ -1649,7 +1649,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
         //ENHANCED TRANSPOSITION CUTOFF
         if(bestmove != NOMOVE) {
             
-            ((board).*(board.generate_flips[bestmove]))(*move);
+            board.generate_flips(bestmove, *move);
             ++board.n_nodes;
             
             
@@ -1702,7 +1702,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
             if(legal_movesBB & bit) {
                 legal_movesBB ^= bit;
                 
-                ((board).*(board.generate_flips[pos]))(*move);
+                board.generate_flips(pos, *move);
                 ++board.n_nodes;
                 
                 
@@ -2491,8 +2491,8 @@ bool RXEngine::EG_check_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard,
         if(pos == PASS) {
             board.do_pass();
         } else {
-            ((board).*(board.generate_flips[pos]))(move);
-            ((sBoard).*(sBoard.update_patterns[pos][board.player]))(move);
+            board.generate_flips(pos, move);
+            sBoard.patterns_update(move);
             sBoard.do_move(move);
         }
         
@@ -2508,7 +2508,7 @@ bool RXEngine::EG_check_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard,
                 list->sort_bestmove(pv.front());
                 
                 for(RXMove* iter = list->next; iter != nullptr; iter = iter->next)
-                    ((sBoard).*(sBoard.update_patterns[iter->position][board.player]))(*iter);
+                    sBoard.patterns_update(*iter);
  
                 //version monogame [provoque bug affichage]
                 hTable->reset();
