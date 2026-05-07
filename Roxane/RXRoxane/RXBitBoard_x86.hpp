@@ -127,7 +127,7 @@ inline int RXBitBoard::get_stability(const unsigned long long discs_player, cons
 //    return moves & ~(P | O);
 //}
 
-#if defined(__AVX2__)
+#if ARCH == ARCH_X86_NEON
 
 inline unsigned long long RXBitBoard::get_legal_moves(const unsigned long long P, const unsigned long long O)
 {

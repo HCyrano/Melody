@@ -51,6 +51,9 @@ class alignas(32) RXBitBoard {
     
     static void init_hashcodeTable();
     static void edge_stability_init();
+    
+    typedef unsigned long long  (*type_do_flips)(const unsigned long long& discs_player, const unsigned long long& discs_opponent);
+
 
     // move functions
 #if ARCH == ARCH_ARM_NEON
@@ -68,11 +71,17 @@ class alignas(32) RXBitBoard {
     
 #undef func
         
+    static int count_flips_NEON(int pos, unsigned long long P);
     void generate_flips_NEON(const int pos, RXMove& move) const;
+    
+    static type_do_flips const do_flips_NEON[];
+
     
 #elif ARCH == ARCH_X86_AVX2
     
     void generate_flips_AVX2(const int pos, RXMove& move) const;
+    static int count_flips_AVX2(int pos, unsigned long long P);
+    static unsigned long long do_flips_AVX2(const int pos, const unsigned long long P, const unsigned long long O);
 
 #else
     
@@ -90,8 +99,10 @@ class alignas(32) RXBitBoard {
 #undef func
     
     typedef int (*type_count_flips)(const unsigned long long& discs_player);
+    static type_count_flips const count_flips_X86[];
 
     void generate_flips_X86(const int pos, RXMove& move) const;
+    static type_do_flips const do_flips_X86[];
 
     
 #endif
@@ -146,28 +157,16 @@ class alignas(32) RXBitBoard {
     bool isPassed();
     bool isEndGame();
         
-    typedef unsigned long long  (*type_do_flips)(const unsigned long long& discs_player, const unsigned long long& discs_opponent);
     
     
 #if ARCH == ARCH_ARM_NEON
     
-    static int count_flips_NEON(int pos, unsigned long long P);
-    static type_do_flips const do_flips_NEON[];
     
     static inline uint64x2_t dual_legal_moves(const unsigned long long p, const unsigned long long o);
     inline uint64x2_t dual_count_legal_moves() const;
     static inline uint64x2_t dual_count_legal_moves(const unsigned long long p, const unsigned long long o);
 
 #else
-    
-#if ARCH == ARCH_X86_GENERIC
-    static type_count_flips const count_flips_X86[];
-    static type_do_flips const do_flips_X86[];
-
-#else
-    static int count_flips_AVX2(int pos, unsigned long long P);
-    static unsigned long long do_flips_AVX2(const int pos, const unsigned long long P, const unsigned long long O);
-#endif
     
     
     static inline int count_legal_moves(const unsigned long long discs_player, const unsigned long long discs_opponent);
