@@ -81,7 +81,7 @@ int main (int argc, char * const argv[]) {
 		}
 	}
 
-    std::string version = "dev-2026-05-06 15h30";
+    std::string version = "build-2026-05-07 12h00";
     std::string vers_eval = RXEvaluation::get_version();
 
 	std::cout << "Version Melody " << version << std::endl;
