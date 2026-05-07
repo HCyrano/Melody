@@ -33,6 +33,8 @@
 		3771E9062EE9629900D78E2D /* IOStdProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3771E9032EE9629900D78E2D /* IOStdProtocol.cpp */; };
 		3771E9072EE9629900D78E2D /* StdInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3771E9052EE9629900D78E2D /* StdInput.cpp */; };
 		37A656D42F3F26E6009E0822 /* RXBitBoard_x86.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 37A656D32F3F26CD009E0822 /* RXBitBoard_x86.hpp */; };
+		37DCA1672FAB8B6600AC3503 /* RXBBCountFlips_AVX2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37DCA1662FAB8B6600AC3503 /* RXBBCountFlips_AVX2.cpp */; };
+		37DCA1692FAB9BA900AC3503 /* RXBBDoFlips_AVX2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37DCA1682FAB9BA900AC3503 /* RXBBDoFlips_AVX2.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -101,6 +103,8 @@
 		37A656D32F3F26CD009E0822 /* RXBitBoard_x86.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXBitBoard_x86.hpp; sourceTree = "<group>"; };
 		37A671752EE6E80200476E87 /* Melody */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Melody; sourceTree = BUILT_PRODUCTS_DIR; };
 		37BF368C2E268CDC0029C7F6 /* RXSetting.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXSetting.hpp; sourceTree = "<group>"; };
+		37DCA1662FAB8B6600AC3503 /* RXBBCountFlips_AVX2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBCountFlips_AVX2.cpp; sourceTree = "<group>"; };
+		37DCA1682FAB9BA900AC3503 /* RXBBDoFlips_AVX2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBDoFlips_AVX2.cpp; sourceTree = "<group>"; };
 		37FF9AF02F952E7E006338A1 /* COMPILATION.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = COMPILATION.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -177,8 +181,10 @@
 				37A656D22F3F24E4009E0822 /* RXBitBoard_NEON.hpp */,
 				372326F72D1FF69D002CFAF4 /* RXBitBoard.cpp */,
 				372326F02D1FF69D002CFAF4 /* RXBBDoFlips_X86.cpp */,
+				37DCA1682FAB9BA900AC3503 /* RXBBDoFlips_AVX2.cpp */,
 				374071FF2FAB48640095268D /* RXBBDoFlips_NEON.cpp */,
 				372326EE2D1FF69D002CFAF4 /* RXBBCountFlips_X86.cpp */,
+				37DCA1662FAB8B6600AC3503 /* RXBBCountFlips_AVX2.cpp */,
 				372326EF2D1FF69D002CFAF4 /* RXBBCountFlips_NEON.cpp */,
 				372326FC2D1FF69D002CFAF4 /* RXEvaluation.hpp */,
 				372326FD2D1FF69D002CFAF4 /* RXEvaluation.cpp */,
@@ -291,11 +297,13 @@
 				3771E9062EE9629900D78E2D /* IOStdProtocol.cpp in Sources */,
 				3771E9072EE9629900D78E2D /* StdInput.cpp in Sources */,
 				3723271D2D1FF69D002CFAF4 /* RXBBPatterns.cpp in Sources */,
+				37DCA1672FAB8B6600AC3503 /* RXBBCountFlips_AVX2.cpp in Sources */,
 				37A656D42F3F26E6009E0822 /* RXBitBoard_x86.hpp in Sources */,
 				3723271E2D1FF69D002CFAF4 /* RXBitBoard.cpp in Sources */,
 				3723271F2D1FF69D002CFAF4 /* RXEndGame.cpp in Sources */,
 				372327202D1FF69D002CFAF4 /* RXEngine.cpp in Sources */,
 				372327212D1FF69D002CFAF4 /* RXEvaluation.cpp in Sources */,
+				37DCA1692FAB9BA900AC3503 /* RXBBDoFlips_AVX2.cpp in Sources */,
 				372327222D1FF69D002CFAF4 /* RXHashShallow.cpp in Sources */,
 				372327232D1FF69D002CFAF4 /* RXHashTable.cpp in Sources */,
 				372327242D1FF69D002CFAF4 /* RXMidGame.cpp in Sources */,
@@ -393,7 +401,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CPLUSPLUSFLAGS = (
 					"-ffast-math",
 					"-fomit-frame-pointer",
@@ -486,7 +494,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CPLUSPLUSFLAGS = (
 					"-ffast-math",
 					"-fomit-frame-pointer",
@@ -568,7 +576,10 @@
 					"-fvectorize",
 					"-fslp-vectorize",
 				);
-				"OTHER_CPLUSPLUSFLAGS[arch=x86_64]" = "-mavx2";
+				"OTHER_CPLUSPLUSFLAGS[arch=x86_64]" = (
+					"-mavx2",
+					"-mbmi2",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

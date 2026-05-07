@@ -53,6 +53,8 @@ class alignas(32) RXBitBoard {
     static void edge_stability_init();
 
     // move functions
+#if ARCH == ARCH_ARM_NEON
+
 #define func(pos) static unsigned long long do_flips_##pos(const unsigned long long& discs_player, const unsigned long long& discs_opponent) \
 
     func(A1); func(B1); func(C1); func(D1); func(E1); func(F1); func(G1); func(H1);
@@ -66,12 +68,13 @@ class alignas(32) RXBitBoard {
     
 #undef func
         
-#if ARCH == ARCH_ARM_NEON
-        
     void generate_flips_NEON(const int pos, RXMove& move) const;
     
-#else
+#elif ARCH == ARCH_X86_AVX2
     
+    void generate_flips_AVX2(const int pos, RXMove& move) const;
+
+#else
     
 #define func(pos) static int count_flips_##pos(const unsigned long long& discs_player)\
 
@@ -157,8 +160,15 @@ class alignas(32) RXBitBoard {
 
 #else
     
+#if ARCH == ARCH_X86_GENERIC
     static type_count_flips const count_flips_X86[];
     static type_do_flips const do_flips_X86[];
+
+#else
+    static int count_flips_AVX2(int pos, unsigned long long P);
+    static unsigned long long do_flips_AVX2(const int pos, const unsigned long long P, const unsigned long long O);
+#endif
+    
     
     static inline int count_legal_moves(const unsigned long long discs_player, const unsigned long long discs_opponent);
     inline void dual_count_legal_moves(int& mob_P, int& mob_O) const;
@@ -398,6 +408,8 @@ __attribute__((always_inline))
 inline int RXBitBoard::count_flips(const int pos, const unsigned long long P) {
 #if ARCH == ARCH_ARM_NEON
     return count_flips_NEON(pos, P);
+#elif ARCH == ARCH_X86_AVX2
+    return count_flips_AVX2(pos, P);
 #else
     return count_flips_X86[pos](P);
 #endif
@@ -408,6 +420,8 @@ __attribute__((always_inline))
 inline void RXBitBoard::generate_flips(const int pos, RXMove& move) const {
 #if ARCH == ARCH_ARM_NEON
     generate_flips_NEON(pos, move);
+#elif ARCH == ARCH_X86_AVX2
+    return generate_flips_AVX2(pos, move);
 #else
     generate_flips_X86(pos, move);
 #endif
@@ -418,6 +432,8 @@ __attribute__((always_inline))
 inline unsigned long long RXBitBoard::do_flips(const int pos, unsigned long long P, unsigned long long O) {
 #if ARCH == ARCH_ARM_NEON
     return do_flips_NEON[pos](P, O);
+#elif ARCH == ARCH_X86_AVX2
+    return RXBitBoard::do_flips_AVX2(pos, P, O);
 #else
     return do_flips_X86[pos](P, O);
 #endif

@@ -5,6 +5,7 @@
 //  adapter by Causse Bruno on 15/08/2024.
 //  Copyleft © 2025 personnel.
 //
+
 #include "RXSetting.hpp"
 
 
@@ -12,6 +13,7 @@
 #if ARCH == ARCH_ARM_NEON
 
 #include <stdio.h>
+#include <bit> // std::rotl
 
 #include "RXBitBoard.hpp"
 #include "RXTools.hpp"
@@ -49,6 +51,63 @@ alignas(64) const unsigned long long FLIPPED_4_H[19] = {    // ...cbahg
     0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
     0x0808080808080808, 0x2828282828282828, 0x6868686868686868
 };
+
+
+
+// Strictly, (long long) >> 64 is undefined in C, but either 0 bit (no change)
+// or 64 bit (zero out) shift will lead valid result (i.e. flipped == 0).
+//#define outflank_right(O,maskr) (0x8000000000000000ULL >> __builtin_clzll(~(O) & (maskr)))
+
+[[nodiscard]] __attribute__((always_inline))
+static constexpr inline unsigned long long outflank_right(const unsigned long long O, const unsigned long long maskr) noexcept {
+    //Fixed version without undefined behavior (UB)
+    //const unsigned long long masked = ~O & maskr;
+    //return (0x8000000000000000ULL >> __builtin_clzll(masked | 1ULL)) & -(masked != 0ULL);
+
+    return 0x8000000000000000ULL >> __builtin_clzll(~O & maskr);
+}
+
+// in case continuous from MSB
+//#define outflank_right_H(O) (0x80000000u >> __builtin_clz(~(O)))
+
+[[nodiscard]] __attribute__((always_inline))
+static constexpr inline unsigned int outflank_right_H(const unsigned int O) noexcept {
+    //Fixed version without undefined behavior (UB)
+    //const unsigned int masked = ~O;
+    //return (0x80000000u >> __builtin_clz(masked | 1u)) & -(masked != 0u);
+    
+    return 0x80000000u >> __builtin_clz(~O);
+}
+
+
+//#define not_O_in_mask(mask,O)   vbicq_u64((mask), vdupq_n_u64(O))
+
+[[nodiscard]] __attribute__((always_inline))
+static constexpr inline uint64x2_t not_O_in_mask(const uint64x2_t mask, const unsigned long long O) noexcept {
+    return vbicq_u64(mask, vdupq_n_u64(O));
+}
+
+//rotl8
+//#define rotl8(static_cast<uint8_t>(x,y)  __builtin_rotateleft8((x),(y))
+//
+//__attribute__((always_inline))
+//static constexpr inline uint8_t rotl8(const uint8_t x, const uint8_t y) {
+//    // Le masque (y & 7) est une excellente optimisation pour les architectures 8-bit
+//    // ou pour aider l'optimiseur sur ARM/x86.
+//    return static_cast<uint8_t>((x << (y & 7)) | (x >> ((8 - y) & 7)));
+//}
+
+// C++20: optimal circular shift for 8-bit types
+//uint8_t result = std::rotl(static_cast<uint8_t>(P >> 48), 3);
+
+//Clang on Apple Silicon will compile this into a SUBS instruction followed by a CSEL (Conditional Select).
+//This is the 'Holy Grail' of ARM optimization: 2 cycles, 0 branches.
+//Set all bits below the sole outflank bit if outfrank != 0
+[[nodiscard]] __attribute__((always_inline))
+static constexpr inline unsigned long long OutflankToFlipmask(unsigned long long outflank) noexcept {
+    return outflank ? (outflank - 1) : 0;
+}
+
 
 
 

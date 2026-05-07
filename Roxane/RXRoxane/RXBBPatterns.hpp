@@ -20,6 +20,8 @@
 
 #if ARCH ==  ARCH_ARM_NEON
     #include <arm_neon.h>
+#elif ARCH == ARCH_X86_AVX2
+    #include <x86intrin.h>
 #endif
 
 
@@ -206,8 +208,8 @@ inline int acc_score(const int   stage,
     
 #if ARCH ==  ARCH_ARM_NEON
     
-    // ── Calcul SIMD des (46+2) 48 cp = (patt[i] ^ mask) - mask ────────────────
-    // patt[] est int[48], on charge en int32x4, on XOR+SUB vectoriellement
+    // ── Calcul SIMD des (50+2) 50 cp = (patt[i] ^ mask) - mask ────────────────
+    // patt[] est int[64], on charge en int32x4, on XOR+SUB vectoriellement
     
     const int32_t* pp = p;
     int32x4_t vmask4  = vdupq_n_s32(mask);
@@ -229,7 +231,7 @@ inline int acc_score(const int   stage,
     
     // pp+48 charge 4 ints mais seuls [48] et [49] sont utilisés — les 2 extras
     // sont lus mais jamais utilisés, inoffensif si patt[50..51] est accessible
-    // patt[50..51] sont du padding
+    // patt[50..63] sont du padding
     
     // Extraire les scalaires nécessaires
     // (le compilateur les garde en registre — pas d'aller-retour mémoire)
@@ -261,7 +263,54 @@ inline int acc_score(const int   stage,
     const int cp46 = vgetq_lane_s32(vcp44_47,  2), cp47 = vgetq_lane_s32(vcp44_47,  3);
     const int cp48 = vgetq_lane_s32(vcp48_51,  0), cp49 = vgetq_lane_s32(vcp48_51,  1);
     //    const int cp50 = vgetq_lane_s32(vcp48_51,  2), cp51 = vgetq_lane_s32(vcp48_51,  3); //padding
+
+#elif ARCH == ARCH_X86_AVX2
+
+    // ── Calcul AVX2 des 50 cp = (patt[i] ^ mask) - mask ──────────────────────
+    // AVX2 traite 8 int32 à la fois (256 bits / 32 bits)
     
+    const int32_t* pp = p;
+    __m256i vmask8 = _mm256_set1_epi32(mask);
+    
+    // 7 registres × 8 int32 = 56 valeurs (on n'utilise que 50)
+    __m256i vcp_0__7  = _mm256_sub_epi32(_mm256_xor_si256(_mm256_loadu_si256((__m256i*)(pp +  0)), vmask8), vmask8);
+    __m256i vcp_8_15  = _mm256_sub_epi32(_mm256_xor_si256(_mm256_loadu_si256((__m256i*)(pp +  8)), vmask8), vmask8);
+    __m256i vcp16_23  = _mm256_sub_epi32(_mm256_xor_si256(_mm256_loadu_si256((__m256i*)(pp + 16)), vmask8), vmask8);
+    __m256i vcp24_31  = _mm256_sub_epi32(_mm256_xor_si256(_mm256_loadu_si256((__m256i*)(pp + 24)), vmask8), vmask8);
+    __m256i vcp32_39  = _mm256_sub_epi32(_mm256_xor_si256(_mm256_loadu_si256((__m256i*)(pp + 32)), vmask8), vmask8);
+    __m256i vcp40_47  = _mm256_sub_epi32(_mm256_xor_si256(_mm256_loadu_si256((__m256i*)(pp + 40)), vmask8), vmask8);
+    __m256i vcp48_51  = _mm256_sub_epi32(_mm256_xor_si256(_mm256_loadu_si256((__m256i*)(pp + 48)), vmask8), vmask8);
+    // pp+48 charge 8 ints mais seuls [48] et [49] sont utilisés — padding requis jusqu'à [55]
+
+    // Extraire les scalaires (le compilateur les garde en registre)
+    const int cp0  = _mm256_extract_epi32(vcp_0__7, 0), cp1  = _mm256_extract_epi32(vcp_0__7, 1);
+    const int cp2  = _mm256_extract_epi32(vcp_0__7, 2), cp3  = _mm256_extract_epi32(vcp_0__7, 3);
+    const int cp4  = _mm256_extract_epi32(vcp_0__7, 4), cp5  = _mm256_extract_epi32(vcp_0__7, 5);
+    const int cp6  = _mm256_extract_epi32(vcp_0__7, 6), cp7  = _mm256_extract_epi32(vcp_0__7, 7);
+    const int cp8  = _mm256_extract_epi32(vcp_8_15, 0), cp9  = _mm256_extract_epi32(vcp_8_15, 1);
+    const int cp10 = _mm256_extract_epi32(vcp_8_15, 2), cp11 = _mm256_extract_epi32(vcp_8_15, 3);
+    const int cp12 = _mm256_extract_epi32(vcp_8_15, 4), cp13 = _mm256_extract_epi32(vcp_8_15, 5);
+
+    const int cpA = maskA ? _mm256_extract_epi32(vcp_8_15, 6) : _mm256_extract_epi32(vcp16_23, 2);
+    const int cpB = maskB ? _mm256_extract_epi32(vcp_8_15, 7) : _mm256_extract_epi32(vcp16_23, 3);
+    const int cpC = maskC ? _mm256_extract_epi32(vcp16_23, 0) : _mm256_extract_epi32(vcp16_23, 4);
+    const int cpD = maskD ? _mm256_extract_epi32(vcp16_23, 1) : _mm256_extract_epi32(vcp16_23, 5);
+
+    const int cp22 = _mm256_extract_epi32(vcp16_23, 6), cp23 = _mm256_extract_epi32(vcp16_23, 7);
+    const int cp24 = _mm256_extract_epi32(vcp24_31, 0), cp25 = _mm256_extract_epi32(vcp24_31, 1);
+    const int cp26 = _mm256_extract_epi32(vcp24_31, 2), cp27 = _mm256_extract_epi32(vcp24_31, 3);
+    const int cp28 = _mm256_extract_epi32(vcp24_31, 4), cp29 = _mm256_extract_epi32(vcp24_31, 5);
+    const int cp30 = _mm256_extract_epi32(vcp24_31, 6), cp31 = _mm256_extract_epi32(vcp24_31, 7);
+    const int cp32 = _mm256_extract_epi32(vcp32_39, 0), cp33 = _mm256_extract_epi32(vcp32_39, 1);
+    const int cp34 = _mm256_extract_epi32(vcp32_39, 2), cp35 = _mm256_extract_epi32(vcp32_39, 3);
+    const int cp36 = _mm256_extract_epi32(vcp32_39, 4), cp37 = _mm256_extract_epi32(vcp32_39, 5);
+    const int cp38 = _mm256_extract_epi32(vcp32_39, 6), cp39 = _mm256_extract_epi32(vcp32_39, 7);
+    const int cp40 = _mm256_extract_epi32(vcp40_47, 0), cp41 = _mm256_extract_epi32(vcp40_47, 1);
+    const int cp42 = _mm256_extract_epi32(vcp40_47, 2), cp43 = _mm256_extract_epi32(vcp40_47, 3);
+    const int cp44 = _mm256_extract_epi32(vcp40_47, 4), cp45 = _mm256_extract_epi32(vcp40_47, 5);
+    const int cp46 = _mm256_extract_epi32(vcp40_47, 6), cp47 = _mm256_extract_epi32(vcp40_47, 7);
+    const int cp48 = _mm256_extract_epi32(vcp48_51, 0), cp49 = _mm256_extract_epi32(vcp48_51, 1);
+
 #else
     auto cp = [mask, p](int i) __attribute__((always_inline)) -> int {
         return (p[i] ^ mask) - mask;
@@ -360,6 +409,28 @@ inline int acc_score(const int   stage,
                 sum_hi = vaddq_s16(sum_hi, vld1q_s16(v_ref.data + 8));
                 
             };
+            
+#elif ARCH == ARCH_X86_AVX2
+
+            // RANK=16 : sum_vx et sum_vx_sq en 2 registres __m256i (16 × int16)
+            // sum en int16 (bounds garantis par la conception des vecteurs latents)
+            // sumsq en int32 pour éviter l'overflow (50 acc × valeurs int16²)
+            
+            __m256i sum     = _mm256_setzero_si256();  // 16 × int16 : Σ x_i
+            __m256i sumsq_0 = _mm256_setzero_si256();  // 8  × int32 : -Σ x_i² lanes 0..7
+            __m256i sumsq_1 = _mm256_setzero_si256();  // 8  × int32 : -Σ x_i² lanes 8..15
+            
+            auto acc = [&](const Vec_short* __restrict V, int idx) __attribute__((always_inline)) {
+                const Vec_short& v_ref = V[idx];
+                
+                // sumsq -= x² (équivalent NEON version 2 : sumsq = -Σx²)
+                sumsq_0 = _mm256_sub_epi32(sumsq_0, _mm256_loadu_si256((__m256i*)(v_ref.squares    )));
+                sumsq_1 = _mm256_sub_epi32(sumsq_1, _mm256_loadu_si256((__m256i*)(v_ref.squares + 8)));
+                
+                // sum += x (int16 × 16)
+                sum     = _mm256_add_epi16(sum, _mm256_loadu_si256((__m256i*)v_ref.data));
+            };
+
             
 #else
             
@@ -460,6 +531,26 @@ inline int acc_score(const int   stage,
                                             vaddq_s32(vaddq_s32(res0, res1),
                                                       vaddq_s32(res2, res3))
                                             );
+
+#elif ARCH == ARCH_X86_AVX2
+            
+            // Étape 1 : sq via madd (évite cvtepi16 + mullo)
+            // sum est __m256i int16 → on travaille directement dessus
+            __m256i sq = _mm256_madd_epi16(sum, sum);
+            // sq contient 8×int32 : sq[i] = sum[2i]² + sum[2i+1]²
+
+            // Étape 2 : fusionner sumsq (sumsq_0 et sumsq_1 doivent être sur 8 lanes chacun)
+            __m256i sumsq = _mm256_add_epi32(sumsq_0, sumsq_1);
+
+            // Étape 3 : res = sq + sumsq
+            __m256i res = _mm256_add_epi32(sq, sumsq);
+
+            // Étape 4 : réduction (inchangée, déjà optimale sur Intel)
+            __m128i r = _mm_add_epi32(_mm256_castsi256_si128(res),
+                                        _mm256_extracti128_si256(res, 1));
+            r = _mm_add_epi32(r, _mm_shuffle_epi32(r, 0x4E));
+            r = _mm_add_epi32(r, _mm_shuffle_epi32(r, 0xB1));
+            int fm_interaction = _mm_cvtsi128_si32(r);
             
 #else
             int fm_interaction = 0;

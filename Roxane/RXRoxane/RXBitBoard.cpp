@@ -15,6 +15,7 @@
 #include <iomanip>
 
 
+
 const unsigned long long RXBitBoard::hashSquare[64][2] = {
     
     {0X5F4871C661CF2338ULL,  0X33FEA1852435F281ULL},    //H8
@@ -156,11 +157,6 @@ alignas(64) unsigned long long RXBitBoard::hashByte[2][8][256];
 
 
 unsigned char RXBitBoard::EDGE_STABILITY[256*256]; //unsigned char
-
-
-
-
-
 
 
 void RXBitBoard::init_hashcodeTable() {

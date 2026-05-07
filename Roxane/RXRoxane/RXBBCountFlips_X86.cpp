@@ -10,7 +10,7 @@
 
 #include "RXSetting.hpp"
 
-#if ARCH != ARCH_ARM_NEON
+#if ARCH == ARCH_X86_GENERIC
 
 #include "RXBitBoard.hpp"
 

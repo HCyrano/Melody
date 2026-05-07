@@ -5,6 +5,16 @@
 //  Created by Causse Bruno on 13/02/2026.
 //
 
+#include "RXSetting.hpp"
+
+#if ARCH == ARCH_X86_AVX2
+    #include <x86intrin.h>
+
+    // forward declaration - définie dans RXBBDoFlips_AVX2.cpp
+    __m128i mm_flip(const __m128i OP, int pos);
+
+#endif
+
 /*
  @brief count all legal moves
  
@@ -117,6 +127,39 @@ inline int RXBitBoard::get_stability(const unsigned long long discs_player, cons
 //    return moves & ~(P | O);
 //}
 
+#if defined(__AVX2__)
+
+inline unsigned long long RXBitBoard::get_legal_moves(const unsigned long long P, const unsigned long long O)
+{
+
+
+    __m256i PP = _mm256_set1_epi64x(P);
+    __m256i OO = _mm256_set1_epi64x(O);
+    
+    __m256i    MM, flip_l, flip_r, pre_l, pre_r;
+    __m128i    M;
+    const __m256i dir1 = _mm256_set_epi64x(7, 9, 8, 1);
+    const __m256i dir2 = _mm256_add_epi64(dir1, dir1);
+    const __m256i mask = _mm256_and_si256(OO, _mm256_set_epi64x(0x007E7E7E7E7E7E00, 0x007E7E7E7E7E7E00, 0x00FFFFFFFFFFFF00, 0x7E7E7E7E7E7E7E7E));
+    const __m128i occupied = _mm_or_si128(_mm256_castsi256_si128(PP), _mm256_castsi256_si128(OO));
+
+    flip_l = _mm256_and_si256(mask, _mm256_sllv_epi64(PP, dir1));
+    flip_r = _mm256_and_si256(mask, _mm256_srlv_epi64(PP, dir1));
+    flip_l = _mm256_or_si256(flip_l, _mm256_and_si256(mask, _mm256_sllv_epi64(flip_l, dir1)));
+    flip_r = _mm256_or_si256(flip_r, _mm256_and_si256(mask, _mm256_srlv_epi64(flip_r, dir1)));
+    pre_l = _mm256_and_si256(mask, _mm256_sllv_epi64(mask, dir1));
+    pre_r = _mm256_srlv_epi64(pre_l, dir1);
+    flip_l = _mm256_or_si256(flip_l, _mm256_and_si256(pre_l, _mm256_sllv_epi64(flip_l, dir2)));
+    flip_r = _mm256_or_si256(flip_r, _mm256_and_si256(pre_r, _mm256_srlv_epi64(flip_r, dir2)));
+    flip_l = _mm256_or_si256(flip_l, _mm256_and_si256(pre_l, _mm256_sllv_epi64(flip_l, dir2)));
+    flip_r = _mm256_or_si256(flip_r, _mm256_and_si256(pre_r, _mm256_srlv_epi64(flip_r, dir2)));
+    MM = _mm256_or_si256(_mm256_sllv_epi64(flip_l, dir1), _mm256_srlv_epi64(flip_r, dir1));
+
+    M = _mm_or_si128(_mm256_castsi256_si128(MM), _mm256_extracti128_si256(MM, 1));
+    return _mm_cvtsi128_si64(_mm_andnot_si128(occupied, _mm_or_si128(M, _mm_unpackhi_epi64(M, M))));    // mask with empties
+}
+
+#else
 
 inline unsigned long long RXBitBoard::get_legal_moves(const unsigned long long p_discs, const unsigned long long o_discs) {
     
@@ -231,6 +274,8 @@ inline unsigned long long RXBitBoard::get_legal_moves(const unsigned long long p
     return legals;
     
 }
+
+#endif
 
 
 inline void RXBitBoard::dual_count_legal_moves(int& mob_P, int& mob_O) const {

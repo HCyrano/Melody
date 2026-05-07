@@ -9,7 +9,7 @@
 #ifndef RXSETTING_HPP
 #define RXSETTING_HPP
 
-//#define RELEASE
+#define RELEASE
 
 #define ARCH_X86_GENERIC 0
 #define ARCH_X86_AVX2    1

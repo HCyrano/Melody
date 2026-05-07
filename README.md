@@ -51,10 +51,10 @@ This version of Melody is distributed as a Universal Binary, compatible with bot
 
 ARM Architecture: The code is optimized to make intensive use of the NEON (SIMD) extension, ensuring increased performance on compatible processors (Apple Silicon, Raspberry Pi, etc.).
 
-x86-64 Architecture: For now, this version is generic. It does not take advantage of specific SIMD instructions (such as AVX/AVX2 ...).
+x86-64 Architecture: This version now benefits from hardware optimizations via AVX/AVX2 instruction sets. Core compute-intensive functions have been rewritten using SIMD to maximize data throughput and minimize latency.
 
-💡 Community Call (SIMD Extensions)
-As I currently lack the hardware needed to test and implement AVX/AVX2 extensions on x86-64, I am open to feedback and contributions:
+💡 Community Feedback & Testing.
+While the essential functions are now implemented, feedback regarding performance across different micro-architectures (Intel/AMD) is highly appreciated to help refine our profiling.
 
 If you would like to help implement these optimizations.
 
