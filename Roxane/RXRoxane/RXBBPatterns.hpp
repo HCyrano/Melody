@@ -603,8 +603,8 @@ inline int RXBBPatterns::get_score() const
 
 #else
     
-    int mob_P = 0;
-    int mob_O = 0;
+    unsigned int mob_P = 0;
+    unsigned int mob_O = 0;
     board.dual_count_legal_moves(mob_P, mob_O);
     
 #endif
@@ -649,8 +649,8 @@ inline int RXBBPatterns::get_score(const RXMove& move) const
 
 #else
     
-    int mob_P = 0;
-    int mob_O = 0;
+    unsigned int mob_P = 0;
+    unsigned int mob_O = 0;
     RXBitBoard::dual_count_legal_moves(discs_player, discs_opponent, mob_P, mob_O);
 
 #endif

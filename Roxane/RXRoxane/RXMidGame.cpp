@@ -1038,6 +1038,7 @@ int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, 
                 
                 RXMove *previous = list;
                 
+                // Bypassing JWC order improves throughput; but that move sequence may vary for equal scores.
                 RXSquareList* empties = board.empties_list;
                 do {
                     empties = empties->next;

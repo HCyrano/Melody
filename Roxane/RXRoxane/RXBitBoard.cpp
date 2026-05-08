@@ -7,13 +7,27 @@
  *
  */
 
+#include <cstddef> // define nullptr
+#include <iomanip>
+
+#include "RXSetting.hpp"
 #include "RXBitBoard.hpp"
 #include "RXEvaluation.hpp"
 #include "RXHashTable.hpp"
 
-#include <cstddef> // define nullptr
-#include <iomanip>
 
+#if ARCH == ARCH_X86_AVX2
+    #include "RXBBDoFlips_AVX2.cpp"
+    #include "RXBBCountFlips_AVX2.cpp"
+#elif ARCH == ARCH_ARM_NEON
+    #include "RXBBDoFlips_NEON.cpp"
+    #include "RXBBCountFlips_NEON.cpp"
+#elif ARCH == ARCH_X86_GENERIC
+    #include "RXBBDoFlips_X86.cpp"
+    #include "RXBBCountFlips_X86.cpp"
+#else
+    #error "Unsupported architecture — define ARCH in RXSetting.hpp"
+#endif
 
 
 const unsigned long long RXBitBoard::hashSquare[64][2] = {

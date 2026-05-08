@@ -169,9 +169,9 @@ class alignas(32) RXBitBoard {
 #else
     
     
-    static inline int count_legal_moves(const unsigned long long discs_player, const unsigned long long discs_opponent);
-    inline void dual_count_legal_moves(int& mob_P, int& mob_O) const;
-    static inline void dual_count_legal_moves(const unsigned long long discs_player, const unsigned long long discs_opponent, int& mob_P, int& mob_O);
+    static inline unsigned int count_legal_moves(const unsigned long long discs_player, const unsigned long long discs_opponent);
+    inline void dual_count_legal_moves(unsigned int& mob_P, unsigned int& mob_O) const;
+    static inline void dual_count_legal_moves(const unsigned long long discs_player, const unsigned long long discs_opponent, unsigned int& mob_P, unsigned int& mob_O);
 
     
 #endif
@@ -242,9 +242,11 @@ class alignas(32) RXBitBoard {
 };
 
 #if ARCH == ARCH_ARM_NEON
- #include "RXBitBoard_NEON.hpp"
+    #include "RXBitBoard_NEON.hpp"
+#elif ARCH == ARCH_X86_GENERIC || ARCH == ARCH_X86_AVX2
+    #include "RXBitBoard_x86.hpp"
 #else
- #include "RXBitBoard_x86.hpp"
+    #error "Unsupported architecture — define ARCH in RXSetting.hpp"
 #endif
 
 

@@ -631,6 +631,7 @@ int RXEngine::PVS_last_ply(const unsigned int threadID, RXBBPatterns& sBoard, in
                                 
                                 RXMove& lastMove = threads[threadID]._move[board.n_empty][1];
 
+                                // Skipping JWC order is faster, but JWC tie-breaking for equal scores is lost.
                                 do {
                                     const int pos = __builtin_ctzll(legal_movesBB);  // index du bit le plus bas
                                     legal_movesBB &= legal_movesBB - 1;              // retire ce bit

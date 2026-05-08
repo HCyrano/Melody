@@ -22,7 +22,7 @@
  @param O                    a bitboard representing opponent
  @return count all legal moves
  */
-inline int RXBitBoard::count_legal_moves(const unsigned long long p_discs, const unsigned long long o_discs) {
+inline unsigned int RXBitBoard::count_legal_moves(const unsigned long long p_discs, const unsigned long long o_discs) {
     
     const unsigned long long legals = get_legal_moves(p_discs, o_discs);
     return __builtin_popcountll(legals);
@@ -278,11 +278,11 @@ inline unsigned long long RXBitBoard::get_legal_moves(const unsigned long long p
 #endif
 
 
-inline void RXBitBoard::dual_count_legal_moves(int& mob_P, int& mob_O) const {
+inline void RXBitBoard::dual_count_legal_moves(unsigned int& mob_P, unsigned int& mob_O) const {
     return RXBitBoard::dual_count_legal_moves(discs[player], discs[player^1], mob_P, mob_O);
 }
 
-inline void RXBitBoard::dual_count_legal_moves(const unsigned long long discs_player, const unsigned long long discs_opponent, int& mob_P, int& mob_O) {
+inline void RXBitBoard::dual_count_legal_moves(const unsigned long long discs_player, const unsigned long long discs_opponent, unsigned int& mob_P, unsigned int& mob_O) {
     mob_P = RXBitBoard::count_legal_moves(discs_player, discs_opponent);
     mob_O = RXBitBoard::count_legal_moves(discs_opponent, discs_player);
 }
