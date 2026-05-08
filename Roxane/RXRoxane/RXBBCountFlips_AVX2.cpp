@@ -1,30 +1,18 @@
-/**
- 
- *  RXBBCountFlips_AVX2.cpp
- *  Roxane
+/*
+ * Copyright (C) 2026  Bruno Causse
  *
- *  Copyleft 2026 personnel.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * A function is provided to count the number of fipped disc of the last move.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * The basic principle is to read into an array a precomputed result. Doing
- * this is easy for a single line ; as we can use arrays of the form:
- *  - COUNT_FLIP[square where we play][8-bits disc pattern].
- * The problem is thus to convert any line of a 64-bits disc pattern into an
- * 8-bits disc pattern. A fast way to do this is to select the right line,
- * with a bit-mask, to gather the masked-bits into a continuous set by the
- * BMI2 PEXT instruction.
- * Once we get our 8-bits disc patterns, we directly get the number of
- * flipped discs from the precomputed array, and add them from each flipping
- * lines.
- * For optimization purpose, the value returned is twice the number of flipped
- * disc, to facilitate the computation of disc difference.
- *
- * @date 1998 - 2023
- * @author Richard Delorme
- * @author Toshihiko Okuhara
- * @version 4.5
- *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "RXSetting.hpp"

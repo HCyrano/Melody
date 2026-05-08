@@ -72,4 +72,5 @@ This ensures the binary will be perfectly optimized for your distribution (Ubunt
 
 
 ## ⚖️ License
-Distributed under the MIT License.
+This project is licensed under the **GPLv3** - see the [LICENSE](LICENSE) file for details.
+(Previously licensed under MIT).
