@@ -1,15 +1,18 @@
 /*
- *  StdInput.cpp
+ * Copyright (C) 2026  Bruno Causse Stéphane Nicolet
  *
- *  Input/output routines for the engine and the IOStd protocol.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  Created by Bruno Causse on 10/12/25. (base Stephane Nicolet)
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  Most of the code below in taken from Robert Hyatt's chess
- *  program "crafty" (thanks). See http://www.craftychess.com/
- *  for the crafty source code.
- *
- *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef STANDARD_INPUT_H
