@@ -17,7 +17,8 @@
 
 /*
  *  RXBitBoard*
- *  many ideas from Toshihiko Okuhara [http://www.amy.hi-ho.ne.jp/okuhara/edaxopt.htm]
+ *  many ideas from Richard Delorme [https://github.com/abulmo/edax-reversi]
+ *  and Toshihiko Okuhara [http://www.amy.hi-ho.ne.jp/okuhara/edaxopt.htm]
  *
  */
 
