@@ -1,675 +1,675 @@
-# Licence publique générale GNU
+# GNU GENERAL PUBLIC LICENSE
 
-Version 3, 29 juin 2007
+Version 3, 29 June 2007
 
 Copyright (C) 2007 Free Software Foundation, Inc.
 <https://fsf.org/>
 
-Chacun est autorisé à copier et à distribuer des copies conformes de ce document.
-Le document de licence, mais sa modification est interdite.
+Everyone is permitted to copy and distribute verbatim copies of this
+license document, but changing it is not allowed.
 
-## Préambule
+## Preamble
 
-La licence publique générale GNU est une licence libre et copyleft pour
-logiciels et autres types d'œuvres.
+The GNU General Public License is a free, copyleft license for
+software and other kinds of works.
 
-Les licences de la plupart des logiciels et autres ouvrages pratiques sont conçues
-vous priver de votre liberté de partager et de modifier vos œuvres. À l'inverse,
-La licence publique générale GNU vise à garantir votre liberté.
-partager et modifier toutes les versions d'un programme — pour s'assurer qu'il reste
-Des logiciels libres pour tous leurs utilisateurs. Nous, la Fondation pour le logiciel libre, utilisons
-La licence publique générale GNU (GPL) s'applique à la plupart de nos logiciels.
-également à toute autre œuvre diffusée de cette manière par ses auteurs. Vous pouvez postuler
-Ajoutez-le aussi à vos programmes.
+The licenses for most software and other practical works are designed
+to take away your freedom to share and change the works. By contrast,
+the GNU General Public License is intended to guarantee your freedom
+to share and change all versions of a program--to make sure it remains
+free software for all its users. We, the Free Software Foundation, use
+the GNU General Public License for most of our software; it applies
+also to any other work released this way by its authors. You can apply
+it to your programs, too.
 
-Quand on parle de logiciel libre, on parle de liberté, pas de logiciel libre.
-prix. Nos licences générales de vente au public sont conçues pour vous garantir que vous
-ont la liberté de distribuer des copies de logiciels libres (et de les facturer)
-(si vous le souhaitez), que vous recevez le code source ou que vous pouvez l'obtenir si vous
-Je le souhaite, c'est-à-dire que vous pouvez modifier le logiciel ou en utiliser des parties dans de nouveaux projets.
-des programmes gratuits, et que vous savez que vous pouvez faire ces choses.
+When we speak of free software, we are referring to freedom, not
+price. Our General Public Licenses are designed to make sure that you
+have the freedom to distribute copies of free software (and charge for
+them if you wish), that you receive source code or can get it if you
+want it, that you can change the software or use pieces of it in new
+free programs, and that you know you can do these things.
 
-Pour protéger vos droits, nous devons empêcher les autres de vous les refuser.
-ces droits ou vous demander d'y renoncer. Par conséquent, vous
-Vous avez certaines responsabilités si vous distribuez des copies du
-logiciel, ou si vous le modifiez : responsabilités de respecter la liberté
-des autres.
+To protect your rights, we need to prevent others from denying you
+these rights or asking you to surrender the rights. Therefore, you
+have certain responsibilities if you distribute copies of the
+software, or if you modify it: responsibilities to respect the freedom
+of others.
 
-Par exemple, si vous distribuez des copies d'un tel programme, que
-Que ce soit gratuitement ou moyennant des frais, vous devez transmettre aux bénéficiaires la même chose
-Les libertés que vous avez reçues. Vous devez vous assurer qu'eux aussi les reçoivent.
-ou peuvent obtenir le code source. Et vous devez leur présenter ces conditions afin qu'ils
-connaître leurs droits.
+For example, if you distribute copies of such a program, whether
+gratis or for a fee, you must pass on to the recipients the same
+freedoms that you received. You must make sure that they, too, receive
+or can get the source code. And you must show them these terms so they
+know their rights.
 
-Les développeurs qui utilisent la licence GNU GPL protègent vos droits en deux étapes :
-(1) revendiquer des droits d'auteur sur le logiciel, et (2) vous proposer cette licence
-vous autorisant légalement à le copier, le distribuer et/ou le modifier.
+Developers that use the GNU GPL protect your rights with two steps:
+(1) assert copyright on the software, and (2) offer you this License
+giving you legal permission to copy, distribute and/or modify it.
 
-Pour la protection des développeurs et des auteurs, la GPL explique clairement
-qu'il n'existe aucune garantie pour ce logiciel gratuit. Pour les utilisateurs et
-Par respect pour les auteurs, la GPL exige que les versions modifiées soient marquées comme telles.
-modifiés, afin que leurs problèmes ne soient pas attribués à tort à
-auteurs des versions précédentes.
+For the developers' and authors' protection, the GPL clearly explains
+that there is no warranty for this free software. For both users' and
+authors' sake, the GPL requires that modified versions be marked as
+changed, so that their problems will not be attributed erroneously to
+authors of previous versions.
 
-Certains appareils sont conçus pour empêcher les utilisateurs d'installer ou d'exécuter des programmes.
-des versions modifiées du logiciel qu'elles contiennent, bien que le
-Le fabricant peut le faire. Ceci est fondamentalement incompatible avec le
-l'objectif de protéger la liberté des utilisateurs de modifier le logiciel.
-Ce type d'abus systématique se manifeste dans le domaine des produits destinés à
-que les individus l'utilisent, ce qui est précisément là où c'est le plus inacceptable.
-Par conséquent, nous avons conçu cette version de la GPL pour interdire
-pratique pour ces produits. Si de tels problèmes surviennent de manière substantielle dans
-d'autres domaines, nous sommes prêts à étendre cette disposition à ceux-ci
-les domaines dans les futures versions de la GPL, selon les besoins pour protéger les
-liberté des utilisateurs.
+Some devices are designed to deny users access to install or run
+modified versions of the software inside them, although the
+manufacturer can do so. This is fundamentally incompatible with the
+aim of protecting users' freedom to change the software. The
+systematic pattern of such abuse occurs in the area of products for
+individuals to use, which is precisely where it is most unacceptable.
+Therefore, we have designed this version of the GPL to prohibit the
+practice for those products. If such problems arise substantially in
+other domains, we stand ready to extend this provision to those
+domains in future versions of the GPL, as needed to protect the
+freedom of users.
 
-Enfin, chaque programme est constamment menacé par les brevets logiciels.
-Les États ne devraient pas permettre que les brevets restreignent le développement et l'utilisation de
-des logiciels sur des ordinateurs à usage général, mais dans ceux qui le font, nous souhaitons
-pour éviter le danger particulier que représentent les brevets appliqués à un programme libre
-pourrait la rendre de fait propriétaire. Pour éviter cela, la GPL
-garantit que les brevets ne peuvent pas être utilisés pour rendre le programme non libre.
+Finally, every program is threatened constantly by software patents.
+States should not allow patents to restrict development and use of
+software on general-purpose computers, but in those that do, we wish
+to avoid the special danger that patents applied to a free program
+could make it effectively proprietary. To prevent this, the GPL
+assures that patents cannot be used to render the program non-free.
 
-Les conditions précises de copie, de distribution et
-modification à suivre.
+The precise terms and conditions for copying, distribution and
+modification follow.
 
-## TERMES ET CONDITIONS
+## TERMS AND CONDITIONS
 
-### 0. Définitions.
+### 0. Definitions.
 
-« Cette licence » fait référence à la version 3 de la licence publique générale GNU.
+"This License" refers to version 3 of the GNU General Public License.
 
-Le terme « droit d'auteur » désigne également les lois similaires au droit d'auteur qui s'appliquent à d'autres types de lois.
-des travaux, tels que les masques de semi-conducteurs.
+"Copyright" also means copyright-like laws that apply to other kinds
+of works, such as semiconductor masks.
 
-« Le Programme » désigne toute œuvre protégée par le droit d'auteur et concédée sous licence en vertu des présentes
-Licence. Chaque titulaire de licence est désigné par « vous ». « Titulaires de licence » et
-Les « destinataires » peuvent être des personnes physiques ou morales.
+"The Program" refers to any copyrightable work licensed under this
+License. Each licensee is addressed as "you". "Licensees" and
+"recipients" may be individuals or organizations.
 
-« Modifier » une œuvre signifie en copier ou en adapter tout ou partie.
-d'une manière nécessitant une autorisation de droit d'auteur, autre que la réalisation de
-une copie conforme. L'œuvre résultante est appelée « version modifiée » de
-l'œuvre antérieure ou une œuvre « basée sur » l'œuvre antérieure.
+To "modify" a work means to copy from or adapt all or part of the work
+in a fashion requiring copyright permission, other than the making of
+an exact copy. The resulting work is called a "modified version" of
+the earlier work or a work "based on" the earlier work.
 
-Une « œuvre visée » désigne soit le programme non modifié, soit une œuvre basée sur
-au programme.
+A "covered work" means either the unmodified Program or a work based
+on the Program.
 
-« Diffuser » une œuvre signifie en faire tout ce qui, sans
-l'autorisation vous rendrait directement ou indirectement responsable de
-violation du droit d'auteur applicable, sauf si elle est exécutée sur un
-ordinateur ou modification d'une copie privée. La propagation comprend la copie,
-distribution (avec ou sans modification), mettant à disposition de la
-public, et dans certains pays d'autres activités également.
+To "propagate" a work means to do anything with it that, without
+permission, would make you directly or secondarily liable for
+infringement under applicable copyright law, except executing it on a
+computer or modifying a private copy. Propagation includes copying,
+distribution (with or without modification), making available to the
+public, and in some countries other activities as well.
 
-« Transmettre » une œuvre signifie toute forme de diffusion permettant à d'autres de la recevoir.
-des parties à faire ou à recevoir des copies. Simple interaction avec un utilisateur
-via un réseau informatique, sans transfert de copie, n'est pas
-transport.
+To "convey" a work means any kind of propagation that enables other
+parties to make or receive copies. Mere interaction with a user
+through a computer network, with no transfer of a copy, is not
+conveying.
 
-Une interface utilisateur interactive affiche les « mentions légales appropriées » à
-dans la mesure où il comprend un emplacement pratique et bien visible
-une fonctionnalité qui (1) affiche un avis de droit d'auteur approprié, et (2)
-indique à l'utilisateur qu'il n'y a pas de garantie pour les travaux (sauf pour le
-dans la mesure où des garanties sont fournies), que les titulaires de licence peuvent transmettre
-travailler sous cette licence et comment consulter une copie de cette licence. Si
-l'interface présente une liste de commandes ou d'options utilisateur, telles que :
-Dans le menu, un élément important de la liste répond à ce critère.
+An interactive user interface displays "Appropriate Legal Notices" to
+the extent that it includes a convenient and prominently visible
+feature that (1) displays an appropriate copyright notice, and (2)
+tells the user that there is no warranty for the work (except to the
+extent that warranties are provided), that licensees may convey the
+work under this License, and how to view a copy of this License. If
+the interface presents a list of user commands or options, such as a
+menu, a prominent item in the list meets this criterion.
 
-### 1. Code source.
+### 1. Source Code.
 
-Le « code source » d'une œuvre désigne la forme privilégiée de cette œuvre pour
-y apporter des modifications. « Code objet » désigne toute forme de code non source.
-une œuvre.
+The "source code" for a work means the preferred form of the work for
+making modifications to it. "Object code" means any non-source form of
+a work.
 
-Une « interface standard » désigne une interface qui est soit officielle
-norme définie par un organisme de normalisation reconnu, ou, dans le cas de
-interfaces spécifiées pour un langage de programmation particulier, un langage qui
-est largement utilisé par les développeurs travaillant dans ce langage.
+A "Standard Interface" means an interface that either is an official
+standard defined by a recognized standards body, or, in the case of
+interfaces specified for a particular programming language, one that
+is widely used among developers working in that language.
 
-Les « bibliothèques système » d'une œuvre exécutable comprennent tout ce qui est inclus dans le système.
-que l'œuvre dans son ensemble, c'est-à-dire (a) qui est incluse dans la forme normale de
-emballage d'un composant majeur, mais qui ne fait pas partie de ce composant majeur
-Composant, et (b) sert uniquement à permettre l'utilisation de l'œuvre avec ce
-Composant majeur, ou pour implémenter une interface standard pour laquelle un
-L'implémentation est disponible publiquement sous forme de code source.
-Dans ce contexte, « composant majeur » désigne un composant essentiel majeur.
-(noyau, système de fenêtrage, etc.) du système d'exploitation spécifique
-(le cas échéant) sur lequel le programme s'exécute, ou un compilateur utilisé pour
-produire le travail, ou un interpréteur de code objet utilisé pour l'exécuter.
+The "System Libraries" of an executable work include anything, other
+than the work as a whole, that (a) is included in the normal form of
+packaging a Major Component, but which is not part of that Major
+Component, and (b) serves only to enable use of the work with that
+Major Component, or to implement a Standard Interface for which an
+implementation is available to the public in source code form. A
+"Major Component", in this context, means a major essential component
+(kernel, window system, and so on) of the specific operating system
+(if any) on which the executable work runs, or a compiler used to
+produce the work, or an object code interpreter used to run it.
 
-La « source correspondante » d'une œuvre sous forme de code objet désigne tout
-le code source nécessaire pour générer, installer et (pour un exécutable)
-exécuter le code objet et modifier le travail, y compris les scripts,
-contrôler ces activités. Toutefois, cela n'inclut pas les travaux
-Bibliothèques système, ou outils à usage général ou outils gratuits généralement disponibles
-programmes qui sont utilisés sans modification pour réaliser ces activités, mais
-qui ne font pas partie de l'œuvre. Par exemple, la source correspondante
-comprend des fichiers de définition d'interface associés aux fichiers sources pour
-le travail, et le code source des bibliothèques partagées et dynamiques
-sous-programmes liés que le travail est spécifiquement conçu pour exiger,
-par exemple par une communication de données étroite ou un flux de contrôle entre ces
-sous-programmes et autres parties du travail.
+The "Corresponding Source" for a work in object code form means all
+the source code needed to generate, install, and (for an executable
+work) run the object code and to modify the work, including scripts to
+control those activities. However, it does not include the work's
+System Libraries, or general-purpose tools or generally available free
+programs which are used unmodified in performing those activities but
+which are not part of the work. For example, Corresponding Source
+includes interface definition files associated with source files for
+the work, and the source code for shared libraries and dynamically
+linked subprograms that the work is specifically designed to require,
+such as by intimate data communication or control flow between those
+subprograms and other parts of the work.
 
-La source correspondante n'a pas besoin d'inclure quoi que ce soit que les utilisateurs puissent
-se régénérer automatiquement à partir d'autres parties de la source correspondante.
+The Corresponding Source need not include anything that users can
+regenerate automatically from other parts of the Corresponding Source.
 
-La source correspondante pour une œuvre sous forme de code source est la même
-travail.
+The Corresponding Source for a work in source code form is that same
+work.
 
-### 2. Autorisations de base.
+### 2. Basic Permissions.
 
-Tous les droits accordés en vertu de la présente licence sont accordés pour la durée de
-Le droit d'auteur sur le Programme est irrévocable, sous réserve des conditions énoncées.
-Les conditions sont remplies. Cette licence affirme explicitement votre liberté illimitée
-autorisation d'exécuter le programme non modifié. Le résultat de l'exécution d'un
-L'œuvre couverte n'est couverte par cette licence que si le résultat, compte tenu de son
-Le contenu constitue une œuvre protégée. Cette licence reconnaît votre
-droits d'utilisation équitable ou autres droits équivalents, tels que prévus par la loi sur le droit d'auteur.
+All rights granted under this License are granted for the term of
+copyright on the Program, and are irrevocable provided the stated
+conditions are met. This License explicitly affirms your unlimited
+permission to run the unmodified Program. The output from running a
+covered work is covered by this License only if the output, given its
+content, constitutes a covered work. This License acknowledges your
+rights of fair use or other equivalent, as provided by copyright law.
 
-Vous pouvez créer, exploiter et diffuser des œuvres protégées que vous ne transmettez pas,
-sans conditions, tant que votre permis reste par ailleurs en vigueur.
-Vous pouvez céder des œuvres protégées à des tiers dans le seul but de les faire connaître.
-ils effectuent des modifications exclusivement pour vous, ou vous fournissent
-des installations permettant l'exploitation de ces travaux, à condition que vous respectiez les
-les termes de cette licence dans la transmission de tout matériel pour lequel vous ne
-contrôle les droits d'auteur. Ceux qui créent ou exploitent les œuvres protégées pour
-vous devez le faire exclusivement en votre nom, sous votre direction et
-contrôle, à des conditions qui leur interdisent de faire des copies de votre
-du matériel protégé par le droit d'auteur en dehors de leur relation avec vous.
+You may make, run and propagate covered works that you do not convey,
+without conditions so long as your license otherwise remains in force.
+You may convey covered works to others for the sole purpose of having
+them make modifications exclusively for you, or provide you with
+facilities for running those works, provided that you comply with the
+terms of this License in conveying all material for which you do not
+control copyright. Those thus making or running the covered works for
+you must do so exclusively on your behalf, under your direction and
+control, on terms that prohibit them from making any copies of your
+copyrighted material outside their relationship with you.
 
-Le transport dans d'autres circonstances n'est autorisé que dans les conditions prévues par la loi.
-Les conditions sont énoncées ci-dessous. La sous-licence est interdite ; l’article 10 prévoit
-C'est inutile.
+Conveying under any other circumstances is permitted solely under the
+conditions stated below. Sublicensing is not allowed; section 10 makes
+it unnecessary.
 
-### 3. Protection des droits légaux des utilisateurs contre la loi anti-contournement.
+### 3. Protecting Users' Legal Rights From Anti-Circumvention Law.
 
-Aucun travail couvert ne sera considéré comme faisant partie d'une technologie efficace
-mesure en vertu de toute loi applicable remplissant les obligations prévues à l'article
-11 du traité de l'OMPI sur le droit d'auteur adopté le 20 décembre 1996, ou
-des lois similaires interdisant ou limitant le contournement de telles
-mesures.
+No covered work shall be deemed part of an effective technological
+measure under any applicable law fulfilling obligations under article
+11 of the WIPO copyright treaty adopted on 20 December 1996, or
+similar laws prohibiting or restricting circumvention of such
+measures.
 
-Lorsque vous transmettez une œuvre protégée, vous renoncez à tout pouvoir légal de l'interdire
-contournement des mesures technologiques dans la mesure où
-Le contournement est effectué en exerçant les droits conférés par la présente Licence avec
-respect de l'œuvre protégée, et vous renoncez à toute intention de limiter
-l'exploitation ou la modification de l'ouvrage comme moyen de faire respecter, contre
-les utilisateurs de l'œuvre, vos droits légaux ou ceux de tiers de vous interdire
-contournement des mesures technologiques.
+When you convey a covered work, you waive any legal power to forbid
+circumvention of technological measures to the extent such
+circumvention is effected by exercising rights under this License with
+respect to the covered work, and you disclaim any intention to limit
+operation or modification of the work as a means of enforcing, against
+the work's users, your or third parties' legal rights to forbid
+circumvention of technological measures.
 
-### 4. Transmission de copies conformes.
+### 4. Conveying Verbatim Copies.
 
-Vous pouvez transmettre des copies conformes du code source du programme lorsque vous
-vous pouvez le recevoir, quel que soit le support, à condition de le signaler de manière visible et
-apposer sur chaque exemplaire une mention de droit d'auteur appropriée ;
-conserver intacts tous les avis indiquant que cette licence et toute
-Les termes non permissifs ajoutés conformément à l'article 7 s'appliquent au code ;
-conserver intacts tous les avis d'absence de garantie ; et fournir tous les
-Les destinataires recevront un exemplaire de cette licence avec le programme.
+You may convey verbatim copies of the Program's source code as you
+receive it, in any medium, provided that you conspicuously and
+appropriately publish on each copy an appropriate copyright notice;
+keep intact all notices stating that this License and any
+non-permissive terms added in accord with section 7 apply to the code;
+keep intact all notices of the absence of any warranty; and give all
+recipients a copy of this License along with the Program.
 
-Vous pouvez fixer le prix de chaque exemplaire distribué, ou même ne pas le distribuer du tout.
-et vous pouvez proposer une assistance ou une garantie moyennant des frais.
+You may charge any price or no price for each copy that you convey,
+and you may offer support or warranty protection for a fee.
 
-### 5. Transmission des versions modifiées du code source.
+### 5. Conveying Modified Source Versions.
 
-Vous pouvez transmettre une œuvre basée sur le Programme, ou sur les modifications apportées à celui-ci.
-le produire à partir du programme, sous la forme de code source sous le
-les conditions de l'article 4, à condition que vous remplissiez également toutes ces conditions.
+You may convey a work based on the Program, or the modifications to
+produce it from the Program, in the form of source code under the
+terms of section 4, provided that you also meet all of these
 conditions:
 
-a) L'œuvre doit comporter des mentions bien visibles indiquant que vous l'avez modifiée.
-    et en indiquant une date pertinente.
-b) L'œuvre doit comporter des panneaux bien visibles indiquant qu'elle est
-    publié sous cette licence et toutes conditions ajoutées sous
-    Article 7. Cette exigence modifie l'exigence de l'article 4.
-    « conserver intacts tous les avis ».
-- c) Vous devez concéder sous licence l'œuvre complète, dans son intégralité, conformément à la présente
-    Licence accordée à toute personne qui entre en possession d'une copie.
-    La licence s'appliquera donc, ainsi que toute section 7 applicable.
-    des conditions supplémentaires, à l'ensemble de l'œuvre et à toutes ses parties,
-    peu importe leur conditionnement. Cette licence n'accorde aucun droit.
-    l'autorisation de concéder l'œuvre sous licence d'une autre manière, mais elle ne l'autorise pas
-    invalidez cette autorisation si vous l'avez reçue séparément.
-d) Si l'œuvre comporte des interfaces utilisateur interactives, chacune doit afficher
-    Mentions légales appropriées ; toutefois, si le programme comporte des éléments interactifs
-    les interfaces qui n'affichent pas les mentions légales appropriées, votre
-    Le travail n'a pas besoin de les y contraindre.
+-   a) The work must carry prominent notices stating that you modified
+    it, and giving a relevant date.
+-   b) The work must carry prominent notices stating that it is
+    released under this License and any conditions added under
+    section 7. This requirement modifies the requirement in section 4
+    to "keep intact all notices".
+-   c) You must license the entire work, as a whole, under this
+    License to anyone who comes into possession of a copy. This
+    License will therefore apply, along with any applicable section 7
+    additional terms, to the whole of the work, and all its parts,
+    regardless of how they are packaged. This License gives no
+    permission to license the work in any other way, but it does not
+    invalidate such permission if you have separately received it.
+-   d) If the work has interactive user interfaces, each must display
+    Appropriate Legal Notices; however, if the Program has interactive
+    interfaces that do not display Appropriate Legal Notices, your
+    work need not make them do so.
 
-Une compilation d'une œuvre couverte avec d'autres œuvres séparées et indépendantes
-œuvres qui ne sont pas par nature des extensions de l'œuvre couverte,
-et qui ne sont pas combinés avec lui de manière à former un programme plus vaste,
-dans ou sur un volume d'un support de stockage ou de distribution, est appelé un
-« agrégat » si la compilation et le droit d’auteur qui en résulte ne sont pas
-utilisé pour limiter l'accès ou les droits légaux des utilisateurs de la compilation
-au-delà de ce que les œuvres individuelles permettent. Inclusion d'une œuvre couverte
-L'ensemble de ces éléments n'entraîne pas l'application de la présente licence aux autres parties.
-parties de l'agrégat.
+A compilation of a covered work with other separate and independent
+works, which are not by their nature extensions of the covered work,
+and which are not combined with it such as to form a larger program,
+in or on a volume of a storage or distribution medium, is called an
+"aggregate" if the compilation and its resulting copyright are not
+used to limit the access or legal rights of the compilation's users
+beyond what the individual works permit. Inclusion of a covered work
+in an aggregate does not cause this License to apply to the other
+parts of the aggregate.
 
-### 6. Transmission de formes non sources.
+### 6. Conveying Non-Source Forms.
 
-Vous pouvez transmettre une œuvre protégée sous forme de code objet conformément aux termes de
-sections 4 et 5, à condition que vous transmettiez également le code lisible par machine
-Source correspondante aux termes de cette licence, dans l'une de ces
-façons :
+You may convey a covered work in object code form under the terms of
+sections 4 and 5, provided that you also convey the machine-readable
+Corresponding Source under the terms of this License, in one of these
+ways:
 
-- a) Transmettre le code objet dans un produit physique ou l'incorporer dans celui-ci
-    (y compris un support de distribution physique), accompagné du
-    Source correspondante fixée sur un support physique durable
-    couramment utilisé pour l'échange de logiciels.
-- b) Transmettre le code objet dans un produit physique ou l'incorporer dans celui-ci
-    (y compris un support de distribution physique), accompagné d'un
-    offre écrite, valable pendant au moins trois ans et valable pendant une durée déterminée
-    à condition que vous proposiez des pièces détachées ou un service client pour ce produit
-    modèle, pour donner à quiconque possède le code objet soit (1) un
-    copie du code source correspondant pour tous les logiciels du
-    produit couvert par cette licence, sur un support physique durable
-    support habituellement utilisé pour l'échange de logiciels, pour un prix non
-    plus que le coût raisonnable de l'exécution physique de ceci
-    transmission de la source, ou (2) accès à la copie du document correspondant
-    Source provenant d'un serveur réseau, sans frais.
-- c) Transmettre des copies individuelles du code objet avec une copie du
-    offre écrite de fournir la source correspondante.
-    L'alternative n'est autorisée qu'occasionnellement et à titre non commercial, et
-    seulement si vous avez reçu le code objet avec une telle offre, conformément
-    avec le paragraphe 6b.
-d) Transmettre le code objet en offrant un accès depuis une interface désignée
-    lieu (gratuitement ou moyennant paiement), et offrir un accès équivalent au
-    Source correspondante de la même manière, au même endroit, sans
-    Des frais supplémentaires s'appliquent. Il n'est pas nécessaire d'exiger que les destinataires copient le document.
-    Code source correspondant ainsi que le code objet. Si l'endroit où
-    La copie du code objet se fait sur un serveur réseau, la source correspondante
-    peut se trouver sur un serveur différent (exploité par vous ou par un tiers)
-    qui prend en charge des installations de photocopie équivalentes, à condition que vous mainteniez
-    des instructions claires à côté du code objet indiquant où trouver le
-    Source correspondante. Quel que soit le serveur hébergeant le
-    Source correspondante, vous restez tenu de vous assurer qu'elle est
-    disponible aussi longtemps que nécessaire pour satisfaire à ces exigences.
-- e) Transmettre le code objet en utilisant une transmission pair à pair,
-    à condition d'informer vos collègues de l'emplacement du code objet et
-    Les sources correspondantes de l'œuvre sont proposées au grand public.
-    public gratuit en vertu du paragraphe 6d.
+-   a) Convey the object code in, or embodied in, a physical product
+    (including a physical distribution medium), accompanied by the
+    Corresponding Source fixed on a durable physical medium
+    customarily used for software interchange.
+-   b) Convey the object code in, or embodied in, a physical product
+    (including a physical distribution medium), accompanied by a
+    written offer, valid for at least three years and valid for as
+    long as you offer spare parts or customer support for that product
+    model, to give anyone who possesses the object code either (1) a
+    copy of the Corresponding Source for all the software in the
+    product that is covered by this License, on a durable physical
+    medium customarily used for software interchange, for a price no
+    more than your reasonable cost of physically performing this
+    conveying of source, or (2) access to copy the Corresponding
+    Source from a network server at no charge.
+-   c) Convey individual copies of the object code with a copy of the
+    written offer to provide the Corresponding Source. This
+    alternative is allowed only occasionally and noncommercially, and
+    only if you received the object code with such an offer, in accord
+    with subsection 6b.
+-   d) Convey the object code by offering access from a designated
+    place (gratis or for a charge), and offer equivalent access to the
+    Corresponding Source in the same way through the same place at no
+    further charge. You need not require recipients to copy the
+    Corresponding Source along with the object code. If the place to
+    copy the object code is a network server, the Corresponding Source
+    may be on a different server (operated by you or a third party)
+    that supports equivalent copying facilities, provided you maintain
+    clear directions next to the object code saying where to find the
+    Corresponding Source. Regardless of what server hosts the
+    Corresponding Source, you remain obligated to ensure that it is
+    available for as long as needed to satisfy these requirements.
+-   e) Convey the object code using peer-to-peer transmission,
+    provided you inform other peers where the object code and
+    Corresponding Source of the work are being offered to the general
+    public at no charge under subsection 6d.
 
-Une portion séparable du code objet, dont le code source est exclu.
-à partir de la source correspondante en tant que bibliothèque système, n'a pas besoin d'être
-inclus dans la transmission du travail du code objet.
+A separable portion of the object code, whose source code is excluded
+from the Corresponding Source as a System Library, need not be
+included in conveying the object code work.
 
-Un « produit utilisateur » est soit (1) un « produit de consommation », c’est-à-dire n’importe quel
-biens meubles corporels normalement utilisés à des fins personnelles,
-à des fins familiales ou domestiques, ou (2) tout objet conçu ou vendu pour
-incorporation dans un logement. Pour déterminer si un produit est un
-En cas de litige relatif à un produit de consommation, la décision sera rendue en faveur de
-couverture. Pour un produit particulier reçu par un utilisateur particulier,
-« Normalement utilisé » fait référence à un usage typique ou courant de cette catégorie de
-produit, quel que soit le statut de l'utilisateur concerné ou la manière dont
-dans lequel l'utilisateur particulier utilise réellement, s'attend à ou est censé
-utiliser le produit. Un produit est un produit de consommation, quel que soit son usage.
-que le produit ait une activité commerciale, industrielle ou autre importante
-les utilisations non destinées aux consommateurs, sauf si ces utilisations représentent la seule utilisation significative
-mode d'utilisation du produit.
+A "User Product" is either (1) a "consumer product", which means any
+tangible personal property which is normally used for personal,
+family, or household purposes, or (2) anything designed or sold for
+incorporation into a dwelling. In determining whether a product is a
+consumer product, doubtful cases shall be resolved in favor of
+coverage. For a particular product received by a particular user,
+"normally used" refers to a typical or common use of that class of
+product, regardless of the status of the particular user or of the way
+in which the particular user actually uses, or expects or is expected
+to use, the product. A product is a consumer product regardless of
+whether the product has substantial commercial, industrial or
+non-consumer uses, unless such uses represent the only significant
+mode of use of the product.
 
-« Informations d’installation » pour un produit utilisateur désigne toute méthode,
-procédures, clés d'autorisation ou autres informations requises pour
-installer et exécuter des versions modifiées d'une œuvre couverte dans cet utilisateur
-Produit issu d'une version modifiée de sa source correspondante.
-Les informations doivent suffire à garantir le fonctionnement continu de
-Le code objet modifié n'est en aucun cas empêché ou perturbé.
-uniquement parce qu'une modification a été apportée.
+"Installation Information" for a User Product means any methods,
+procedures, authorization keys, or other information required to
+install and execute modified versions of a covered work in that User
+Product from a modified version of its Corresponding Source. The
+information must suffice to ensure that the continued functioning of
+the modified object code is in no case prevented or interfered with
+solely because modification has been made.
 
-Si vous transmettez un travail de code objet en vertu de cette section dans, ou avec, ou
-spécifiquement destiné à être utilisé dans un produit utilisateur, et la transmission s'effectue comme
-partie d'une transaction dans laquelle le droit de possession et d'utilisation de
-Le produit utilisateur est transféré au destinataire à perpétuité ou pour une durée déterminée.
-à terme fixe (quelle que soit la qualification de l'opération), le
-La source correspondante communiquée en vertu du présent article doit être accompagnée
-par les informations d'installation. Mais cette exigence ne s'applique pas
-si ni vous ni aucun tiers ne conservez la possibilité d'installer
-code objet modifié sur le produit utilisateur (par exemple, le travail a
-(a été installé dans la ROM).
+If you convey an object code work under this section in, or with, or
+specifically for use in, a User Product, and the conveying occurs as
+part of a transaction in which the right of possession and use of the
+User Product is transferred to the recipient in perpetuity or for a
+fixed term (regardless of how the transaction is characterized), the
+Corresponding Source conveyed under this section must be accompanied
+by the Installation Information. But this requirement does not apply
+if neither you nor any third party retains the ability to install
+modified object code on the User Product (for example, the work has
+been installed in ROM).
 
-L'obligation de fournir des informations sur l'installation n'inclut pas une
-obligation de continuer à fournir un service d'assistance, une garantie ou
-mises à jour pour une œuvre qui a été modifiée ou installée par le
-destinataire, ou pour le Produit Utilisateur dans lequel il a été modifié ou
-installé. L'accès à un réseau peut être refusé lorsque la modification
-elle-même affecte matériellement et négativement le fonctionnement du réseau
-ou enfreint les règles et protocoles de communication au sein du
-réseau.
+The requirement to provide Installation Information does not include a
+requirement to continue to provide support service, warranty, or
+updates for a work that has been modified or installed by the
+recipient, or for the User Product in which it has been modified or
+installed. Access to a network may be denied when the modification
+itself materially and adversely affects the operation of the network
+or violates the rules and protocols for communication across the
+network.
 
-Source correspondante communiquée et informations d'installation fournies,
-conformément à cette section, les documents doivent être présentés dans un format public.
-documenté (et avec une implémentation disponible au public dans
-sous forme de code source), et ne doit nécessiter aucun mot de passe ou clé spéciale pour
-déballer, lire ou copier.
+Corresponding Source conveyed, and Installation Information provided,
+in accord with this section must be in a format that is publicly
+documented (and with an implementation available to the public in
+source code form), and must require no special password or key for
+unpacking, reading or copying.
 
-### 7. Conditions supplémentaires.
+### 7. Additional Terms.
 
-Les « autorisations supplémentaires » sont des termes qui complètent les termes du présent document.
-Licence accordée en dérogeant à une ou plusieurs de ses conditions.
-Des autorisations supplémentaires applicables à l'ensemble du programme seront
-être traitées comme si elles étaient incluses dans la présente Licence, dans la mesure où
-qu'elles sont valides en vertu du droit applicable. Si des autorisations supplémentaires
-ne s'appliquent qu'à une partie du Programme, cette partie pouvant être utilisée séparément
-sous ces autorisations, mais l'ensemble du Programme reste régi par
-cette licence sans tenir compte des autorisations supplémentaires.
+"Additional permissions" are terms that supplement the terms of this
+License by making exceptions from one or more of its conditions.
+Additional permissions that are applicable to the entire Program shall
+be treated as though they were included in this License, to the extent
+that they are valid under applicable law. If additional permissions
+apply only to part of the Program, that part may be used separately
+under those permissions, but the entire Program remains governed by
+this License without regard to the additional permissions.
 
-Lorsque vous transmettez une copie d'une œuvre protégée, vous pouvez, à votre discrétion :
-supprimer toute autorisation supplémentaire de cette copie, ou de toute partie de celle-ci
-il. (Des autorisations supplémentaires peuvent être rédigées pour exiger leurs propres
-(Suppression dans certains cas lorsque vous modifiez l'œuvre.) Vous pouvez placer
-autorisations supplémentaires sur le contenu que vous avez ajouté à une œuvre couverte,
-pour lequel vous disposez ou pouvez accorder l'autorisation de droit d'auteur appropriée.
+When you convey a copy of a covered work, you may at your option
+remove any additional permissions from that copy, or from any part of
+it. (Additional permissions may be written to require their own
+removal in certain cases when you modify the work.) You may place
+additional permissions on material, added by you to a covered work,
+for which you have or can give appropriate copyright permission.
 
-Nonobstant toute autre disposition de la présente Licence, pour le matériel que vous
-Vous pouvez, si les détenteurs des droits d'auteur vous y autorisent, ajouter du contenu à une œuvre protégée.
-de ce matériel) complètent les termes de cette licence par des termes :
+Notwithstanding any other provision of this License, for material you
+add to a covered work, you may (if authorized by the copyright holders
+of that material) supplement the terms of this License with terms:
 
-- a) Exclure la garantie ou limiter la responsabilité différemment de
-    termes des articles 15 et 16 de la présente licence; ou
-- b) Exiger la conservation de certains avis juridiques raisonnables ou
-    attributions d'auteur dans ce matériel ou dans les mentions légales appropriées
-    Avis affichés par les œuvres qui le contiennent; ou
-- c) Interdire toute fausse déclaration concernant l'origine de ce matériel,
-    ou exigeant que les versions modifiées de ce matériel soient marquées dans
-    des moyens raisonnables différents de la version originale ; ou
-d) Limiter l'utilisation à des fins publicitaires des noms des concédants de licence
-    ou les auteurs du matériel; ou
-e) Refuser d'accorder des droits en vertu du droit des marques pour l'utilisation de certains
-    noms commerciaux, marques de commerce ou marques de service; ou
-- f) Exiger l'indemnisation des concédants de licence et des auteurs de ce
-    matériel transmis par quiconque (ou versions modifiées)
-    de celle-ci) avec des prises en charge contractuelles de responsabilité envers le destinataire,
-    pour toute responsabilité découlant directement de ces hypothèses contractuelles
-    imposer à ces concédants de licence et auteurs.
+-   a) Disclaiming warranty or limiting liability differently from the
+    terms of sections 15 and 16 of this License; or
+-   b) Requiring preservation of specified reasonable legal notices or
+    author attributions in that material or in the Appropriate Legal
+    Notices displayed by works containing it; or
+-   c) Prohibiting misrepresentation of the origin of that material,
+    or requiring that modified versions of such material be marked in
+    reasonable ways as different from the original version; or
+-   d) Limiting the use for publicity purposes of names of licensors
+    or authors of the material; or
+-   e) Declining to grant rights under trademark law for use of some
+    trade names, trademarks, or service marks; or
+-   f) Requiring indemnification of licensors and authors of that
+    material by anyone who conveys the material (or modified versions
+    of it) with contractual assumptions of liability to the recipient,
+    for any liability that these contractual assumptions directly
+    impose on those licensors and authors.
 
-Toutes les autres conditions supplémentaires non permissives sont considérées comme des « conditions supplémentaires »
-restrictions » au sens de l'article 10. Si le Programme comme vous
-reçu, ou toute partie de celui-ci, contient un avis indiquant qu'il est
-régie par la présente licence ainsi que par une condition supplémentaire
-restriction, vous pouvez supprimer cette clause. Si un document de licence contient
-une restriction supplémentaire, mais autorise la re-licence ou la cession en vertu de cette
-Licence, vous pouvez ajouter à une œuvre couverte du matériel régi par les conditions
-de ce document de licence, à condition que la restriction supplémentaire
-ne pas survivre à une telle relicence ou cession.
+All other non-permissive additional terms are considered "further
+restrictions" within the meaning of section 10. If the Program as you
+received it, or any part of it, contains a notice stating that it is
+governed by this License along with a term that is a further
+restriction, you may remove that term. If a license document contains
+a further restriction but permits relicensing or conveying under this
+License, you may add to a covered work material governed by the terms
+of that license document, provided that the further restriction does
+not survive such relicensing or conveying.
 
-Si vous ajoutez des termes à une œuvre couverte conformément à cette section, vous
-doit insérer, dans les fichiers sources concernés, une déclaration de
-des conditions supplémentaires qui s'appliquent à ces fichiers, ou un avis indiquant
-où trouver les conditions applicables.
+If you add terms to a covered work in accord with this section, you
+must place, in the relevant source files, a statement of the
+additional terms that apply to those files, or a notice indicating
+where to find the applicable terms.
 
-Des conditions supplémentaires, permissives ou non permissives, peuvent être mentionnées dans le
-sous la forme d'une licence écrite séparée, ou énoncée comme exceptions ;
-Les exigences ci-dessus s'appliquent dans les deux cas.
+Additional terms, permissive or non-permissive, may be stated in the
+form of a separately written license, or stated as exceptions; the
+above requirements apply either way.
 
-### 8. Résiliation.
+### 8. Termination.
 
-Vous ne pouvez pas propager ou modifier une œuvre protégée, sauf autorisation expresse.
-fourni en vertu de la présente licence. Toute tentative de propagation ou autre
-Toute modification est nulle et entraînera la résiliation automatique de vos droits en vertu de
-la présente Licence (y compris toute licence de brevet accordée en vertu de la troisième
-paragraphe de la section 11).
+You may not propagate or modify a covered work except as expressly
+provided under this License. Any attempt otherwise to propagate or
+modify it is void, and will automatically terminate your rights under
+this License (including any patent licenses granted under the third
+paragraph of section 11).
 
-Toutefois, si vous cessez toute violation de cette licence, alors votre licence
-la réintégration d'un titulaire de droits d'auteur particulier (a) à titre provisoire,
-à moins que et jusqu'à ce que le titulaire du droit d'auteur le fasse explicitement et définitivement
-résilie votre licence, et (b) définitivement, si le titulaire des droits d'auteur
-omet de vous informer de la violation par des moyens raisonnables avant
-60 jours après l'arrêt.
+However, if you cease all violation of this License, then your license
+from a particular copyright holder is reinstated (a) provisionally,
+unless and until the copyright holder explicitly and finally
+terminates your license, and (b) permanently, if the copyright holder
+fails to notify you of the violation by some reasonable means prior to
+60 days after the cessation.
 
-De plus, votre licence d'un titulaire de droits d'auteur particulier est
-rétablis définitivement si le titulaire des droits d'auteur vous en informe
-violation par des moyens raisonnables, c'est la première fois que vous avez
-a reçu une notification de violation de cette licence (pour toute œuvre) de la part de ce
-titulaire des droits d'auteur, et vous remédiez à la violation dans les 30 jours suivant
-votre réception de l'avis.
+Moreover, your license from a particular copyright holder is
+reinstated permanently if the copyright holder notifies you of the
+violation by some reasonable means, this is the first time you have
+received notice of violation of this License (for any work) from that
+copyright holder, and you cure the violation prior to 30 days after
+your receipt of the notice.
 
-La résiliation de vos droits en vertu de la présente section n'entraîne pas la résiliation du
-licences de parties qui ont reçu de vous des copies ou des droits en vertu de
-cette licence. Si vos droits ont été résiliés et non définitivement.
-Une fois réintégré, vous ne pourrez pas obtenir de nouvelles licences pour le même poste.
-matériel visé à l'article 10.
+Termination of your rights under this section does not terminate the
+licenses of parties who have received copies or rights from you under
+this License. If your rights have been terminated and not permanently
+reinstated, you do not qualify to receive new licenses for the same
+material under section 10.
 
-### 9. L'acceptation n'est pas requise pour obtenir des copies.
+### 9. Acceptance Not Required for Having Copies.
 
-Vous n'êtes pas tenu d'accepter cette licence pour recevoir ou exécuter
-une copie du Programme. Diffusion accessoire d'une œuvre protégée
-survenant uniquement en conséquence de l'utilisation de la transmission pair à pair
-Recevoir un exemplaire ne nécessite pas non plus d'acceptation. Cependant,
-Rien d'autre que cette licence ne vous autorise à propager ou
-modifier une œuvre protégée constitue une violation du droit d'auteur.
-n'acceptez pas cette licence. Par conséquent, en modifiant ou en propageant un
-En effectuant des travaux couverts par cette licence, vous indiquez votre acceptation de celle-ci.
+You are not required to accept this License in order to receive or run
+a copy of the Program. Ancillary propagation of a covered work
+occurring solely as a consequence of using peer-to-peer transmission
+to receive a copy likewise does not require acceptance. However,
+nothing other than this License grants you permission to propagate or
+modify any covered work. These actions infringe copyright if you do
+not accept this License. Therefore, by modifying or propagating a
+covered work, you indicate your acceptance of this License to do so.
 
-### 10. Octroi automatique de licences aux destinataires en aval.
+### 10. Automatic Licensing of Downstream Recipients.
 
-Chaque fois que vous transmettez une œuvre protégée, le destinataire est automatiquement mis à jour.
-reçoit une licence des concédants de licence d'origine, pour exécuter, modifier et
-Vous n'êtes pas responsable de la diffusion de cette œuvre, sous réserve de la présente licence.
-pour faire respecter la présente licence par des tiers.
+Each time you convey a covered work, the recipient automatically
+receives a license from the original licensors, to run, modify and
+propagate that work, subject to this License. You are not responsible
+for enforcing compliance by third parties with this License.
 
-Une « transaction d'entité » est une transaction transférant le contrôle d'une entité.
-une organisation, ou la quasi-totalité des actifs d'une organisation, ou la subdivision d'une organisation
-organisation, ou fusion d'organisations. Si la propagation d'une couverture
-Le travail résulte d'une transaction entre entités, chaque partie à cette transaction
-transaction qui reçoit une copie de l'œuvre reçoit également tout
-licences sur l'œuvre que le prédécesseur en droit de la partie détenait ou pouvait
-donner en vertu du paragraphe précédent, plus un droit de possession de
-Source correspondante de l'œuvre du prédécesseur concerné, le cas échéant
-Le prédécesseur le possède ou peut l'obtenir en faisant des efforts raisonnables.
+An "entity transaction" is a transaction transferring control of an
+organization, or substantially all assets of one, or subdividing an
+organization, or merging organizations. If propagation of a covered
+work results from an entity transaction, each party to that
+transaction who receives a copy of the work also receives whatever
+licenses to the work the party's predecessor in interest had or could
+give under the previous paragraph, plus a right to possession of the
+Corresponding Source of the work from the predecessor in interest, if
+the predecessor has it or can get it with reasonable efforts.
 
-Vous ne pouvez imposer aucune restriction supplémentaire à l'exercice du
-droits accordés ou confirmés en vertu de la présente licence. Par exemple, vous pouvez
-ne pas imposer de droits de licence, de redevances ou autres frais pour l'exercice de
-Vous bénéficiez des droits accordés par la présente licence et vous ne pouvez pas engager de poursuites judiciaires.
-(y compris une demande reconventionnelle ou une demande incidente dans le cadre d'une action en justice) alléguant que
-Toute revendication de brevet est enfreinte par la fabrication, l'utilisation, la vente ou la mise en vente de produits dérivés.
-la vente ou l'importation du Programme ou de toute partie de celui-ci.
+You may not impose any further restrictions on the exercise of the
+rights granted or affirmed under this License. For example, you may
+not impose a license fee, royalty, or other charge for exercise of
+rights granted under this License, and you may not initiate litigation
+(including a cross-claim or counterclaim in a lawsuit) alleging that
+any patent claim is infringed by making, using, selling, offering for
+sale, or importing the Program or any portion of it.
 
-### 11. Brevets.
+### 11. Patents.
 
-Un « contributeur » est un titulaire de droits d'auteur qui autorise l'utilisation en vertu de ce texte.
-Licence du Programme ou d'une œuvre sur laquelle le Programme est basé.
-L'œuvre ainsi concédée sous licence est appelée « version du contributeur ».
+A "contributor" is a copyright holder who authorizes use under this
+License of the Program or a work on which the Program is based. The
+work thus licensed is called the contributor's "contributor version".
 
-Les « revendications de brevet essentielles » d'un contributeur sont toutes les revendications de brevet dont il est propriétaire.
-ou contrôlés par le contributeur, qu'ils soient déjà acquis ou
-acquis ultérieurement, qui serait enfreint d'une manière ou d'une autre, permis
-par cette Licence, de fabriquer, d'utiliser ou de vendre sa version de contributeur,
-mais n'incluez pas les réclamations qui ne seraient enfreintes que dans le cadre d'une
-conséquence de modifications ultérieures de la version du contributeur. Pour
-Aux fins de la présente définition, le terme « contrôle » inclut le droit d'accorder
-accorder des sous-licences de brevets d'une manière conforme aux exigences de
-cette licence.
+A contributor's "essential patent claims" are all patent claims owned
+or controlled by the contributor, whether already acquired or
+hereafter acquired, that would be infringed by some manner, permitted
+by this License, of making, using, or selling its contributor version,
+but do not include claims that would be infringed only as a
+consequence of further modification of the contributor version. For
+purposes of this definition, "control" includes the right to grant
+patent sublicenses in a manner consistent with the requirements of
+this License.
 
-Chaque contributeur vous accorde une licence non exclusive, mondiale et sans redevances.
-licence de brevet en vertu des revendications essentielles du brevet du contributeur, à
-fabriquer, utiliser, vendre, proposer à la vente, importer et exploiter, modifier et
-diffuser le contenu de sa version contributrice.
+Each contributor grants you a non-exclusive, worldwide, royalty-free
+patent license under the contributor's essential patent claims, to
+make, use, sell, offer for sale, import and otherwise run, modify and
+propagate the contents of its contributor version.
 
-Dans les trois paragraphes suivants, une « licence de brevet » désigne toute licence expresse
-accord ou engagement, quelle que soit sa dénomination, de ne pas faire valoir un brevet
-(comme une autorisation expresse d'exploiter un brevet ou un engagement de ne pas
-intenter une action en contrefaçon de brevet). « Accorder » une telle licence de brevet à un
-une partie signifie conclure un tel accord ou engagement de ne pas faire appliquer un
-brevet contre la partie.
+In the following three paragraphs, a "patent license" is any express
+agreement or commitment, however denominated, not to enforce a patent
+(such as an express permission to practice a patent or covenant not to
+sue for patent infringement). To "grant" such a patent license to a
+party means to make such an agreement or commitment not to enforce a
+patent against the party.
 
-Si vous transmettez une œuvre protégée en vous appuyant sciemment sur une licence de brevet,
-et la source correspondante de l'œuvre n'est accessible à personne
-copier, gratuitement et conformément aux termes de cette licence, par le biais d'un
-serveur réseau accessible au public ou tout autre moyen facilement accessible,
-alors vous devez soit (1) faire en sorte que la source correspondante soit ainsi
-disponible, ou (2) s'arranger pour se priver du bénéfice de
-(3) obtenir une licence de brevet pour cette œuvre particulière, ou (4) s'arranger, de manière
-conformément aux exigences de la présente licence, étendre le brevet
-licence aux destinataires en aval. « Se fier sciemment » signifie que vous avez
-connaissance réelle que, sans la licence de brevet, votre transmission du
-travaux couverts dans un pays, ou l'utilisation par votre destinataire des travaux couverts
-dans un pays, enfreindrait un ou plusieurs brevets identifiables dans ce
-pays que vous avez des raisons de croire valides.
+If you convey a covered work, knowingly relying on a patent license,
+and the Corresponding Source of the work is not available for anyone
+to copy, free of charge and under the terms of this License, through a
+publicly available network server or other readily accessible means,
+then you must either (1) cause the Corresponding Source to be so
+available, or (2) arrange to deprive yourself of the benefit of the
+patent license for this particular work, or (3) arrange, in a manner
+consistent with the requirements of this License, to extend the patent
+license to downstream recipients. "Knowingly relying" means you have
+actual knowledge that, but for the patent license, your conveying the
+covered work in a country, or your recipient's use of the covered work
+in a country, would infringe one or more identifiable patents in that
+country that you have reason to believe are valid.
 
-Si, en vertu ou en lien avec une transaction unique ou
-arrangement, vous transmettez, ou propagez en obtenant la transmission d'un
-travaux couverts et accorder une licence de brevet à certaines parties
-recevoir l'œuvre protégée les autorisant à l'utiliser, à la diffuser, à la modifier
-ou transmettre une copie spécifique de l'œuvre protégée, alors la licence de brevet
-Votre subvention est automatiquement étendue à tous les bénéficiaires couverts.
-œuvre et œuvres qui en découlent.
+If, pursuant to or in connection with a single transaction or
+arrangement, you convey, or propagate by procuring conveyance of, a
+covered work, and grant a patent license to some of the parties
+receiving the covered work authorizing them to use, propagate, modify
+or convey a specific copy of the covered work, then the patent license
+you grant is automatically extended to all recipients of the covered
+work and works based on it.
 
-Une licence de brevet est « discriminatoire » si elle n'inclut pas dans le
-L'étendue de sa couverture, interdit l'exercice de, ou est conditionnée par
-le non-exercice d'un ou plusieurs des droits qui sont spécifiquement
-concédé en vertu de cette licence. Vous ne pouvez pas diffuser une œuvre protégée si vous
-sont partie à un accord avec un tiers qui est dans le
-l'activité de distribution de logiciels, dans le cadre de laquelle vous effectuez un paiement à la
-tiers en fonction de l'étendue de votre activité de transmission
-travail, et en vertu duquel le tiers accorde, à l'une quelconque des parties
-qui recevrait de vous l'œuvre protégée, un brevet discriminatoire
-licence (a) en relation avec les copies de l'œuvre couverte transmises par
-vous (ou des copies faites à partir de ces copies), ou (b) principalement pour et dans
-lien avec des produits ou compilations spécifiques qui contiennent le
-travaux couverts, sauf si vous avez conclu cet accord ou ce brevet
-La licence a été accordée avant le 28 mars 2007.
+A patent license is "discriminatory" if it does not include within the
+scope of its coverage, prohibits the exercise of, or is conditioned on
+the non-exercise of one or more of the rights that are specifically
+granted under this License. You may not convey a covered work if you
+are a party to an arrangement with a third party that is in the
+business of distributing software, under which you make payment to the
+third party based on the extent of your activity of conveying the
+work, and under which the third party grants, to any of the parties
+who would receive the covered work from you, a discriminatory patent
+license (a) in connection with copies of the covered work conveyed by
+you (or copies made from those copies), or (b) primarily for and in
+connection with specific products or compilations that contain the
+covered work, unless you entered into that arrangement, or that patent
+license was granted, prior to 28 March 2007.
 
-Aucune disposition de la présente licence ne saurait être interprétée comme excluant ou limitant
-toute licence implicite ou autres moyens de défense en cas de contrefaçon qui pourraient
-autrement vous seront accessibles en vertu du droit des brevets applicable.
+Nothing in this License shall be construed as excluding or limiting
+any implied license or other defenses to infringement that may
+otherwise be available to you under applicable patent law.
 
-### 12. Pas de reddition de la liberté des autres.
+### 12. No Surrender of Others' Freedom.
 
-Si des conditions vous sont imposées (que ce soit par une décision de justice, un accord ou
-sinon) qui contredisent les conditions de cette licence, elles ne
-Vous êtes dispensé des conditions de cette licence. Si vous ne pouvez pas transmettre un
-travaux couverts afin de satisfaire simultanément à vos obligations en vertu de
-cette licence et toutes autres obligations pertinentes, alors en tant que
-Par conséquent, vous pourriez ne pas le transmettre du tout. Par exemple, si vous acceptez de
-conditions qui vous obligent à percevoir des redevances pour toute cession ultérieure
-de ceux à qui vous transmettez le Programme, la seule façon dont vous pourriez
-satisfaire à ces deux conditions et cette licence consisterait à s'abstenir entièrement
-de la transmission du programme.
+If conditions are imposed on you (whether by court order, agreement or
+otherwise) that contradict the conditions of this License, they do not
+excuse you from the conditions of this License. If you cannot convey a
+covered work so as to satisfy simultaneously your obligations under
+this License and any other pertinent obligations, then as a
+consequence you may not convey it at all. For example, if you agree to
+terms that obligate you to collect a royalty for further conveying
+from those to whom you convey the Program, the only way you could
+satisfy both those terms and this License would be to refrain entirely
+from conveying the Program.
 
-### 13. Utiliser avec la licence publique générale GNU Affero.
+### 13. Use with the GNU Affero General Public License.
 
-Nonobstant toute autre disposition de la présente Licence, vous avez
-autorisation de lier ou de combiner toute œuvre couverte avec une œuvre sous licence
-sous la version 3 de la licence publique générale GNU Affero dans un seul
-travail combiné, et de communiquer le travail qui en résulte. Les termes de ce
-La licence continuera de s'appliquer à la partie qui constitue l'œuvre couverte.
-mais les exigences particulières de la licence publique générale GNU Affero,
-L'article 13, relatif à l'interaction via un réseau, s'appliquera à
-combinaison en tant que telle.
+Notwithstanding any other provision of this License, you have
+permission to link or combine any covered work with a work licensed
+under version 3 of the GNU Affero General Public License into a single
+combined work, and to convey the resulting work. The terms of this
+License will continue to apply to the part which is the covered work,
+but the special requirements of the GNU Affero General Public License,
+section 13, concerning interaction through a network will apply to the
+combination as such.
 
-### 14. Versions révisées de cette licence.
+### 14. Revised Versions of this License.
 
-La Free Software Foundation peut publier des versions révisées et/ou nouvelles.
-de la licence publique générale GNU de temps à autre. Ces nouvelles versions
-sera similaire dans son esprit à la version actuelle, mais pourra différer sur certains points.
-détailler pour aborder de nouveaux problèmes ou préoccupations.
+The Free Software Foundation may publish revised and/or new versions
+of the GNU General Public License from time to time. Such new versions
+will be similar in spirit to the present version, but may differ in
+detail to address new problems or concerns.
 
-Chaque version se voit attribuer un numéro de version distinctif. Si le programme
-spécifie qu'une certaine version numérotée du GNU Public
-La licence « ou toute version ultérieure » s'applique, vous avez la possibilité de
-conformément aux termes et conditions de cette version numérotée ou
-de toute version ultérieure publiée par la Free Software Foundation. Si la
-Le programme ne spécifie pas de numéro de version du GNU GPL.
-Licence : vous pouvez choisir n’importe quelle version jamais publiée par le Free
-Fondation logicielle.
+Each version is given a distinguishing version number. If the Program
+specifies that a certain numbered version of the GNU General Public
+License "or any later version" applies to it, you have the option of
+following the terms and conditions either of that numbered version or
+of any later version published by the Free Software Foundation. If the
+Program does not specify a version number of the GNU General Public
+License, you may choose any version ever published by the Free
+Software Foundation.
 
-Si le programme spécifie qu'un proxy peut décider quelles versions futures
-La licence publique générale GNU peut être utilisée, celle de ce proxy public
-La déclaration d'acceptation d'une version vous autorise de façon permanente à
-Choisissez cette version pour le programme.
+If the Program specifies that a proxy can decide which future versions
+of the GNU General Public License can be used, that proxy's public
+statement of acceptance of a version permanently authorizes you to
+choose that version for the Program.
 
-Les versions ultérieures de la licence peuvent vous accorder des droits supplémentaires ou différents.
-autorisations. Toutefois, aucune obligation supplémentaire n'est imposée à aucun
-auteur ou titulaire de droits d'auteur en raison de votre choix de suivre un
-version ultérieure.
+Later license versions may give you additional or different
+permissions. However, no additional obligations are imposed on any
+author or copyright holder as a result of your choosing to follow a
+later version.
 
-### 15. Exclusion de garantie.
+### 15. Disclaimer of Warranty.
 
-AUCUNE GARANTIE N'EST OFFERTE POUR LE PROGRAMME, DANS LA MESURE PERMISE PAR
-DROIT APPLICABLE. SAUF INDICATION CONTRAIRE ÉCRITE, LE DROIT D'AUTEUR S'APPLIQUE
-LES DÉTENTEURS ET/OU D'AUTRES PARTIES FOURNISSENT LE PROGRAMME « TEL QUEL », SANS GARANTIE.
-AUCUNE GARANTIE DE QUELQUE NATURE QUE CE SOIT, EXPRESSE OU IMPLICITE, Y COMPRIS, MAIS NON PLUS, LES GARANTIES D'AUCUNE SORTE, EXPRESSE OU IMPLICITE, Y COMPRIS, MAIS SANS S'Y LIMITER
-LIMITÉE AUX GARANTIES IMPLICITES DE QUALITÉ MARCHANDE ET D'ADÉQUATION À UN USAGE PARTICULIER
-À DES FINS PARTICULIÈRES. L'INTÉGRALITÉ DES RISQUES QUANT À LA QUALITÉ ET
-LA PERFORMANCE DU PROGRAMME EST AVEC VOUS. SI LE PROGRAMME S'AVÈRE
-EN CAS DE DÉFAUT, VOUS ASSUMEZ LES FRAIS DE TOUTES LES RÉPARATIONS, ENTRETIEN OU MISE EN SERVICE NÉCESSAIRES.
+THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
+APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT
+HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT
+WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND
+PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE
+DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
 CORRECTION.
 
-### 16. Limitation de responsabilité.
+### 16. Limitation of Liability.
 
-EN AUCUN CAS SAUF SI LA LOI APPLICABLE L'EXIGE OU SI UN ACCORD ÉCRIT LE PRÉVOIT
-Tout titulaire de droits d'auteur, ou toute autre partie qui modifie et/ou
-TRANSMET LE PROGRAMME COMME AUTORISÉ CI-DESSUS, NE SERA PAS RESPONSABLE ENVERS VOUS DES DOMMAGES,
-Y COMPRIS TOUS DOMMAGES GÉNÉRAUX, SPÉCIAUX, ACCESSOIRES OU INDIRECTS
-DÉCOULANT DE L'UTILISATION OU DE L'INCAPACITÉ D'UTILISER LE PROGRAMME (Y COMPRIS, MAIS
-SANS S'Y LIMITER, LA PERTE DE DONNÉES OU L'INEXACTITUDE DES DONNÉES OU
-LES PERTES SUBIES PAR VOUS OU DES TIERS OU UNE DÉFAILLANCE DU PROGRAMME
-POUR FONCTIONNER AVEC D'AUTRES PROGRAMMES), MÊME SI CE TITULAIRE OU AUTRE
-LA PARTIE A ÉTÉ INFORMÉE DE LA POSSIBILITÉ DE TELS DOMMAGES.
+IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR
+CONVEYS THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES,
+INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES
+ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT
+NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR
+LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM
+TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER OR OTHER
+PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
-### 17. Interprétation des articles 15 et 16.
+### 17. Interpretation of Sections 15 and 16.
 
-Si l'exclusion de garantie et la limitation de responsabilité prévues
-Les dispositions ci-dessus ne peuvent avoir d'effet juridique local conformément à leurs termes.
-Les juridictions de révision doivent appliquer la loi locale qui se rapproche le plus de
-une renonciation absolue à toute responsabilité civile en lien avec
-Programme, sauf si une garantie ou une prise en charge de responsabilité accompagne un
-un exemplaire du programme en échange d'une somme d'argent.
+If the disclaimer of warranty and limitation of liability provided
+above cannot be given local legal effect according to their terms,
+reviewing courts shall apply local law that most closely approximates
+an absolute waiver of all civil liability in connection with the
+Program, unless a warranty or assumption of liability accompanies a
+copy of the Program in return for a fee.
 
-FIN DES CONDITIONS GÉNÉRALES
+END OF TERMS AND CONDITIONS
 
-## Comment appliquer ces conditions à vos nouveaux programmes
+## How to Apply These Terms to Your New Programs
 
-Si vous développez un nouveau programme et que vous souhaitez qu'il soit le meilleur possible,
-pour une éventuelle utilité publique, le meilleur moyen d'y parvenir est de le rendre
-logiciel libre que chacun peut redistribuer et modifier sous ces conditions
-termes.
+If you develop a new program, and you want it to be of the greatest
+possible use to the public, the best way to achieve this is to make it
+free software which everyone can redistribute and change under these
+terms.
 
-Pour ce faire, joignez les avis suivants au programme. Il est plus sûr de
-attachez-les au début de chaque fichier source pour indiquer le plus efficacement possible
-l'exclusion de garantie ; et chaque fichier doit avoir au moins
-ligne « copyright » et un lien vers l'endroit où se trouve l'avis complet.
+To do so, attach the following notices to the program. It is safest to
+attach them to the start of each source file to most effectively state
+the exclusion of warranty; and each file should have at least the
+"copyright" line and a pointer to where the full notice is found.
 
-        <Une ligne pour donner le nom du programme et une brève description de son fonctionnement.>
-        Droits d'auteur (C) <année> <nom de l'auteur>
+        <one line to give the program's name and a brief idea of what it does.>
+        Copyright (C) <year>  <name of author>
 
-        Ce programme est un logiciel libre : vous pouvez le redistribuer et/ou le modifier.
-        il est distribué selon les termes de la licence publique générale GNU telle que publiée par
-        la Free Software Foundation, soit la version 3 de la licence, soit
-        (à votre choix) toute version ultérieure.
+        This program is free software: you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation, either version 3 of the License, or
+        (at your option) any later version.
 
-        Ce programme est distribué dans l'espoir qu'il sera utile.
-        mais SANS AUCUNE GARANTIE ; sans même la garantie implicite de
-        QUALITÉ MARCHANDE ou ADÉQUATION À UN USAGE PARTICULIER. Voir la
-        Licence publique générale GNU pour plus de détails.
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
 
-        Vous auriez dû recevoir une copie de la licence publique générale GNU
-        ainsi que ce programme. Sinon, consultez <https://www.gnu.org/licenses/>.
+        You should have received a copy of the GNU General Public License
+        along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-Veuillez également ajouter vos coordonnées par voie électronique et par courrier.
+Also add information on how to contact you by electronic and paper
 mail.
 
-Si le programme interagit avec le terminal, faites en sorte qu'il génère un court message.
-Remarquez ceci lorsqu'il démarre en mode interactif :
+If the program does terminal interaction, make it output a short
+notice like this when it starts in an interactive mode:
 
-        <programme> Copyright (C) <année> <nom de l'auteur>
-        Ce programme est fourni SANS AUCUNE GARANTIE ; pour plus de détails, tapez `show w'.
-        Il s'agit d'un logiciel libre, et vous êtes libre de le redistribuer.
-        sous certaines conditions ; tapez `show c' pour plus de détails.
+        <program>  Copyright (C) <year>  <name of author>
+        This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+        This is free software, and you are welcome to redistribute it
+        under certain conditions; type `show c' for details.
 
-Les commandes hypothétiques `show w` et `show c` devraient afficher
-les parties appropriées de la licence publique générale. Bien sûr, votre
-Les commandes du programme peuvent être différentes ; pour une interface graphique, vous devriez…
-Utilisez une boîte « À propos ».
+The hypothetical commands \`show w' and \`show c' should show the
+appropriate parts of the General Public License. Of course, your
+program's commands might be different; for a GUI interface, you would
+use an "about box".
 
-Vous devriez également contacter votre employeur (si vous travaillez comme programmeur) ou
-l'école, le cas échéant, de signer une « clause de non-responsabilité relative aux droits d'auteur » pour le programme, si
-nécessaire. Pour plus d'informations à ce sujet, ainsi que sur la procédure à suivre, veuillez consulter les instructions.
-la licence GNU GPL, voir <https://www.gnu.org/licenses/>.
+You should also get your employer (if you work as a programmer) or
+school, if any, to sign a "copyright disclaimer" for the program, if
+necessary. For more information on this, and how to apply and follow
+the GNU GPL, see <https://www.gnu.org/licenses/>.
 
-La licence publique générale GNU ne permet pas d'incorporer votre
-Intégrez votre programme dans des programmes propriétaires. Si votre programme est une sous-routine
-Dans une bibliothèque, il peut être plus utile d'autoriser la liaison de bibliothèques propriétaires.
-applications avec la bibliothèque. Si c'est ce que vous souhaitez faire, utilisez la
-Licence publique générale limitée GNU au lieu de cette licence. Mais d'abord,
-Veuillez lire <https://www.gnu.org/licenses/why-not-lgpl.html>.
+The GNU General Public License does not permit incorporating your
+program into proprietary programs. If your program is a subroutine
+library, you may consider it more useful to permit linking proprietary
+applications with the library. If this is what you want to do, use the
+GNU Lesser General Public License instead of this License. But first,
+please read <https://www.gnu.org/licenses/why-not-lgpl.html>.

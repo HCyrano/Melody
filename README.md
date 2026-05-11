@@ -1,6 +1,6 @@
 # ⚪ Melody: High-Performance Othello AI ⚫
 
-**Melody** is a high-performance Othello (Reversi) engine written in C++23. Designed for competition, it combines the power of classical search algorithms with modern predictive models to deliver top-level gameplay.
+**Melody** is a high-performance Othello (Reversi) engine written in C++23. Designed for competition, it combines the power of classical search algorithms with modern predictive models to deliver top-level playing strength.
 
 ---
 
@@ -72,5 +72,5 @@ This ensures the binary will be perfectly optimized for your distribution (Ubunt
 
 
 ## ⚖️ License
-This project is licensed under the **GPLv3** - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **GPLv3** - see the [LICENSE](LICENSE.md) file for details.
 (Previously licensed under MIT).
