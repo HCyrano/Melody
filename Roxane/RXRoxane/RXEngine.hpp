@@ -19,16 +19,14 @@
 #define RXENGINE_HPP
 
 #include <string>
-#include <cstddef> // define nullptr
-#include <cstdlib> // abs()
 #include <vector>
-#include <array>
 #include <fstream>
 #include <ostream>
 #include <locale>
 #include <cstring>
 #include <atomic>
 #include <cmath>
+#include <cassert>
 
 #include "RXBBPatterns.hpp"
 #include "RXBitBoard.hpp"
@@ -87,8 +85,7 @@ public:
     RXSplitPoint* parent;
     
     RXBBPatterns* sBoard;
-    //non copiableAssignable, mais il n'y a pas de redimensionnenent (semble fonctionner)
-    //soluce : remplacer le vector par un tableau static a taille fixe :-(
+    // Not copy-assignable, but no reallocation occurs at runtime — works as intended
     std::vector<RXBBPatterns> sBoardStack;
     
     RXMove* list;
@@ -98,6 +95,7 @@ public:
     bool pv;
     int pvDev;
     int depth;
+    int depth_reduction;
     int selectivity;
     int alpha, beta, bestscore, bestmove;
     
@@ -119,12 +117,11 @@ public:
         pthread_mutex_init(&lock, nullptr);
     }
     
-    // Constructeur de copie explicite nécessaire à cause de std::atomic<> non copiable
-    // Il faut donc écrire la copie manuellement en faisant ex : n_Slaves(o.n_Slaves.load())
+    // Copy constructor — called once at init by std::vector(count, value), never at runtime
     RXSplitPoint(const RXSplitPoint& o) :
         parent(o.parent), sBoard(o.sBoard), sBoardStack(o.sBoardStack),
         list(o.list), CBSearch(o.CBSearch),
-        pv(o.pv), pvDev(o.pvDev), depth(o.depth), selectivity(o.selectivity),
+        pv(o.pv), pvDev(o.pvDev), depth(o.depth), depth_reduction(o.depth_reduction), selectivity(o.selectivity),
         alpha(o.alpha), beta(o.beta), bestscore(o.bestscore), bestmove(o.bestmove),
         master(o.master), n_Slaves(o.n_Slaves.load()),
         slaves(o.slaves), explored(o.explored.load())
@@ -134,13 +131,13 @@ public:
         pthread_mutex_init(&lock, nullptr);
     }
     
-    // Constructeur de déplacement
-    // Utilise std::move() sur les vecteurs pour transférer la mémoire sans copie (plus efficace)
-    // noexcept est important pour que les conteneurs STL (std::vector) puissent utiliser ce constructeur lors de leurs réallocations
+    // Move constructor
+    // Uses std::move() on vectors to transfer memory without copying (more efficient)
+    // noexcept is required so that STL containers (std::vector) can use this constructor during reallocation
     RXSplitPoint(RXSplitPoint&& o) noexcept :
         parent(o.parent), sBoard(o.sBoard), sBoardStack(std::move(o.sBoardStack)),
         list(o.list), CBSearch(o.CBSearch),
-        pv(o.pv), pvDev(o.pvDev), depth(o.depth), selectivity(o.selectivity),
+        pv(o.pv), pvDev(o.pvDev), depth(o.depth), depth_reduction(o.depth_reduction), selectivity(o.selectivity),
         alpha(o.alpha), beta(o.beta), bestscore(o.bestscore), bestmove(o.bestmove),
         master(o.master), n_Slaves(o.n_Slaves.load()),
         slaves(std::move(o.slaves)), explored(o.explored.load())
@@ -150,6 +147,9 @@ public:
         lock = o.lock;
         pthread_mutex_init(&o.lock, nullptr);
     }
+
+    // Required by std::vector<RXSplitPoint>, never called at runtime
+    RXSplitPoint& operator=(const RXSplitPoint&) = delete;
     
     ~RXSplitPoint() {
         pthread_mutex_destroy(&lock);
@@ -263,6 +263,7 @@ class RXEngine: public Runnable {
     static const int CONFIDENCE[];
     static const float PERCENTILE[];
     static const int DEPTH_BOOSTER;
+    static const unsigned int LMR_NO_REDUCTION;
     
     //time manager part
     int time_remaining;
@@ -371,6 +372,11 @@ class RXEngine: public Runnable {
     static const int PV_EXTENSION_DEPTH;
     static const int MIN_DEPTH_USE_PV_EXTENSION;
     
+#ifdef USE_LMR
+    static const int LMR_MIN_DEPTH;
+    static const int LMR_DEEP_DEPTH;
+#endif
+    
     
     
     void iterative_deepening(RXBBPatterns& sBoard, RXMove* list, int selectivity, int depth, const int max_depth);
@@ -432,7 +438,7 @@ class RXEngine: public Runnable {
     
     
     //parameter for launch thread
-    uint idThread;
+    unsigned int idThread;
     
     
     static const int MIN_DEPTH_SPLITPOINT;
@@ -452,12 +458,12 @@ class RXEngine: public Runnable {
     void stop_threads();
     void wake_sleeping_threads();
     //    void wake_sleeping_thread(unsigned int threadID);
-    bool idle_thread_exists(unsigned int master);
+    inline bool idle_thread_exists(unsigned int master);
     bool thread_is_available(unsigned int slave, unsigned int master);
-    bool thread_should_stop(unsigned int threadID);
+    inline bool thread_should_stop(unsigned int threadID);
     
-    bool split(    RXBBPatterns& sBoard, bool pv, int pvDev,
-               int depth, int selectivity, int alpha, int beta, int& bestscore, unsigned int& bestmove,
+    bool split(RXBBPatterns& sBoard, bool pv, int pvDev,
+               int depth, int depth_reduction, int selectivity, int alpha, int beta, int& bestscore, unsigned int& bestmove,
                RXMove* list, unsigned int master, RXSplitPoint::t_callBackSearch callback);
    
     // Table de lookup statique (partagée par toutes les instances)
@@ -842,7 +848,7 @@ inline int RXEngine::probcut_bounds(const RXBitBoard& board, const int selectivi
     float coeff_sc = 1.0f + (std::abs(alpha)/160.0f - 0.1f);
 
     //error evaluation with lower bound at 3
-    int eval_error = std::round(sigma(board.n_empty, depth, depth_probcut) * coeff_pv * coeff_sc * PERCENTILE[selectivity]);
+    int eval_error = static_cast<int>(std::round(sigma(board.n_empty, depth, depth_probcut) * coeff_pv * coeff_sc * PERCENTILE[selectivity]));
     
     lower_bound = std::max(-MAX_SCORE, alpha - eval_error);
     upper_bound = std::min(+MAX_SCORE, beta  + eval_error);
@@ -872,6 +878,21 @@ inline RXBBPatterns& RXEngine::get_board() {
     
     return search_sBoard;
 }
+
+// idle_thread_exists() tries to find an idle thread which is available as
+// a slave for the thread with threadID "master".
+
+inline bool RXEngine::idle_thread_exists(unsigned int master) {
+    
+    //    assert(master >= 0 && master < activeThreads);
+    //    assert(activeThreads > 1);
+    
+    for(unsigned int i = 0; i < activeThreads; i++)
+        if(thread_is_available(i, master))
+            return true;
+    return false;
+}
+
 
 // thread_should_stop() checks whether the thread with a given threadID has
 // been asked to stop, directly or indirectly.  This can happen if a beta

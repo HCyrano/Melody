@@ -126,51 +126,88 @@ int StdInput::ReadInput() {
  * std::string. Retourne une chaîne vide en cas d'erreur ou de fin de fichier.
  *******************************************************************************
  */
+//std::string StdInput::Read() {
+//    
+//    char *eol, *ret;
+//    bool readdata;
+//    
+//    // Logique de lecture jusqu'à ce qu'on trouve un '\n'
+//    if (!strchr(cmd_buffer_, '\n')) {
+//        while (!strchr(cmd_buffer_, '\n')) {
+//            readdata = ReadInput();
+//            if (!readdata) {
+//                // Retourne une chaîne vide en cas d'erreur ou EOF
+//                return ""; 
+//            }
+//        }
+//    }
+//    
+//    // 1. Trouver la fin de ligne
+//    eol = strchr(cmd_buffer_, '\n');
+//    
+//    // Calculer la taille de la ligne (jusqu'à l'indice de eol)
+//    size_t line_length = eol - cmd_buffer_;
+//
+//    // 2. Extraire la ligne dans un std::string
+//    // Le constructeur de std::string peut prendre un char* et une longueur
+//    std::string line(cmd_buffer_, line_length);
+//
+//    // 3. Supprimer le '\r' s'il existe (le remplacer par un espace n'est plus nécessaire 
+//    // car nous allons le supprimer dans l'étape suivante, mais si la logique d'origine
+//    // le voulait, on le ferait ici)
+//    ret = strchr(cmd_buffer_, '\r');
+//    if (ret) {
+//        // En C++, on peut supprimer le caractère 'r' de la string extraite
+//        size_t r_pos = line.find('\r');
+//        if (r_pos != std::string::npos) {
+//            line.erase(r_pos, 1);
+//        }
+//    }
+//    
+//    // 4. Déplacer le reste du cmd_buffer_ au début
+//    // La position de départ pour le reste du buffer est eol + 1 (après le '\n')
+//    memmove(cmd_buffer_, eol + 1, strlen(eol + 1) + 1);
+//    
+//    return line;
+//}
+
 std::string StdInput::Read() {
+    char *eol;
     
-    char *eol, *ret;
-    bool readdata;
-    
-    // Logique de lecture jusqu'à ce qu'on trouve un '\n'
+    // 1. Si le buffer ne contient pas de fin de ligne ('\n'), on lit le pipe
     if (!strchr(cmd_buffer_, '\n')) {
         while (!strchr(cmd_buffer_, '\n')) {
-            readdata = ReadInput();
-            if (!readdata) {
-                // Retourne une chaîne vide en cas d'erreur ou EOF
-                return ""; 
+            
+            int status = ReadInput(); // <-- Correction : Utilisation d'un INT
+            
+            if (status <= 0) {
+                // Si status vaut 0 (EOF) ou -1 (Erreur / Overflow),
+                // on s'arrête immédiatement pour éviter le blocage (Deadlock)
+                return "";
             }
         }
     }
     
-    // 1. Trouver la fin de ligne
+    // 2. Trouver la fin de la première ligne présente dans le buffer
     eol = strchr(cmd_buffer_, '\n');
-    
-    // Calculer la taille de la ligne (jusqu'à l'indice de eol)
     size_t line_length = eol - cmd_buffer_;
-
-    // 2. Extraire la ligne dans un std::string
-    // Le constructeur de std::string peut prendre un char* et une longueur
+    
+    // 3. Extraire uniquement cette ligne dans une chaîne std::string
     std::string line(cmd_buffer_, line_length);
-
-    // 3. Supprimer le '\r' s'il existe (le remplacer par un espace n'est plus nécessaire 
-    // car nous allons le supprimer dans l'étape suivante, mais si la logique d'origine
-    // le voulait, on le ferait ici)
-    ret = strchr(cmd_buffer_, '\r');
-    if (ret) {
-        // En C++, on peut supprimer le caractère 'r' de la string extraite
-        size_t r_pos = line.find('\r');
-        if (r_pos != std::string::npos) {
-            line.erase(r_pos, 1);
-        }
+    
+    // 4. Nettoyer le '\r' (retour chariot style Windows) s'il est présent à la fin de la ligne
+    // On le fait directement sur l'objet 'line' pour ne pas corrompre le reste du buffer
+    if (!line.empty() && line.back() == '\r') {
+        line.pop_back();
     }
     
-    // 4. Déplacer le reste du cmd_buffer_ au début
-    // La position de départ pour le reste du buffer est eol + 1 (après le '\n')
-    memmove(cmd_buffer_, eol + 1, strlen(eol + 1) + 1);
+    // 5. Déplacer le reste du buffer (les commandes suivantes reçues en rafale) au début
+    std::memmove(cmd_buffer_, eol + 1, std::strlen(eol + 1) + 1);
     
     return line;
-}
+};
 
+    
 /*
  *******************************************************************************
  * ReadParse() (Version C++ Moderne)

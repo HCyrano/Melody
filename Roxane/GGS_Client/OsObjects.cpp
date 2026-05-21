@@ -108,11 +108,11 @@ void COsMoveListItem::Out(std::ostream& os) const {
 	std::ios_base::fmtflags fFlagsOld=os.setf(std::ios::fixed, std::ios::floatfield);
 
 	os << mv;
-	if (dEval || tElapsed) {
+	if (dEval !=0 || tElapsed != 0) {
 		os << '/';
-		if (dEval)
+		if (dEval != 0)
 			os << dEval;
-		if (tElapsed)
+		if (tElapsed != 0)
 			os << '/' << tElapsed;
 	}
 
@@ -176,11 +176,11 @@ std::istream& COsClock::InIOS(std::istream& is) {
 
 void COsClock::Out(std::ostream& os) const {
 	WriteTime(os, static_cast<int>(tCurrent));
-	if (tIncrement || tGrace) {
+	if (tIncrement!=0  || tGrace!=0) {
 		os << "/";
-		if (tIncrement)
+		if (tIncrement!=0)
 			WriteTime(os, static_cast<int>(tIncrement));
-		if (tGrace) {
+		if (tGrace!=0) {
 			os << "/";
 			WriteTime(os, static_cast<int>(tGrace));
 		}
@@ -1178,9 +1178,9 @@ void COsGame::Out(std::ostream& os) const {
 	os << "]PW[" << pis[0].sName;
 	os << "]RE[" << result;
 
-	if (pis[1].dRating)
+	if (pis[1].dRating!=0)
 		os << "]RB[" << pis[1].dRating;
-	if (pis[0].dRating)
+	if (pis[0].dRating!=0)
 		os << "]RW[" << pis[0].dRating;
 	if (posStart.cks[0]==posStart.cks[1]) {
 		os << "]TI[" << posStart.cks[1];

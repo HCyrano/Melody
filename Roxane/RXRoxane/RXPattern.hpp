@@ -18,7 +18,6 @@
 #ifndef RXPATTERN_HPP
 #define RXPATTERN_HPP
 
-#include <iostream>
 
 
 

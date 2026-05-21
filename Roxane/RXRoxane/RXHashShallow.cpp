@@ -17,15 +17,6 @@
 
 #include "RXHashShallow.hpp"
 
-#include <iostream>
-#include <new>
-#include <sstream>
-
-
-#include "RXHashTable.hpp"
-
-
-
 
 RXHashShallow::RXHashShallow(unsigned int nBitsTable) : table(0), date(0) {
     
@@ -38,175 +29,130 @@ RXHashShallow::RXHashShallow(unsigned int nBitsTable) : table(0), date(0) {
 
 void RXHashShallow::reset() {
     
-    
-    for(std::vector<RXHashEntry>::iterator iter = table.begin(); iter!=table.end(); iter++) {
-        (iter->deepest).packed = 0x0ULL;
-        (iter->newest).packed = 0x0ULL;
+    // "Pour chaque entrée par référence dans la table"
+    for (auto& entry : table) {
+        
+        entry.spin.store(0, std::memory_order_relaxed);
+
+        entry.deepest.packed  = 0x0ULL;
+        entry.deepest.discs_P = 0x0ULL;
+        entry.deepest.discs_O = 0x0ULL;
+        
+        entry.newest.packed   = 0x0ULL;
+        entry.newest.discs_P  = 0x0ULL;
+        entry.newest.discs_O  = 0x0ULL;
+
     }
-    
+
     date = 0;
 }
 
 
-//implementation LockFree
-void RXHashShallow::update(const unsigned long long hash_code, const unsigned char depth, const int alpha, const int beta, const int score, const char move) {
+void RXHashShallow::update(const unsigned long long hash_code, const RXBitBoard& board,
+                            const unsigned char depth, const int alpha, const int beta,
+                            const int score, const char move) {
+    
+    unsigned int _date = date;
+    if (alpha < score && score < beta)
+        ++_date; // bonus pour score exact
+
+
+    const unsigned long long P = board.discs[board.player];
+    const unsigned long long O = board.discs[board.player^1];
     
     RXHashEntry& entry = table[static_cast<unsigned int>(hash_code>>32) & _maskTable];
-    
-    int _date = date;
-    
-    if(alpha < score && score < beta)
-        ++_date; //bonus for exact score
 
-    
-    RXHashRecord& deepest = entry.deepest;
-    
-    const unsigned long long deepest_packed = deepest.packed;
-    const unsigned long long deepest_lock = deepest.lock;
-    
-    const unsigned long long deepest_hashcode = deepest_lock ^ deepest_packed;
-    RXHashValue deepest_value(deepest_packed);
-    
-    
-    /* try to update deepest entry */
-    if (hash_code == deepest_hashcode && depth == deepest_value.depth) {
-        
-        if (score < beta && score < deepest_value.upper)
-            deepest_value.upper = static_cast<short>(score);
+
+    entry.lock();
+
+    RXHashValue deepest_val(entry.deepest.packed);
+    const bool is_deepest = (P == entry.deepest.discs_P && O == entry.deepest.discs_O);
+
+    if (is_deepest && depth == deepest_val.depth) {
+        // Mise à jour entrée profonde existante
+        if (score < beta && score < deepest_val.upper)
+            deepest_val.upper = static_cast<short>(score);
         if (score > alpha) {
-            deepest_value.move = move;
-            
-            if(score > deepest_value.lower)
-                deepest_value.lower = static_cast<short>(score);
+            deepest_val.move = move;
+            if (score > deepest_val.lower)
+                deepest_val.lower = static_cast<short>(score);
         }
-        
-        /* control if lower>upper : Instability */
-        if(deepest_value.lower>deepest_value.upper) {
-                        
-            if(score<beta)
-                deepest_value.upper = static_cast<short>(score);
-            else
-                deepest_value.upper = MAX_SCORE;
-            
-            if(score>alpha)
-                deepest_value.lower = static_cast<short>(score);
-            else
-                deepest_value.lower = -MAX_SCORE;
-            
-            deepest_value.move = move;
-            
-        } else if(deepest_value.lower == deepest_value.upper) {
-            if(_date == date)
-                ++_date;
+        // Correction instabilité
+        if (deepest_val.lower > deepest_val.upper) {
+            deepest_val.lower = (score > alpha) ? static_cast<short>(score) : (short)-MAX_SCORE;
+            deepest_val.upper = (score < beta)  ? static_cast<short>(score) : (short)MAX_SCORE;
+            deepest_val.move = move;
+        } else if (deepest_val.lower == deepest_val.upper && _date == date) {
+            _date++;
         }
-        
-        deepest_value.date = _date;
-        
-        deepest.packed = deepest_value.wide_2_compact();
-        deepest.lock   = hash_code ^ deepest.packed;
-        
+        deepest_val.date = _date;
+        entry.deepest.packed = deepest_val.wide_2_compact();
+
     } else {
-        
-        RXHashRecord& newest = entry.newest;
-        
-        const unsigned long long newest_packed = newest.packed;
-        const unsigned long long newest_hashcode= newest.lock ^ newest_packed;
-        RXHashValue newest_value(newest_packed);
-        
-        
-        /* else try to update newest entry */
-        if (hash_code == newest_hashcode && depth == newest_value.depth) {
-            
-            if (score < beta && score < newest_value.upper)
-                newest_value.upper = static_cast<short>(score);
+
+        RXHashValue newest_val(entry.newest.packed);
+        const bool is_newest = (P == entry.newest.discs_P && O == entry.newest.discs_O);
+
+        if (is_newest && depth == newest_val.depth) {
+            // Mise à jour entrée récente existante
+            if (score < beta && score < newest_val.upper)
+                newest_val.upper = static_cast<short>(score);
             if (score > alpha) {
-                newest_value.move =  move;
-                
-                if(score > newest_value.lower)
-                    newest_value.lower =  static_cast<short>(score);
+                newest_val.move = move;
+                if (score > newest_val.lower)
+                    newest_val.lower = static_cast<short>(score);
             }
-            
-            /* control if lower>upper : Instability */
-            if(newest_value.lower>newest_value.upper) {
-
-                if(score<beta)
-                    newest_value.upper = static_cast<short>(score);
-                else
-                    newest_value.upper = MAX_SCORE;
-                
-                if(score>alpha)
-                    newest_value.lower = static_cast<short>(score);
-                else
-                    newest_value.lower = -MAX_SCORE;
-                
-                newest_value.move =  move;
-                
-            } else if(newest_value.lower == newest_value.upper) {
-                if(_date == date)
-                    ++_date;
+            // Correction instabilité
+            if (newest_val.lower > newest_val.upper) {
+                newest_val.lower = (score > alpha) ? static_cast<short>(score) : (short)-MAX_SCORE;
+                newest_val.upper = (score < beta)  ? static_cast<short>(score) : (short)MAX_SCORE;
+                newest_val.move = move;
             }
-            
-            newest_value.date = _date;
+            newest_val.date = _date;
 
-            //implementation 2025-08-05 (en test)
-            if(newest_value.date > deepest_value.date) {
-                
-                //copy
-                newest.lock   = deepest_lock;
-                newest.packed = deepest_packed;
-                
-                deepest.packed = newest_value.wide_2_compact();
-                deepest.lock   = hash_code ^ deepest.packed;
-                
+            // Promotion si newest devient plus importante que deepest
+            if (newest_val.date > deepest_val.date ||
+               (newest_val.date == deepest_val.date && depth > deepest_val.depth)) {
+                entry.newest  = entry.deepest;
+                entry.deepest.discs_P = P;
+                entry.deepest.discs_O = O;
+                entry.deepest.packed  = newest_val.wide_2_compact();
             } else {
-                
-                newest.packed = newest_value.wide_2_compact();
-                newest.lock   = hash_code ^ newest.packed;
+                entry.newest.packed = newest_val.wide_2_compact();
             }
-            
-            /* else try to add to deepest entry */
-        } else if (deepest_hashcode == hash_code || deepest_value.date < _date ||  deepest_value.depth < depth) { // priority
-            
-            if(deepest_hashcode != hash_code &&	(newest_hashcode == hash_code || (newest_value.date < deepest_value.date ||
-                                                                                  ((newest_value.date == deepest_value.date) && (newest_value.depth <= deepest_value.depth))))) {
-                
-                //copy
-                newest.lock = deepest_lock;
-                newest.packed = deepest_packed;
+
+        } else if (is_deepest || deepest_val.date  < _date ||
+                                (deepest_val.date == _date && deepest_val.depth < depth)) {
+            // Remplacement deepest
+            if (!is_deepest && (is_newest || newest_val.date  < deepest_val.date ||
+                                            (newest_val.date == deepest_val.date && newest_val.depth <= deepest_val.depth))) {
+                entry.newest = entry.deepest;
             }
-            
-            deepest_value.depth = depth;
-            deepest_value.date = _date;
-            deepest_value.lower = -MAX_SCORE;
-            deepest_value.upper = +MAX_SCORE;
-            if (score < beta) deepest_value.upper = static_cast<short>(score);
-            if (score > alpha) deepest_value.lower = static_cast<short>(score);
-            deepest_value.move =  move;
-            
-            deepest.packed = deepest_value.wide_2_compact();
-            deepest.lock = hash_code ^ deepest.packed;
-            
-            
-            /* else add to newest entry */
+
+            entry.deepest.discs_P = P;
+            entry.deepest.discs_O = O;
+            deepest_val.depth = depth;
+            deepest_val.date  = _date;
+            deepest_val.lower = (score > alpha) ? static_cast<short>(score) : (short)-MAX_SCORE;
+            deepest_val.upper = (score < beta)  ? static_cast<short>(score) : (short)MAX_SCORE;
+            deepest_val.move  = move;
+            entry.deepest.packed = deepest_val.wide_2_compact();
+
         } else {
-            
-            newest_value.depth = depth;
-            newest_value.date = _date;
-            newest_value.lower = -MAX_SCORE;
-            newest_value.upper = +MAX_SCORE;
-            if (score < beta) newest_value.upper = static_cast<short>(score);
-            if (score > alpha) newest_value.lower = static_cast<short>(score);
-            newest_value.move =  move;
-            
-            newest.packed = newest_value.wide_2_compact();
-            newest.lock = hash_code ^ newest.packed;
-            
-            
+            // Remplacement newest
+            entry.newest.discs_P = P;
+            entry.newest.discs_O = O;
+            newest_val.depth = depth;
+            newest_val.date  = _date;
+            newest_val.lower = (score > alpha) ? static_cast<short>(score) : (short)-MAX_SCORE;
+            newest_val.upper = (score < beta)  ? static_cast<short>(score) : (short)MAX_SCORE;
+            newest_val.move  = move;
+            entry.newest.packed = newest_val.wide_2_compact();
         }
     }
-    
-}
 
+    entry.unlock();
+}
 
 
 

@@ -19,9 +19,7 @@
 #include <iomanip>
 #include <fstream>
 #include <sstream>
-#include <cmath>
 #include <chrono>
-#include <filesystem>
 
 #include "RXRoxane.hpp"
 #include "RXEvaluation.hpp"

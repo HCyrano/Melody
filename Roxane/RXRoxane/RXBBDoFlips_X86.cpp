@@ -22,7 +22,6 @@
 #if ARCH == ARCH_X86_GENERIC
 
 #include "RXBitBoard.hpp"
-#include "RXTools.hpp"
 
 void RXBitBoard::generate_flips_X86(const int pos, RXMove& move) const {
     

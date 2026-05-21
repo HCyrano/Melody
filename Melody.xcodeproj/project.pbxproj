@@ -58,9 +58,7 @@
 		372326E92D1FF69D002CFAF4 /* OsObjects.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OsObjects.cpp; sourceTree = "<group>"; };
 		372326EA2D1FF69D002CFAF4 /* sockbuf.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = sockbuf.hpp; sourceTree = "<group>"; };
 		372326EB2D1FF69D002CFAF4 /* sockbuf.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sockbuf.cpp; sourceTree = "<group>"; };
-		372326EE2D1FF69D002CFAF4 /* RXBBCountFlips_X86.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBCountFlips_X86.cpp; sourceTree = "<group>"; };
 		372326EF2D1FF69D002CFAF4 /* RXBBCountFlips_NEON.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBCountFlips_NEON.cpp; sourceTree = "<group>"; };
-		372326F02D1FF69D002CFAF4 /* RXBBDoFlips_X86.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBDoFlips_X86.cpp; sourceTree = "<group>"; };
 		372326F42D1FF69D002CFAF4 /* RXBBPatterns.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXBBPatterns.hpp; sourceTree = "<group>"; };
 		372326F52D1FF69D002CFAF4 /* RXBBPatterns.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBPatterns.cpp; sourceTree = "<group>"; };
 		372326F62D1FF69D002CFAF4 /* RXBitBoard.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXBitBoard.hpp; sourceTree = "<group>"; };
@@ -173,10 +171,8 @@
 				37A656D32F3F26CD009E0822 /* RXBitBoard_x86.hpp */,
 				37A656D22F3F24E4009E0822 /* RXBitBoard_NEON.hpp */,
 				372326F72D1FF69D002CFAF4 /* RXBitBoard.cpp */,
-				372326F02D1FF69D002CFAF4 /* RXBBDoFlips_X86.cpp */,
 				37DCA1682FAB9BA900AC3503 /* RXBBDoFlips_AVX2.cpp */,
 				374071FF2FAB48640095268D /* RXBBDoFlips_NEON.cpp */,
-				372326EE2D1FF69D002CFAF4 /* RXBBCountFlips_X86.cpp */,
 				37DCA1662FAB8B6600AC3503 /* RXBBCountFlips_AVX2.cpp */,
 				372326EF2D1FF69D002CFAF4 /* RXBBCountFlips_NEON.cpp */,
 				372326FC2D1FF69D002CFAF4 /* RXEvaluation.hpp */,
@@ -246,7 +242,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastUpgradeCheck = 2640;
+				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					371D4D5F2D1EBFBA0072E829 = {
 						CreatedOnToolsVersion = 16.2;
@@ -387,7 +383,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"-ffast-math",
 					"-fomit-frame-pointer",
@@ -497,9 +493,10 @@
 				CLANG_USE_OPTIMIZATION_PROFILE = YES;
 				CLANG_WARN_ASSIGN_ENUM = YES;
 				CLANG_WARN_ATOMIC_IMPLICIT_SEQ_CST = YES;
-				CLANG_WARN_FLOAT_CONVERSION = NO;
+				CLANG_WARN_FLOAT_CONVERSION = YES;
 				CLANG_WARN_FRAMEWORK_INCLUDE_PRIVATE_FROM_PUBLIC = YES;
 				CLANG_WARN_IMPLICIT_FALLTHROUGH = YES;
+				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = NO;
 				CLANG_WARN_SEMICOLON_BEFORE_METHOD_BODY = YES;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = YES;
@@ -532,9 +529,10 @@
 				CLANG_USE_OPTIMIZATION_PROFILE = YES;
 				CLANG_WARN_ASSIGN_ENUM = YES;
 				CLANG_WARN_ATOMIC_IMPLICIT_SEQ_CST = YES;
-				CLANG_WARN_FLOAT_CONVERSION = NO;
+				CLANG_WARN_FLOAT_CONVERSION = YES;
 				CLANG_WARN_FRAMEWORK_INCLUDE_PRIVATE_FROM_PUBLIC = YES;
 				CLANG_WARN_IMPLICIT_FALLTHROUGH = YES;
+				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = NO;
 				CLANG_WARN_SEMICOLON_BEFORE_METHOD_BODY = YES;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
 				CLANG_WARN__EXIT_TIME_DESTRUCTORS = YES;

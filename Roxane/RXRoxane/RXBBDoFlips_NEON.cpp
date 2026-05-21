@@ -21,11 +21,9 @@
 
 #if ARCH == ARCH_ARM_NEON
 
-#include <stdio.h>
 #include <bit> // std::rotl
 
 #include "RXBitBoard.hpp"
-#include "RXTools.hpp"
 
 
 /** rotated outflank array (indexed with inner 6 bits) */

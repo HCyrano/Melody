@@ -66,7 +66,7 @@ CXXFLAGS = -std=c++20             \
            -Wno-misleading-indentation \
            -Wno-unused-private-field
 
-# LDFLAGS inclut maintenant le retrait des symboles (Option 1) et le dead_strip (Option 4)
+# LDFLAGS inclut le retrait des symboles et le dead_strip
 LDFLAGS = $(OS_FLAGS) $(OS_LIBS) $(LDFLAGS_STRIP)
 
 TARGET = build/Melody

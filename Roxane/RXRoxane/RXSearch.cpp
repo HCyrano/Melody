@@ -15,6 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cmath>
+
 #include "RXSearch.hpp"
 
 void RXBestMove::to_COsMoveListItem(COsMoveListItem& mli) {

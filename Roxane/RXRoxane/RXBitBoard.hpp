@@ -27,16 +27,22 @@
 
 #include <iostream>
 #include <string>
-#include <vector>
 
 #include "RXConstantes.hpp"
 #include "RXMove.hpp"
-#include "RXTools.hpp"
 #include "RXSetting.hpp"
 
 #if ARCH == ARCH_ARM_NEON
+#include <arm_acle.h>
+#define CRC32C_U64(crc, data)  __crc32cd(crc, data)
 #include "arm_neon.h"
+#elif ARCH == ARCH_X86_AVX2
+#include <nmmintrin.h>
+#define CRC32C_U64(crc, data)  ((uint32_t)_mm_crc32_u64(crc, data))
+#else
+#error "CRC32C hardware not available - need ARM CRC32 or x86 SSE4.2"
 #endif
+
 
 class alignas(32) RXSquareList {
     
@@ -55,15 +61,10 @@ class alignas(32) RXSquareList {
 class alignas(32) RXBitBoard {
         
     private :
-    static const unsigned long long hashSquare[64][2];
-    
-    // 2 camps, 8 octets par board, 256 valeurs possibles
-    static unsigned long long hashByte[2][8][256];
     
     static unsigned char EDGE_STABILITY[256*256]; //unsigned char
     static int find_edge_stable(const int old_P, const int old_O, int stable);
     
-    static void init_hashcodeTable();
     static void edge_stability_init();
     
     typedef unsigned long long  (*type_do_flips)(const unsigned long long& discs_player, const unsigned long long& discs_opponent);
@@ -236,6 +237,10 @@ class alignas(32) RXBitBoard {
     
     std::string cassio_script() const;
     
+    unsigned long long hashcode() const ;
+    static unsigned long long hashcode(const unsigned long long P, const unsigned long long O);
+
+    
     /* DEBUG */
     void print_empties_list() const;
     //void check_empties_list() const;
@@ -245,8 +250,6 @@ class alignas(32) RXBitBoard {
     static void print_Board(unsigned long long P, unsigned long long O);
     void print_moves_list(RXMove* MovesList) const;
     
-    unsigned long long hashcode() const ;
-    unsigned long long hashcode_after_move(RXMove* move)  const;
     
     /* test */
     //static unsigned long long cntbset(unsigned long long n);
@@ -257,7 +260,7 @@ class alignas(32) RXBitBoard {
 
 #if ARCH == ARCH_ARM_NEON
     #include "RXBitBoard_NEON.hpp"
-#elif ARCH == ARCH_X86_GENERIC || ARCH == ARCH_X86_AVX2
+#elif ARCH == ARCH_X86_AVX2
     #include "RXBitBoard_x86.hpp"
 #else
     #error "Unsupported architecture — define ARCH in RXSetting.hpp"
@@ -325,54 +328,18 @@ inline void RXBitBoard::moves_producing(RXMove* start, unsigned long long exclud
 
 __attribute__((always_inline))
 inline unsigned long long RXBitBoard::hashcode() const {
-    const unsigned long long p = discs[player];
-    const unsigned long long o = discs[player ^ 1];
-
-    unsigned long long h = hashByte[PLAYER][0][p & 0xFF]
-                         ^ hashByte[PLAYER][1][(p >> 8) & 0xFF]
-                         ^ hashByte[PLAYER][2][(p >> 16) & 0xFF]
-                         ^ hashByte[PLAYER][3][(p >> 24) & 0xFF]
-                         ^ hashByte[PLAYER][4][(p >> 32) & 0xFF]
-                         ^ hashByte[PLAYER][5][(p >> 40) & 0xFF]
-                         ^ hashByte[PLAYER][6][(p >> 48) & 0xFF]
-                         ^ hashByte[PLAYER][7][(p >> 56) & 0xFF];
-
-    h ^= hashByte[OPPONENT][0][o & 0xFF]
-       ^ hashByte[OPPONENT][1][(o >> 8) & 0xFF]
-       ^ hashByte[OPPONENT][2][(o >> 16) & 0xFF]
-       ^ hashByte[OPPONENT][3][(o >> 24) & 0xFF]
-       ^ hashByte[OPPONENT][4][(o >> 32) & 0xFF]
-       ^ hashByte[OPPONENT][5][(o >> 40) & 0xFF]
-       ^ hashByte[OPPONENT][6][(o >> 48) & 0xFF]
-       ^ hashByte[OPPONENT][7][(o >> 56) & 0xFF];
-
-    return h;
+    return RXBitBoard::hashcode(this->discs[this->player], this->discs[this->player^1]);
 }
 
 __attribute__((always_inline))
-inline unsigned long long RXBitBoard::hashcode_after_move(RXMove* move) const {
-    const unsigned long long o = discs[player] | (move->flipped | move->square);
-    const unsigned long long p = discs[player ^ 1] ^ move->flipped;
+inline unsigned long long RXBitBoard::hashcode(const unsigned long long P, const unsigned long long O) {
+    
+    uint32_t res1 = CRC32C_U64(0,    P);
+    uint32_t res2 = CRC32C_U64(0,    O);
+    res1          = CRC32C_U64(res1, O);
+    res2          = CRC32C_U64(res2, P);
+    return ((unsigned long long)res1 << 32) | res2;
 
-    unsigned long long h = hashByte[PLAYER][0][p & 0xFF]
-                         ^ hashByte[PLAYER][1][(p >> 8) & 0xFF]
-                         ^ hashByte[PLAYER][2][(p >> 16) & 0xFF]
-                         ^ hashByte[PLAYER][3][(p >> 24) & 0xFF]
-                         ^ hashByte[PLAYER][4][(p >> 32) & 0xFF]
-                         ^ hashByte[PLAYER][5][(p >> 40) & 0xFF]
-                         ^ hashByte[PLAYER][6][(p >> 48) & 0xFF]
-                         ^ hashByte[PLAYER][7][(p >> 56) & 0xFF];
-
-    h ^= hashByte[OPPONENT][0][o & 0xFF]
-       ^ hashByte[OPPONENT][1][(o >> 8) & 0xFF]
-       ^ hashByte[OPPONENT][2][(o >> 16) & 0xFF]
-       ^ hashByte[OPPONENT][3][(o >> 24) & 0xFF]
-       ^ hashByte[OPPONENT][4][(o >> 32) & 0xFF]
-       ^ hashByte[OPPONENT][5][(o >> 40) & 0xFF]
-       ^ hashByte[OPPONENT][6][(o >> 48) & 0xFF]
-       ^ hashByte[OPPONENT][7][(o >> 56) & 0xFF];
-
-    return h;
 }
 
 
@@ -423,10 +390,8 @@ __attribute__((always_inline))
 inline int RXBitBoard::count_flips(const int pos, const unsigned long long P) {
 #if ARCH == ARCH_ARM_NEON
     return count_flips_NEON(pos, P);
-#elif ARCH == ARCH_X86_AVX2
-    return count_flips_AVX2(pos, P);
 #else
-    return count_flips_X86[pos](P);
+    return count_flips_AVX2(pos, P);
 #endif
 }
 
@@ -435,10 +400,8 @@ __attribute__((always_inline))
 inline void RXBitBoard::generate_flips(const int pos, RXMove& move) const {
 #if ARCH == ARCH_ARM_NEON
     generate_flips_NEON(pos, move);
-#elif ARCH == ARCH_X86_AVX2
-    return generate_flips_AVX2(pos, move);
 #else
-    generate_flips_X86(pos, move);
+    generate_flips_AVX2(pos, move);
 #endif
 }
 
@@ -447,10 +410,8 @@ __attribute__((always_inline))
 inline unsigned long long RXBitBoard::do_flips(const int pos, unsigned long long P, unsigned long long O) {
 #if ARCH == ARCH_ARM_NEON
     return do_flips_NEON[pos](P, O);
-#elif ARCH == ARCH_X86_AVX2
-    return RXBitBoard::do_flips_AVX2(pos, P, O);
 #else
-    return do_flips_X86[pos](P, O);
+    return RXBitBoard::do_flips_AVX2(pos, P, O);
 #endif
 }
 

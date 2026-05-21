@@ -19,13 +19,9 @@
 #define RXMOVE_HPP
 
 #include <iostream>
-#include <iomanip>
-#include <cstddef> // define nullptr
 #include <string>
-#include <vector>
 
 #include "RXConstantes.hpp"
-#include "OsObjects.hpp"
 #include "RXPattern.hpp"
 
 
@@ -33,7 +29,7 @@ class RXMove {
 	
 	public :
 
-    char position;
+    unsigned char position;
     unsigned long long square;
     unsigned long long flipped;
     int score;

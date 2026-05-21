@@ -18,7 +18,6 @@
 #ifndef RXSEARCH_HPP
 #define RXSEARCH_HPP
 
-#include <string>
 #include "RXBBPatterns.hpp"
 #include "RXHashTable.hpp"
 #include "OsObjects.hpp"

@@ -21,22 +21,19 @@
 
 #define RELEASE
 
-#define ARCH_X86_GENERIC 0
-#define ARCH_X86_AVX2    1
-#define ARCH_ARM_NEON    2
+#define ARCH_X86_AVX2    0
+#define ARCH_ARM_NEON    1
 
 #ifndef ARCH
     #ifdef __AVX2__
         #define ARCH ARCH_X86_AVX2
-    #elif defined __ARM_NEON
-        #define ARCH ARCH_ARM_NEON
     #else
-        #define ARCH ARCH_X86_GENERIC
+        #define ARCH ARCH_ARM_NEON
     #endif
 #endif
 
 
-//login actif / inactif
+//login ON / OFF
 #define LOGGING_ON
 
 //Matchs avec / sans alpha_cut 91/157/49 [297]
@@ -56,6 +53,9 @@
 //not efficient
 //#define PV_EXTENSION
 
+//LMR 10/20
+//ELO +13 ±8 LLR 3,1078 (4000 games)
+#define USE_LMR
 
 #define USE_ETC
 

@@ -18,7 +18,7 @@
 #ifndef RXBBPATTERN_HPP
 #define RXBBPATTERN_HPP
 
-#include <cmath>
+#include <algorithm> //std::min
 #include <atomic>
 
 #include "RXConstantes.hpp"
@@ -56,7 +56,7 @@ class RXBBPatterns {
     
 #undef func
     
-    static type_update_patterns const update_patterns_NEON[][2];
+    static type_update_patterns const update_patterns[][2];
 
 
     public :
@@ -139,7 +139,7 @@ inline RXBBPatterns& RXBBPatterns::operator=(const RXBBPatterns& src) {
 
 __attribute__((always_inline))
 inline void RXBBPatterns::patterns_update(RXMove& move) const {
-    (this->*RXBBPatterns::update_patterns_NEON[move.position][board.player])(move);
+    (this->*RXBBPatterns::update_patterns[move.position][board.player])(move);
 }
 
 __attribute__((always_inline))

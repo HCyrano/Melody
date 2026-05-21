@@ -16,7 +16,6 @@
  */
 
 #include <iostream>
-#include <iomanip>
 
 
 #include "RXEngine.hpp"
@@ -256,7 +255,7 @@ int RXEngine::EG_alphabeta_hash_mobility(const unsigned int threadID, RXBitBoard
     
     
     RXHashValue entry;
-    if(hTable->get(hash_code, type_hashtable, entry)) {
+    if(hTable->get(hash_code, board, type_hashtable, entry)) {
         
         if(entry.selectivity == NO_SELECT && entry.depth >= board.n_empty) { //
             
@@ -272,7 +271,7 @@ int RXEngine::EG_alphabeta_hash_mobility(const unsigned int threadID, RXBitBoard
             }
             
             //04/02/2025
-            if(board.isValid_square(entry.move))
+//            if(board.isValid_square(entry.move))
                 bestmove = entry.move;
 
         }
@@ -391,8 +390,7 @@ int RXEngine::EG_alphabeta_hash_mobility(const unsigned int threadID, RXBitBoard
         }
     }
     
-    //en test 21/01/2025 suspision bug (bestscore >= upper mais stocker comme < beta)
-    hTable->update(hash_code, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
+    hTable->update(hash_code, board, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
     
     return bestscore;
 }
@@ -452,7 +450,7 @@ int RXEngine::EG_PVS_hash_mobility(const unsigned int threadID, RXBitBoard& boar
     
     
     RXHashValue entry;
-    if(hTable->get(hash_code, type_hashtable, entry)) {
+    if(hTable->get(hash_code, board, type_hashtable, entry)) {
         
         if(entry.selectivity == NO_SELECT && entry.depth >= board.n_empty) { //
             
@@ -469,7 +467,7 @@ int RXEngine::EG_PVS_hash_mobility(const unsigned int threadID, RXBitBoard& boar
             }
             
             //04/02/2025
-            if(board.isValid_square(entry.move))
+//            if(board.isValid_square(entry.move))
                 bestmove = entry.move;
 
         }
@@ -606,8 +604,7 @@ int RXEngine::EG_PVS_hash_mobility(const unsigned int threadID, RXBitBoard& boar
         }
     }
     
-    //en test 21/01/2025 suspision bug (bestscore >= upper mais stocker comme < beta)
-    hTable->update(hash_code, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
+    hTable->update(hash_code, board, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
     
     return bestscore;
 }
@@ -645,7 +642,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
     const unsigned long long  hash_code = board.hashcode();
     
     RXHashValue entry;
-    if(hTable->get(hash_code, type_hashtable, entry)) {
+    if(hTable->get(hash_code, board, type_hashtable, entry)) {
         
         if( entry.selectivity == NO_SELECT && entry.depth >= board.n_empty) {
             
@@ -664,7 +661,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
             
         }
         
-        if(board.isValid_square(entry.move))
+//        if(board.isValid_square(entry.move))
             bestmove = entry.move;
 
     }
@@ -723,15 +720,21 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
                 if ( stability_bound >= upper ) {
                     return stability_bound;
                 }
+                if (stability_bound > lower) {
+                    lower = stability_bound;
+                }
             }
 #endif
             
 #ifdef USE_ETC
-            hashcode_after_move = board.hashcode_after_move(move);
+            const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
+            const unsigned long long O = board.discs[board.player] | (move->square | move->flipped );
+
+            hashcode_after_move = board.hashcode(P, O);
             bool bestmove_eliminated = false;
 
             //synchronized acces
-            if(!pv && hTable->get(hashcode_after_move, type_hashtable, entry) && entry.selectivity == NO_SELECT && entry.depth>=(board.n_empty-1)) {
+            if(!pv && hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.selectivity == NO_SELECT && entry.depth>=(board.n_empty-1)) {
                 
                 // beta cut
                 if(-entry.upper > lower) {
@@ -778,16 +781,22 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
                     if ( stability_bound >= upper ) {
                         return stability_bound;
                     }
+                    if (stability_bound > lower) {
+                        lower = stability_bound;
+                    }
                 }
 #endif
                 
                 move->score = 0; //not in Hash
                 
 #ifdef USE_ETC
-                hashcode_after_move = board.hashcode_after_move(move);
+                const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
+                const unsigned long long O = board.discs[board.player] | (move->square | move->flipped );
+
+                hashcode_after_move = board.hashcode(P, O);
 
                 //synchronized acces
-                if(hTable->get(hashcode_after_move, type_hashtable, entry) && entry.depth>=(board.n_empty-1)) {
+                if(hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.depth>=(board.n_empty-1)) {
                     
                     if (!pv && entry.selectivity == NO_SELECT) {
                         
@@ -911,9 +920,9 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
 #ifdef USE_SPLIT_AT_ETC_MOBILITY
                     
                     // Split? not efficient : unused
-                    if(activeThreads > 1  && !abort.load() && board.n_empty>=EG_MEDIUM_HI_TO_LOW
+                    if(activeThreads > 1  && !abort.load()
                        && !thread_should_stop(threadID) && idle_thread_exists(threadID)
-                       && split(sBoard, pv, 0, board.n_empty, NO_SELECT, lower, upper, bestscore, bestmove, list, threadID, RXSplitPoint::END_ETC_MOBILITY)) {
+                       && split(sBoard, pv, 0, board.n_empty, LMR_NO_REDUCTION, NO_SELECT, lower, upper, bestscore, bestmove, list, threadID, RXSplitPoint::END_ETC_MOBILITY)) {
                         
                         break;
                     }
@@ -943,8 +952,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
     if(abort.load()  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
-    //en test 21/01/2025 suspision bug (bestscore >= upper mais stocker comme < beta)
-    hTable->update(hash_code, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
+    hTable->update(hash_code, board, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
     
     
     return bestscore;
@@ -1060,7 +1068,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
     //synchronized acces
     RXHashValue entry;
     const unsigned long long hash_code = board.hashcode();
-    if(hTable->get(hash_code, type_hashtable, entry)) {
+    if(hTable->get(hash_code, board, type_hashtable, entry)) {
         
         
         if(!pv &&  entry.selectivity >= selectivity && entry.depth >= board.n_empty) {
@@ -1081,7 +1089,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
             
         }
         
-        if(board.isValid_square(entry.move))
+//        if(board.isValid_square(entry.move))
             bestmove = entry.move;
 
     }
@@ -1123,8 +1131,8 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
         if(abort.load() || thread_should_stop(threadID))
             return INTERRUPT_SEARCH;
         
-        if(hTable->get(hash_code, type_hashtable, entry)) {
-            if(board.isValid_square(entry.move))
+        if(hTable->get(hash_code, board, type_hashtable, entry)) {
+//            if(board.isValid_square(entry.move))
                 bestmove = entry.move;
         }
 
@@ -1156,15 +1164,24 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                 if ( stability_bound >= upper ) {
                     return stability_bound;
                 }
+                if (stability_bound > lower) {
+                    lower = stability_bound;
+                }
             }
 #endif
             
 #ifdef USE_ETC
-            //synchronized acces
-            if(!pv && hTable->get(board.hashcode_after_move(move), type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth>=(board.n_empty-1)) {
+            if(!pv) {
+                const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
+                const unsigned long long O = board.discs[board.player] | (move->square | move->flipped );
+                const unsigned long long hashcode_after_move = RXBitBoard::hashcode(P, O);
                 
-                if(-entry.upper >= upper) {
-                    return -entry.upper ;
+                //synchronized acces
+                if(hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth>=(board.n_empty-1)) {
+                    
+                    if(-entry.upper >= upper) {
+                        return -entry.upper ;
+                    }
                 }
             }
 #endif
@@ -1197,24 +1214,31 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                     if ( stability_bound >= upper ) {
                         return stability_bound;
                     }
+                    if (stability_bound > lower) {
+                        lower = stability_bound;
+                    }
                 }
 #endif
                 
                 move->score = 0;    //not in hash
                 
 #ifdef USE_ETC
-                //synchronized acces
-                if(hTable->get(board.hashcode_after_move(move), type_hashtable, entry) && entry.depth>=(board.n_empty-1)) {
+                if(!pv) {
+                    const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
+                    const unsigned long long O = board.discs[board.player] | (move->square | move->flipped);
+                    const unsigned long long hashcode_after_move = RXBitBoard::hashcode(P, O);
                     
-                    move->score = -3;    //in hash
-
-                    if ( -entry.upper >= upper) {
-                        if(!pv && entry.selectivity >= selectivity)
-                            return -entry.upper;
-                        move->score = -16;
+                    //synchronized acces
+                    if(hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.depth>=(board.n_empty-1)) {
+                        
+                        move->score = -3;    //in hash
+                        
+                        if ( -entry.upper >= upper) {
+                            if(!pv && entry.selectivity >= selectivity)
+                                return -entry.upper;
+                            move->score = -16;
+                        }
                     }
-                    
-                    
                 }
 #endif
                 
@@ -1413,11 +1437,6 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
             }
             
             
-            //************************************************************************************************
-            //dans la methode search sequentielle dans la boucle des autres moves
-            //************************************************************************************************
-            
-            
             /* other moves : try to refute the first/best one */
             for(;!abort.load()  && lower < upper && list->next != nullptr; list = list->next) {
                 
@@ -1426,7 +1445,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                     
                     // Split?
                     if(activeThreads > 1  && !abort.load() && !thread_should_stop(threadID) && idle_thread_exists(threadID)
-                       && split(sBoard, pv, 1, board.n_empty, selectivity, lower, upper, bestscore, bestmove, list, threadID, RXSplitPoint::END_PVS)) {
+                       && split(sBoard, pv, 1, board.n_empty, LMR_NO_REDUCTION, selectivity, lower, upper, bestscore, bestmove, list, threadID, RXSplitPoint::END_PVS)) {
                         
                         break;
                     }
@@ -1468,8 +1487,8 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
     if(abort  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
-    hTable->update(   hash_code, type_hashtable, selectivity, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
-    hTable_PV->update(hash_code, type_hashtable, selectivity, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
+    hTable->update(   hash_code, board, type_hashtable, selectivity, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
+    hTable_PV->update(hash_code, board, type_hashtable, selectivity, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
             
     return bestscore;
 }
@@ -1593,7 +1612,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
     //synchronized acces
     RXHashValue entry;
     const unsigned long long hash_code = board.hashcode();
-    if(hTable->get(hash_code, type_hashtable, entry)) {
+    if(hTable->get(hash_code, board, type_hashtable, entry)) {
         
         if(entry.selectivity >= selectivity && entry.depth>=board.n_empty) {
             
@@ -1603,7 +1622,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
             if(entry.upper <= alpha)
                 return  entry.upper;
             
-            if(board.isValid_square(entry.move))
+//            if(board.isValid_square(entry.move))
                 bestmove = entry.move;
 
         }
@@ -1622,23 +1641,26 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
     }
 #endif
     
-    //param mpc
-    int lower_probcut, upper_probcut;
-    int depth_probcut = (board.n_empty/4)*2 + (board.n_empty & 0x1UL);
-    probcut_bounds(board, selectivity, board.n_empty, depth_probcut, pvDev, alpha, alpha+1, lower_probcut, upper_probcut);
-
-    if(bestmove != NOMOVE && entry.selectivity >= selectivity && entry.depth>=depth_probcut) {
-        
-        if(entry.lower >= upper_probcut) {
-            return alpha+2 -(alpha & 1); //05/05/2026
-        }
-#ifdef USE_PROBCUT_ALPHA
-        if(entry.upper <= lower_probcut) {
-            alpha -(alpha & 1);
-        }
-#endif
-        
-    }
+/* *******************************************************************************
+    Disable Not efficient : zero cutoff on Fforum-01-79
+   ******************************************************************************* */
+//    //param mpc
+//    int lower_probcut, upper_probcut;
+//    int depth_probcut = (board.n_empty/4)*2 + (board.n_empty & 0x1UL);
+//    probcut_bounds(board, selectivity, board.n_empty, depth_probcut, pvDev, alpha, alpha+1, lower_probcut, upper_probcut);
+//
+//    if(bestmove != NOMOVE && entry.selectivity >= selectivity && entry.depth>=depth_probcut) {
+//        
+//        if(entry.lower >= upper_probcut) {
+//            return alpha+2 -(alpha & 1); //05/05/2026
+//        }
+//#ifdef USE_PROBCUT_ALPHA
+//        if(entry.upper <= lower_probcut) {
+//            alpha -(alpha & 1);
+//        }
+//#endif
+//        
+//    }
 
     
     RXMove* list = threads[threadID]._move[board.n_empty];
@@ -1674,10 +1696,13 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
             
             //synchronized acces
 #ifdef USE_ETC
-            hashcode_after_move = board.hashcode_after_move(move);
+            const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
+            const unsigned long long O = board.discs[board.player] | (move->square | move->flipped);
+            hashcode_after_move = RXBitBoard::hashcode(P, O);
+            
             bool bestmove_eliminated = false;
 
-            if(hTable->get(hashcode_after_move, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth >= (board.n_empty-1)) {
+            if(hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth >= (board.n_empty-1)) {
                 
                 if(-entry.upper > alpha) {
                     return -entry.upper;
@@ -1729,9 +1754,11 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
                 
                 //synchronized acces
 #ifdef USE_ETC
-                hashcode_after_move = board.hashcode_after_move(move);
+                const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
+                const unsigned long long O = board.discs[board.player] | (move->square | move->flipped);
+                hashcode_after_move = RXBitBoard::hashcode(P, O);
 
-                if(hTable->get(hashcode_after_move, type_hashtable, entry) && entry.depth>=(board.n_empty-1)) {
+                if(hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.depth>=(board.n_empty-1)) {
                     
                     move->score = -3;
                     
@@ -1783,7 +1810,12 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
         }
         
     } else {
-        
+
+        //param mpc
+        int lower_probcut, upper_probcut;
+        int depth_probcut = (board.n_empty/4)*2 + (board.n_empty & 0x1UL);
+        probcut_bounds(board, selectivity, board.n_empty, depth_probcut, pvDev, alpha, alpha+1, lower_probcut, upper_probcut);
+
         //XProbcut
         int type_probcut = probcut(threadID, sBoard, selectivity, alpha, board.n_empty, depth_probcut, lower_probcut, upper_probcut, list, bestmove != NOMOVE);
         if( type_probcut == BETA_CUT) {
@@ -1820,9 +1852,9 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
         int score;
         for(RXMove* iter = list->next; !abort.load()  && bestscore<=alpha && iter != nullptr; iter = iter->next, list = list->next) {
             
-            if(activeThreads > 1 && board.n_empty>=MIN_DEPTH_USE_ENDCUT && (list->next)->next != nullptr
+            if(activeThreads > 1 && board.n_empty>=MIN_DEPTH_USE_ENDCUT && iter->next != nullptr
                && !abort.load() && !thread_should_stop(threadID) &&  idle_thread_exists(threadID)
-               && split(sBoard, false, pvDev+1, board.n_empty, selectivity,
+               && split(sBoard, false, pvDev, board.n_empty, LMR_NO_REDUCTION, selectivity,
                         alpha, (alpha + 1), bestscore, bestmove, list, threadID, RXSplitPoint::END_XPROBCUT)) {
              
                 break;
@@ -1852,9 +1884,9 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
     if(abort.load()  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
-    hTable->update(hash_code, type_hashtable, (board.n_empty<MIN_DEPTH_USE_ENDCUT ? NO_SELECT: selectivity), DEPTH_BOOSTER+board.n_empty, alpha, bestscore, bestmove);
+    hTable->update(hash_code, board, type_hashtable, (board.n_empty<MIN_DEPTH_USE_ENDCUT ? NO_SELECT: selectivity), DEPTH_BOOSTER+board.n_empty, alpha, bestscore, bestmove);
     if(pvDev < 4)
-        hTable_PV->update(hash_code, type_hashtable, (board.n_empty<MIN_DEPTH_USE_ENDCUT ? NO_SELECT: selectivity), DEPTH_BOOSTER+board.n_empty, alpha, bestscore, bestmove);
+        hTable_PV->update(hash_code, board, type_hashtable, (board.n_empty<MIN_DEPTH_USE_ENDCUT ? NO_SELECT: selectivity), DEPTH_BOOSTER+board.n_empty, alpha, bestscore, bestmove);
     
     return bestscore;
     
@@ -1898,7 +1930,7 @@ void RXEngine::EG_SP_search_XEndcut(RXSplitPoint* sp, const unsigned int threadI
         const int alpha = sp->alpha; //local copy
         
         sBoard.do_move(*move);
-        int score = -EG_NWS_XEndCut(threadID, sBoard, sp->pvDev, sp->selectivity, -alpha-1, false);
+        int score = -EG_NWS_XEndCut(threadID, sBoard, sp->pvDev+1, sp->selectivity, -alpha-1, false);
         sBoard.undo_move(*move);
         
         
@@ -2025,7 +2057,7 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, int alph
             
             if(activeThreads > 1 && iter->next != nullptr && board.n_empty >= EG_DEEP_TO_MEDIUM
                && !abort.load() && idle_thread_exists(0) && !thread_should_stop(0)
-               && split(sBoard, true, 0, board.n_empty, selectivity,
+               && split(sBoard, true, 0, board.n_empty, LMR_NO_REDUCTION, selectivity,
                         lower, upper, bestscore, bestmove, iter, 0, RXSplitPoint::END_ROOT)) {
                 
                 break;
@@ -2130,7 +2162,7 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, int alph
         
         //        *log << "                  [score " << bestscore << " ]" << std::endl;
         
-        hTable->update(sBoard.board.hashcode(), type_hashtable, selectivity, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
+        hTable->update(board.hashcode(), board, type_hashtable, selectivity, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
         
         
     }

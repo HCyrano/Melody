@@ -15,10 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "RXBBPatterns.hpp"
 #include <string>
+#include <iomanip>
 
-#include "RXEvaluation.hpp"
+#include "RXBBPatterns.hpp"
+
 
 
 std::ostream& operator<<(std::ostream& os, RXBBPatterns& sBoard) {
@@ -7476,7 +7477,7 @@ void RXBBPatterns::update_patterns_WHITE_H8(RXMove& move) const {
 
 
 // Ordre : [pos][0] = BLACK, [pos][1] = WHITE
-RXBBPatterns::type_update_patterns const RXBBPatterns::update_patterns_NEON[][2] = {
+RXBBPatterns::type_update_patterns const RXBBPatterns::update_patterns[][2] = {
 #define func(pos) { &RXBBPatterns::update_patterns_BLACK_##pos, &RXBBPatterns::update_patterns_WHITE_##pos }
     func(H8), func(G8), func(F8), func(E8), func(D8), func(C8), func(B8), func(A8),
     func(H7), func(G7), func(F7), func(E7), func(D7), func(C7), func(B7), func(A7),

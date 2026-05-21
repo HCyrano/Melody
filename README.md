@@ -1,5 +1,7 @@
 # ⚪ Melody: High-Performance Othello AI ⚫
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE.md)
+
 **Melody** is a high-performance Othello (Reversi) engine written in C++23. Designed for competition, it combines the power of classical search algorithms with modern predictive models to deliver top-level playing strength.
 
 ---
@@ -47,27 +49,19 @@ The engine is specifically optimized for the Apple ecosystem to maximize nodes c
 ---
 
 #### 🚀 Release Technical Details:
-This version of Melody is distributed as a Universal Binary, compatible with both ARM and x86-64 architectures.
+This version of Melody is compatible with both ARM NEON and x86-64 AVX2 architectures.
 
-ARM Architecture: The code is optimized to make intensive use of the NEON (SIMD) extension, ensuring increased performance on compatible processors (Apple Silicon, Raspberry Pi, etc.).
+ARM Architecture: The code is optimized to make intensive use of the NEON (SIMD) extension, ensuring increased performance on compatible processors (Apple Silicon, Raspberry Pi 4+, etc.).
 
 x86-64 Architecture: This version now benefits from hardware optimizations via AVX/AVX2 instruction sets. Core compute-intensive functions have been rewritten using SIMD to maximize data throughput and minimize latency.
 
-💡 Community Feedback & Testing.
-While the essential functions are now implemented, feedback regarding performance across different micro-architectures (Intel/AMD) is highly appreciated to help refine our profiling.
+> [!NOTE]
+> 💡 Feedback on performance across different x86-64 micro-architectures (Intel/AMD) is highly appreciated. Feel free to open an Issue or contact me to discuss!
 
-If you would like to help implement these optimizations.
+### 🐧 Linux
 
-If you have the testing capabilities to validate specific builds.
+No binary is provided for Linux to avoid dependency issues across distributions. Please download the source code and follow the instructions in [Compilation.md](COMPILATION.md) to build a binary perfectly optimized for your distribution and processor.
 
-🐧 Linux Compatibility
-Unlike macOS, no binary is provided for Linux to avoid dependency issues across distributions.
-
-Procedure: Please download the Source Code and follow the instructions in 🛠️ Compilation.md.
-
-This ensures the binary will be perfectly optimized for your distribution (Ubuntu, Debian, Arch, etc.) and your processor.
-
-#### Feel free to open an Issue or contact me to discuss!
 ---
 
 

@@ -16,7 +16,6 @@
  */
 
 #include <iomanip>
-//#include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <sys/time.h>
@@ -33,6 +32,8 @@ const int RXEngine::MG_SELECT = 1; //72%
 const int RXEngine::NO_SELECT = std::size(RXEngine::PERCENTILE);
 
 const int RXEngine::DEPTH_BOOSTER = DEPTH_4;
+
+const unsigned int RXEngine::LMR_NO_REDUCTION = 0;
 
 
 extern "C"
@@ -293,7 +294,7 @@ int RXEngine::probcut(const unsigned int threadID, RXBBPatterns& sBoard, const i
     
     
     const int beta = alpha+1;
-    int eval_error_0 = std::round(PERCENTILE[selectivity] * sigma(board.n_empty, depth, 0));
+    int eval_error_0 = static_cast<int>(std::round(PERCENTILE[selectivity] * sigma(board.n_empty, depth, 0)));
 
     int eval_0 = sBoard.get_score<WITHOUT_FM>();
     
@@ -365,7 +366,7 @@ int RXEngine::probcut(const unsigned int threadID, RXBBPatterns& sBoard, const i
             
             if(bestscore >= upper_probcut) { //beta cut
                 
-                hTable->update(board.hashcode(), type_hashtable, (depth_probcut>DEPTH_5? selectivity:NO_SELECT), depth_probcut, upper_probcut-1, bestscore, list1->position);
+                hTable->update(board.hashcode(), board, type_hashtable, (depth_probcut>DEPTH_5? selectivity:NO_SELECT), depth_probcut, upper_probcut-1, bestscore, list1->position);
                 return BETA_CUT;
             }
         }
@@ -440,7 +441,7 @@ int RXEngine::probcut(const unsigned int threadID, RXBBPatterns& sBoard, const i
                 
                 if(bestscore >= upper_probcut) { //beta cut
                     
-                    hTable->update(board.hashcode(), type_hashtable, (depth_probcut>DEPTH_5? selectivity:NO_SELECT), depth_probcut, upper_probcut-1, bestscore, iter->position);
+                    hTable->update(board.hashcode(), board, type_hashtable, (depth_probcut>DEPTH_5? selectivity:NO_SELECT), depth_probcut, upper_probcut-1, bestscore, iter->position);
                     return BETA_CUT;
                 }
             }
@@ -524,7 +525,7 @@ int RXEngine::probcut(const unsigned int threadID, RXBBPatterns& sBoard, const i
                     bestscore = iter->score;
                     
                     if(bestscore > lower_probcut) { //no cut
-                        hTable->update(board.hashcode(), type_hashtable, (depth_probcut>DEPTH_5? selectivity:NO_SELECT), depth_probcut, lower_probcut, bestscore, bestmove);
+                        hTable->update(board.hashcode(), board, type_hashtable, (depth_probcut>DEPTH_5? selectivity:NO_SELECT), depth_probcut, lower_probcut, bestscore, bestmove);
                         return NO_CUT;
                     }
                 }
@@ -533,7 +534,7 @@ int RXEngine::probcut(const unsigned int threadID, RXBBPatterns& sBoard, const i
         //bestscore <= lower_probcut
         
         if(bestscore != UNDEF_SCORE)
-            hTable->update(board.hashcode(), type_hashtable, (depth_probcut>DEPTH_5? selectivity:NO_SELECT), depth_probcut, lower_probcut, bestscore, bestmove);
+            hTable->update(board.hashcode(), board, type_hashtable, (depth_probcut>DEPTH_5? selectivity:NO_SELECT), depth_probcut, lower_probcut, bestscore, bestmove);
         return ALPHA_CUT;
         
         
@@ -563,7 +564,7 @@ int RXEngine::PVS_last_ply(const unsigned int threadID, RXBBPatterns& sBoard, in
     
     //synchronized access
     RXHashValue entry;
-    if(hTable_shallow->get(hash_code, entry)) {
+    if(hTable_shallow->get(hash_code, board, entry)) {
         if(entry.depth >= depth) {
             
             if (upper > entry.upper) {
@@ -578,7 +579,7 @@ int RXEngine::PVS_last_ply(const unsigned int threadID, RXBBPatterns& sBoard, in
                     return lower;
             }
             
-            if(board.isValid_square(entry.move))
+//            if(board.isValid_square(entry.move))
                 bestmove = entry.move;
 
         }
@@ -737,7 +738,7 @@ int RXEngine::PVS_last_ply(const unsigned int threadID, RXBBPatterns& sBoard, in
     }
     
     if constexpr (UseFM)
-        hTable_shallow->update(hash_code, depth, alpha, upper, bestscore, bestmove);
+        hTable_shallow->update(hash_code, board, depth, alpha, upper, bestscore, bestmove);
     
     return bestscore;
     
@@ -760,7 +761,7 @@ int RXEngine::alphabeta_last_three_ply(const unsigned int threadID, RXBBPatterns
     
     //synchronized access
     RXHashValue entry;
-    if (hTable_shallow->get(hash_code, entry)) {
+    if (hTable_shallow->get(hash_code, board, entry)) {
         //if(entry.depth >= 3) { //always true
         
         if (upper > entry.upper) {
@@ -777,7 +778,7 @@ int RXEngine::alphabeta_last_three_ply(const unsigned int threadID, RXBBPatterns
         
         //}
         
-        if(board.isValid_square(entry.move))
+//        if(board.isValid_square(entry.move))
             bestmove = entry.move;
     }
     
@@ -848,7 +849,7 @@ int RXEngine::alphabeta_last_three_ply(const unsigned int threadID, RXBBPatterns
     }
     
     if constexpr (UseFM)
-        hTable_shallow->update(hash_code, DEPTH_3, alpha, upper, bestscore, bestmove);
+        hTable_shallow->update(hash_code, board, DEPTH_3, alpha, upper, bestscore, bestmove);
     
     return bestscore;
     
@@ -1505,18 +1506,18 @@ void* RXEngine::run() {
         
         
         RXHashValue entry_PV;
-        unsigned long long hash_code = board.hashcode();
-        if(expected_PV->get(hash_code, type_hashtable, entry_PV)) {
+        const unsigned long long hash_code = board.hashcode();
+        if(expected_PV->get(hash_code, board, type_hashtable, entry_PV)) {
             RXHashValue entry;
-            if(!hTable->get(board, type_hashtable, entry)) {
+            if(!hTable->get(hash_code, board, type_hashtable, entry)) {
                 *log << "                  in expected_PV" << std::endl;
                 hTable->copyPV(expected_PV, type_hashtable, board, type_hashtable);
             }
         }
         
-        if(main_PV->get(hash_code, type_hashtable, entry_PV)) {
+        if(main_PV->get(hash_code, board, type_hashtable, entry_PV)) {
             RXHashValue entry;
-            if(!hTable->get(board, type_hashtable, entry)) {
+            if(!hTable->get(hash_code, board, type_hashtable, entry)) {
                 *log << "                  in main_PV" << std::endl;
                 hTable->copyPV(main_PV, type_hashtable, board, type_hashtable);
             }
@@ -1526,7 +1527,7 @@ void* RXEngine::run() {
         
         
         RXHashValue entry;
-        if(hTable->get(hash_code, type_hashtable, entry)) {
+        if(hTable->get(hash_code, board, type_hashtable, entry)) {
             
             best_answer.position = entry.move;
             list->sort_bestmove(entry.move);
@@ -2089,19 +2090,6 @@ void RXEngine::wake_sleeping_threads() {
 //
 //}
 
-// idle_thread_exists() tries to find an idle thread which is available as
-// a slave for the thread with threadID "master".
-
-bool RXEngine::idle_thread_exists(unsigned int master) {
-    
-    //    assert(master >= 0 && master < activeThreads);
-    //    assert(activeThreads > 1);
-    
-    for(unsigned int i = 0; i < activeThreads; i++)
-        if(thread_is_available(i, master))
-            return true;
-    return false;
-}
 
 // thread_is_available() checks whether the thread with threadID "slave" is
 // available to help the thread with threadID "master" at a split point.  An
@@ -2185,7 +2173,7 @@ bool RXEngine::thread_is_available(unsigned int slave, unsigned int master) {
 
 
 bool RXEngine::split(RXBBPatterns& sBoard, bool pv, int pvDev,
-                     int depth, int selectivity, int alpha, int beta, int& bestscore, unsigned int& bestmove,
+                     int depth, int depth_reduction, int selectivity, int alpha, int beta, int& bestscore, unsigned int& bestmove,
                      RXMove* list, unsigned int master, RXSplitPoint::t_callBackSearch callback) {
     
     
@@ -2258,6 +2246,8 @@ bool RXEngine::split(RXBBPatterns& sBoard, bool pv, int pvDev,
     splitPoint.list = list;
     
     splitPoint.depth = depth;
+    splitPoint.depth_reduction = depth_reduction;
+
     splitPoint.pv = pv;
     splitPoint.pvDev = pvDev;
     splitPoint.selectivity = selectivity;

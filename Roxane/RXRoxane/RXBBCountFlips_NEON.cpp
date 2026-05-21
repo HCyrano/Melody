@@ -22,7 +22,6 @@
 
 #include "RXBitBoard.hpp"
 
-#include <arm_neon.h>
 
 /** precomputed count flip array */
 alignas(64) const unsigned char COUNT_FLIP[8][256] = {
