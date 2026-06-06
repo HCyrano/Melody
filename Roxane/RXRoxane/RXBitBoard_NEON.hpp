@@ -15,6 +15,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+typedef struct {
+    uint64x2_t PP;
+    uint64x2_t rPP;
+    uint64x2_t OO;
+    uint64x2_t rOO;
+    uint64x2_t one;
+} NeonBoardCtx;
+
+
+// forward declaration - définie dans RXBBDoFlips_AVX2.cpp
+uint64x2_t do_flip_NEON(const NeonBoardCtx *ctx, int pos);
+
 inline unsigned int RXBitBoard::count_stable_edge(const unsigned long long P, const unsigned long long O) {
     return __builtin_popcountll(RXBitBoard::get_stable_edge(P, O));
 }
@@ -64,42 +76,42 @@ inline int RXBitBoard::get_stability(const unsigned long long discs_player, cons
     
 }
 
-inline unsigned long long RXBitBoard::get_legal_moves(const unsigned long long p_discs, const unsigned long long o_discs) {
+inline unsigned long long RXBitBoard::get_legal_moves(const unsigned long long P, const unsigned long long O) {
     
     constexpr int64x2_t S_H  = { -1,  1}, S2_H  = { -2,  2}, S4_H  = { -4,  4};
     constexpr int64x2_t S_V  = { -8,  8}, S2_V  = {-16, 16}, S4_V  = {-32, 32};
     constexpr int64x2_t S_D7 = { -7,  7}, S2_D7 = {-14, 14}, S4_D7 = {-28, 28};
     constexpr int64x2_t S_D9 = { -9,  9}, S2_D9 = {-18, 18}, S4_D9 = {-36, 36};
     
-    const uint64x2_t P = vdupq_n_u64(p_discs);
-    const uint64x2_t O = vdupq_n_u64(o_discs);
-    const uint64x2_t occupied = vdupq_n_u64(p_discs | o_discs);
+    const uint64x2_t PP = vdupq_n_u64(P);
+    const uint64x2_t OO = vdupq_n_u64(O);
+    const uint64x2_t occupied = vdupq_n_u64(P | O);
     
-    const uint64x2_t O_inner = vdupq_n_u64(o_discs & 0x7E7E7E7E7E7E7E7EULL);
+    const uint64x2_t OO_inner = vdupq_n_u64(O & 0x7E7E7E7E7E7E7E7EULL);
     
     auto kogge_stone_step = [](uint64x2_t& flip, int64x2_t shift, uint64x2_t mask) {
         flip = vorrq_u64(flip, vandq_u64(vshlq_u64(flip, shift), mask));
     };
     
-    uint64x2_t fH  = vandq_u64(vshlq_u64(P, S_H),  O_inner);
-    uint64x2_t fV  = vandq_u64(vshlq_u64(P, S_V),  O);
-    uint64x2_t fD7 = vandq_u64(vshlq_u64(P, S_D7), O_inner);
-    uint64x2_t fD9 = vandq_u64(vshlq_u64(P, S_D9), O_inner);
+    uint64x2_t fH  = vandq_u64(vshlq_u64(PP, S_H),  OO_inner);
+    uint64x2_t fV  = vandq_u64(vshlq_u64(PP, S_V),  OO);
+    uint64x2_t fD7 = vandq_u64(vshlq_u64(PP, S_D7), OO_inner);
+    uint64x2_t fD9 = vandq_u64(vshlq_u64(PP, S_D9), OO_inner);
     
-    const uint64x2_t aH  = vandq_u64(O_inner, vshlq_u64(O_inner, S_H));
-    const uint64x2_t aV  = vandq_u64(O, vshlq_u64(O, S_V));
-    const uint64x2_t aD7 = vandq_u64(O_inner, vshlq_u64(O_inner, S_D7));
-    const uint64x2_t aD9 = vandq_u64(O_inner, vshlq_u64(O_inner, S_D9));
+    const uint64x2_t aH  = vandq_u64(OO_inner, vshlq_u64(OO_inner, S_H));
+    const uint64x2_t aV  = vandq_u64(OO, vshlq_u64(OO, S_V));
+    const uint64x2_t aD7 = vandq_u64(OO_inner, vshlq_u64(OO_inner, S_D7));
+    const uint64x2_t aD9 = vandq_u64(OO_inner, vshlq_u64(OO_inner, S_D9));
     
     const uint64x2_t a2H  = vandq_u64(aH,  vshlq_u64(aH,  S2_H));
     const uint64x2_t a2V  = vandq_u64(aV,  vshlq_u64(aV,  S2_V));
     const uint64x2_t a2D7 = vandq_u64(aD7, vshlq_u64(aD7, S2_D7));
     const uint64x2_t a2D9 = vandq_u64(aD9, vshlq_u64(aD9, S2_D9));
     
-    kogge_stone_step(fH,  S_H,  O_inner);
-    kogge_stone_step(fV,  S_V,  O);
-    kogge_stone_step(fD7, S_D7, O_inner);
-    kogge_stone_step(fD9, S_D9, O_inner);
+    kogge_stone_step(fH,  S_H,  OO_inner);
+    kogge_stone_step(fV,  S_V,  OO);
+    kogge_stone_step(fD7, S_D7, OO_inner);
+    kogge_stone_step(fD9, S_D9, OO_inner);
     
     kogge_stone_step(fH,  S2_H,  aH);
     kogge_stone_step(fV,  S2_V,  aV);
@@ -158,27 +170,27 @@ static inline uint64x2_t ks_neg(uint64x2_t P, uint64x2_t mask)
 
 // ============================================================
 // Calcule les coups légaux des deux joueurs en une seule passe
-// lane0 = légaux de p_discs (noir)
-// lane1 = légaux de o_discs (blanc)
+// lane0 = légaux de P
+// lane1 = légaux de O
 // ============================================================
 inline uint64x2_t RXBitBoard::dual_legal_moves(
-        const unsigned long long p_discs,
-        const unsigned long long o_discs)
+        const unsigned long long P,
+        const unsigned long long O)
 {
     // lane0 = noir, lane1 = blanc
-    const uint64x2_t P        = {p_discs, o_discs};
-    const uint64x2_t O        = {o_discs, p_discs};
-    const uint64x2_t O_inner  = vandq_u64(O, vdupq_n_u64(0x7E7E7E7E7E7E7E7EULL));
-    const uint64x2_t occupied = vorrq_u64(P, O);
+    const uint64x2_t PO        = {P, O};
+    const uint64x2_t OP        = {O, P};
+    const uint64x2_t OO_inner  = vandq_u64(OP, vdupq_n_u64(0x7E7E7E7E7E7E7E7EULL));
+    const uint64x2_t occupied = vorrq_u64(PO, OP);
 
     // 8 chaînes indépendantes — ILP maximal sur les 2 unités SIMD du M4
     const uint64x2_t legals = vorrq_u64(
         vorrq_u64(
-            vorrq_u64(ks_pos<1>(P, O_inner), ks_neg<1>(P, O_inner)),  // E  / W
-            vorrq_u64(ks_pos<8>(P, O),       ks_neg<8>(P, O))),        // N  / S
+            vorrq_u64(ks_pos<1>(PO, OO_inner), ks_neg<1>(PO, OO_inner)),  // E  / W
+            vorrq_u64(ks_pos<8>(PO, OP),       ks_neg<8>(PO, OP))),        // N  / S
         vorrq_u64(
-            vorrq_u64(ks_pos<7>(P, O_inner), ks_neg<7>(P, O_inner)),  // NE / SW
-            vorrq_u64(ks_pos<9>(P, O_inner), ks_neg<9>(P, O_inner)))); // NW / SE
+            vorrq_u64(ks_pos<7>(PO, OO_inner), ks_neg<7>(PO, OO_inner)),  // NE / SW
+            vorrq_u64(ks_pos<9>(PO, OO_inner), ks_neg<9>(PO, OO_inner)))); // NW / SE
 
     // vbicq_u64 = AND NOT natif ARM (BIC) — masque occupied sans transition GPR
     return vbicq_u64(legals, occupied);

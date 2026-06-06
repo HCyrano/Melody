@@ -90,7 +90,7 @@ class RXEngine;
 // ⚠️  AVERTISSEMENT : ordre des membres critiques
 //
 // Les fonctions wide_2_compact() / compact_2_wide() reposent sur un memcpy
-// direct entre le layout mémoire de la classe et un uint64_t.
+// direct entre le layout mémoire de la classe et un unsigned long long.
 //
 // Sur x86 (little-endian), le layout est :
 //
@@ -119,16 +119,16 @@ public:
     unsigned char date;        // offset 7 → bits 56-63
 
 
-    RXHashValue(const uint64_t packed = 0);
+    RXHashValue(const unsigned long long packed = 0);
 
-    inline uint64_t wide_2_compact() const {
-        uint64_t packed;
-        std::memcpy(&packed, this, sizeof(uint64_t));
+    inline unsigned long long wide_2_compact() const {
+        unsigned long long packed;
+        std::memcpy(&packed, this, sizeof(unsigned long long));
         return packed;
     }
 
-    inline void compact_2_wide(uint64_t packed) {
-        std::memcpy(this, &packed, sizeof(uint64_t));
+    inline void compact_2_wide(unsigned long long packed) {
+        std::memcpy(this, &packed, sizeof(unsigned long long));
     }
 };
 

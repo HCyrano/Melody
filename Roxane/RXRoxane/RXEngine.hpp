@@ -80,7 +80,7 @@ class RXSplitPoint {
     
 public:
     
-    enum t_callBackSearch {MID_ROOT, MID_PVS, MID_XPROBCUT, END_ROOT, END_PVS, END_XPROBCUT, END_ETC_MOBILITY};
+    enum t_callBackSearch {MID_ROOT, MID_PVS, MID_XPROBCUT, END_ROOT, END_PVS, END_XPROBCUT};
     
     RXSplitPoint* parent;
     
@@ -363,7 +363,6 @@ class RXEngine: public Runnable {
     /*--------------------------------------------     MidGame part (RXMidGame.cpp)    --------------------------------------------*/
     
         
-    static const int MG_SELECT;
     
     static const int MG_DEEP_TO_SHALLOW;
     static const int MG_MOVING_WINDOW;
@@ -396,14 +395,16 @@ class RXEngine: public Runnable {
     
     /*--------------------------------------------     EndGame part (RXEndGame.cpp)    --------------------------------------------*/
     
+
+public :
+    static constexpr int EG_DEEP_TO_MEDIUM = 17;
+    static constexpr int EG_MEDIUM_HI_TO_LOW = 14;
+    static constexpr int EG_MEDIUM_TO_SHALLOW = 8;
+    static constexpr int MIN_DEPTH_USE_ENDCUT = 16;
+
+private:
+        
     static const int stability_threshold[];
-    
-    static const int EG_MEDIUM_TO_SHALLOW;
-    static const int EG_MEDIUM_HI_TO_LOW ;
-    static const int EG_DEEP_TO_MEDIUM;
-    
-    static const int MIN_DEPTH_USE_ENDCUT;
-    
     static const int EG_HIGH_SELECT;
     
     
@@ -420,10 +421,9 @@ class RXEngine: public Runnable {
     void EG_SP_search_DEEP(RXSplitPoint* sp, const unsigned int threadID);
     
     int EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, int alpha, const int beta, const bool passed);
-    void EG_SP_search_ETC_Mobility(RXSplitPoint* sp, const unsigned int threadID);
     
-    int EG_PVS_hash_mobility(const unsigned int threadID, RXBitBoard& board, const bool pv, int alpha, const int beta, const bool passed);
-    int EG_alphabeta_hash_mobility(const unsigned int threadID, RXBitBoard& board, const bool pv, int alpha, const int beta, const bool passed);
+    int EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, int alpha, const int beta, const bool passed);
+    int EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, int alpha, const int beta, const bool passed);
     int EG_alphabeta_hash_parity(const unsigned int threadID, RXBitBoard& board, const bool pv, int alpha, const int beta, const bool passed);
     int EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board, int alpha, int beta, const bool passed);
     
@@ -506,6 +506,7 @@ public:
     void* idle_loop(const unsigned int threadID, RXSplitPoint* waitSp);
 
     
+    static const int MG_SELECT;
     static const int NO_SELECT;
     static unsigned int confidence_to_selectivity(int c);
     static unsigned int selectivity_to_confidence(int s);

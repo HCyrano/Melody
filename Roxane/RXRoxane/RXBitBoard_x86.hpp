@@ -17,13 +17,11 @@
 
 #include "RXSetting.hpp"
 
-#if ARCH == ARCH_X86_AVX2
-    #include <x86intrin.h>
+#include <x86intrin.h>
 
-    // forward declaration - définie dans RXBBDoFlips_AVX2.cpp
-    __m128i mm_flip(const __m128i OP, int pos);
+// forward declaration - définie dans RXBBDoFlips_AVX2.cpp
+__m128i mm_flip(const __m256i PP, const __m256i OO, int pos);
 
-#endif
 
 /*
  @brief count all legal moves
@@ -32,9 +30,9 @@
  @param O                    a bitboard representing opponent
  @return count all legal moves
  */
-inline unsigned int RXBitBoard::count_legal_moves(const unsigned long long p_discs, const unsigned long long o_discs) {
+inline unsigned int RXBitBoard::count_legal_moves(const unsigned long long P, const unsigned long long O) {
     
-    const unsigned long long legals = get_legal_moves(p_discs, o_discs);
+    const unsigned long long legals = get_legal_moves(P, O);
     return __builtin_popcountll(legals);
     
 }
@@ -54,37 +52,56 @@ inline int RXBitBoard::get_stability(const unsigned long long discs_player, cons
 
     unsigned long long h, v, d7, d9;
     
-    h = filled;
-    h &= h >> 4;
-    h &= h >> 2;
-    h &= h >> 1;
-    h &= 0x0101010101010101ULL;
+//    h = filled;
+//    h &= h >> 4;
+//    h &= h >> 2;
+//    h &= h >> 1;
+//    h &= 0x0101010101010101ULL;
+//    
+//    //trick multiplication par 255 (remplit les lignes)
+//    h = (h << 8) - h; //*=255
+//    h |= 0x8181818181818181ULL;
+//    
+//    v = filled;
+//    v &= (v >> 32) | (v << 32);
+//    v &= (v >> 16) | (v << 16);
+//    v &= (v >>  8) | (v <<  8);
+//    
+//    v |= 0xFF000000000000FFULL;
+//    
+//    d7 = filled;
+//    d7 &= ((d7>>28) & 0x00000000F0F0F0F0ULL) | ((d7<<28) & 0x0F0F0F0F00000000ULL) | 0xF0F0F0F00F0F0F0FULL;
+//    d7 &= ((d7>>14) & 0x0000FCFCFCFCFCFCULL) | ((d7<<14) & 0x3F3F3F3F3F3F0000ULL) | 0xC0C0000000000303ULL;
+//    d7 &= (d7>> 7) & (d7<< 7);
+//    
+//    d7 |= 0xFF818181818181FFULL;
+//    
+//    d9 = filled;
+//    //d9 &= ((d9>>36) & 0x000000000F0F0F0FULL) | ((d9<<36) & 0xF0F0F0F000000000ULL) | 0x0F0F0F0FF0F0F0F0ULL;
+//    d9 &= (d9>>36) | (d9<<36) | 0x0F0F0F0FF0F0F0F0ULL;
+//    d9 &= ((d9>>18) & 0x00003F3F3F3F3F3FULL) | ((d9<<18) & 0xFCFCFCFCFCFC0000ULL) | 0x030300000000C0C0ULL;
+//    d9 &= (d9>> 9) & (d9<< 9);
+//    
+//    d9 |= 0xFF818181818181FFULL;
     
-    //trick multiplication par 255 (remplit les lignes)
-    h = (h << 8) - h; //*=255
-    h |= 0x8181818181818181ULL;
-    
-    v = filled;
-    v &= (v >> 32) | (v << 32);
-    v &= (v >> 16) | (v << 16);
-    v &= (v >>  8) | (v <<  8);
-    
-    v |= 0xFF000000000000FFULL;
-    
-    d7 = filled;
-    d7 &= ((d7>>28) & 0x00000000F0F0F0F0ULL) | ((d7<<28) & 0x0F0F0F0F00000000ULL) | 0xF0F0F0F00F0F0F0FULL;
-    d7 &= ((d7>>14) & 0x0000FCFCFCFCFCFCULL) | ((d7<<14) & 0x3F3F3F3F3F3F0000ULL) | 0xC0C0000000000303ULL;
-    d7 &= (d7>> 7) & (d7<< 7);
-    
-    d7 |= 0xFF818181818181FFULL;
-    
-    d9 = filled;
-    //d9 &= ((d9>>36) & 0x000000000F0F0F0FULL) | ((d9<<36) & 0xF0F0F0F000000000ULL) | 0x0F0F0F0FF0F0F0F0ULL;
-    d9 &= (d9>>36) | (d9<<36) | 0x0F0F0F0FF0F0F0F0ULL;
-    d9 &= ((d9>>18) & 0x00003F3F3F3F3F3FULL) | ((d9<<18) & 0xFCFCFCFCFCFC0000ULL) | 0x030300000000C0C0ULL;
-    d9 &= (d9>> 9) & (d9<< 9);
-    
-    d9 |= 0xFF818181818181FFULL;
+    uint64_t rdisc = __builtin_bswap64(filled);
+    uint64_t l8;
+    __m128i l01, l79, r79;
+    const __m128i kff  = _mm_set1_epi8(-1);
+    const __m128i e790 = _mm_set1_epi64x(0xff80808080808080);
+    const __m128i e791 = _mm_set1_epi64x(0x01010101010101ff);
+    const __m128i e792 = _mm_set1_epi64x(0x00003f3f3f3f3f3f);
+    const __m128i e793 = _mm_set1_epi64x(0x0f0f0f0ff0f0f0f0);
+
+    l01 = l79 = _mm_cvtsi64_si128(filled);    l79 = r79 = _mm_unpacklo_epi64(l79, _mm_cvtsi64_si128(rdisc));
+    l01 = _mm_cmpeq_epi8(kff, l01);         l79 = _mm_and_si128(l79, _mm_or_si128(e790, _mm_srli_epi64(l79, 9)));
+    h = _mm_cvtsi128_si64(l01);
+    r79 = _mm_and_si128(r79, _mm_or_si128(e791, _mm_slli_epi64(r79, 9)));
+    l8 = filled;                              l79 = _mm_andnot_si128(_mm_andnot_si128(_mm_srli_epi64(l79, 18), e792), l79);
+    l8 &= (l8 >> 8) | (l8 << 56);           r79 = _mm_andnot_si128(_mm_slli_epi64(_mm_andnot_si128(r79, e792), 18), r79);
+    l8 &= (l8 >> 16) | (l8 << 48);          l79 = _mm_and_si128(_mm_and_si128(l79, r79), _mm_or_si128(e793, _mm_or_si128(_mm_srli_epi64(l79, 36), _mm_slli_epi64(r79, 36))));
+    l8 &= (l8 >> 32) | (l8 << 32);          d9 = _mm_cvtsi128_si64(l79);
+    v = l8;                                 d7 = __builtin_bswap64(_mm_cvtsi128_si64(_mm_unpackhi_epi64(l79, l79)));
         
     stable |= (h & v & d7 & d9 & central_mask);
     

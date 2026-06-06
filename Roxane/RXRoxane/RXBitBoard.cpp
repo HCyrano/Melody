@@ -179,32 +179,37 @@ void RXBitBoard::static_init() {
 #if ARCH == ARCH_ARM_NEON
 
 
-//not very efficient
-int RXBitBoard::count_potential_moves(const unsigned long long p_discs, const unsigned long long o_discs) {
-        
-    //use tab for speed
-    static const uint64x2_t mask[] = {  {0x7E7E7E7E7E7E7E7EULL, 0x00FFFFFFFFFFFF00ULL},
-                                        {0x007E7E7E7E7E7E00ULL, 0x007E7E7E7E7E7E00ULL}};
-    
-    static const int64x2_t shift[] = {{ 1, 8}, {-1,-8}, { 7, 9}, {-7,-9}};
-    
-    const uint64x2_t oo = vdupq_n_u64(o_discs);
-    
-    uint64x2_t hv = vandq_u64(oo, mask[0]);
-    hv = vorrq_u64(vshlq_u64(hv, shift[0]),vshlq_u64(hv, shift[1])) ;
-    
-    uint64x2_t dg = vandq_u64(oo,  mask[1]);
-    dg = vorrq_u64(vshlq_u64(dg, shift[2]),vshlq_u64(dg, shift[3])) ;
-    
-    hv = vorrq_u64(hv, dg);
-        
-    return __builtin_popcountll((vgetq_lane_u64(hv, 0) | vgetq_lane_u64(hv, 1)) & ~(p_discs|o_discs));
+////not very efficient
+//int RXBitBoard::count_potential_moves(const unsigned long long P, const unsigned long long O) {
+//        
+//    //use tab for speed
+//    static const uint64x2_t mask[] = {  {0x7E7E7E7E7E7E7E7EULL, 0x00FFFFFFFFFFFF00ULL},
+//                                        {0x007E7E7E7E7E7E00ULL, 0x007E7E7E7E7E7E00ULL}};
+//    
+//    static const int64x2_t shift[] = {{ 1, 8}, {-1,-8}, { 7, 9}, {-7,-9}};
+//    
+//    const uint64x2_t oo = vdupq_n_u64(O);
+//    
+//    uint64x2_t hv = vandq_u64(oo, mask[0]);
+//    hv = vorrq_u64(vshlq_u64(hv, shift[0]),vshlq_u64(hv, shift[1])) ;
+//    
+//    uint64x2_t dg = vandq_u64(oo,  mask[1]);
+//    dg = vorrq_u64(vshlq_u64(dg, shift[2]),vshlq_u64(dg, shift[3])) ;
+//    
+//    hv = vorrq_u64(hv, dg);
+//    
+//    uint64x1_t lo = vget_low_u64(hv);
+//    uint64x1_t hi = vget_high_u64(hv);
+//    uint64x1_t combined = vorr_u64(lo, hi);
+//    unsigned long long result = vget_lane_u64(combined, 0) & ~(P | O);
+//        
+//    return __builtin_popcountll(result);
+//
+//}
 
-}
-
-void RXBitBoard::dual_potential_mobility(const unsigned long long p_discs, const unsigned long long o_discs, int &p_pmob, int &o_pmob) {
-    uint64x2_t opp_pair = {o_discs, p_discs};
-    uint64x2_t occupied = vdupq_n_u64(p_discs | o_discs);
+void RXBitBoard::dual_potential_mobility(const unsigned long long P, const unsigned long long O, int &p_pmob, int &o_pmob) {
+    uint64x2_t opp_pair = {O, P};
+    uint64x2_t occupied = vdupq_n_u64(P | O);
     
     // Masques
     uint64x2_t m_lr = vdupq_n_u64(0x7E7E7E7E7E7E7E7EULL);
@@ -236,28 +241,10 @@ void RXBitBoard::dual_potential_mobility(const unsigned long long p_discs, const
 
 #else
 
-int RXBitBoard::count_potential_moves(const unsigned long long p_discs, const unsigned long long o_discs) {
-
-    unsigned long long
-    inner_opp = o_discs & 0x7E7E7E7E7E7E7E7EULL;
-    unsigned long long
-    pot_moves = (inner_opp << 1 | inner_opp >> 1);
-
-    inner_opp = o_discs & 0x00FFFFFFFFFFFF00ULL;
-    pot_moves |= (inner_opp << 8 | inner_opp >> 8);
-
-    inner_opp = o_discs & 0x007E7E7E7E7E7E00ULL;
-    pot_moves |= (inner_opp << 7 | inner_opp >> 7);
-    pot_moves |= (inner_opp << 9 | inner_opp >> 9);
-    
-    pot_moves &= ~(p_discs|o_discs);
-    
-    return __builtin_popcountll(pot_moves);
-
-}
 
 
 #endif
+
 
 
 RXBitBoard::RXBitBoard(): player(BLACK), n_empty(60), n_nodes(0), parity(0xF){
@@ -332,52 +319,96 @@ void RXBitBoard::reset() {
 
 
 
+//RXBitBoard::RXBitBoard(const RXBitBoard& src) {
+//	
+//	discs[BLACK] = src.discs[BLACK];
+//	discs[WHITE] = src.discs[WHITE];
+//	
+//	player = src.player;
+//	n_empty = src.n_empty;
+//    parity = src.parity;
+//	n_nodes = src.n_nodes;
+//	
+//	/* create emptiesList */
+//	RXSquareList* iEmpties = empties_list;	//empties[0]
+//	iEmpties->position = NOMOVE;			//sentinel
+//	iEmpties->previous = nullptr;				//nullptr
+//	iEmpties->next = iEmpties + 1;
+//	iEmpties = iEmpties->next;
+//    
+//    const unsigned long long occupied_squares = discs[BLACK] | discs[WHITE];
+//	
+//	for(int i = 0; i<60; i++) {
+//		if(((occupied_squares) & (0x1ULL<<PRESORTED_POSITION[i])) == 0) {
+//			iEmpties->position = PRESORTED_POSITION[i];
+//			iEmpties->previous = iEmpties - 1;
+//			iEmpties->next = iEmpties + 1 ;
+//			
+//			position_to_empties[PRESORTED_POSITION[i]] = iEmpties;
+//			iEmpties = iEmpties->next;
+//		}
+//	}
+//	iEmpties->position = NOMOVE;			//sentinel
+//	iEmpties->previous = iEmpties - 1; 
+//	iEmpties->next = 0;						//nullptr
+//	
+//	/*BE CAREFULL*/
+//	/*copy actual empties list */
+//	RXSquareList* previous = empties_list;
+//	for(RXSquareList* empties = src.empties_list->next; empties->position != NOMOVE; empties = empties->next) {
+//		RXSquareList* empty = position_to_empties[empties->position];
+//		empty->previous = previous;
+//		previous->next = empty;
+//		previous = previous->next;
+//	}
+//	empties_list[61].previous = previous;
+//	previous->next = &empties_list[61];
+//	
+//}
+
 RXBitBoard::RXBitBoard(const RXBitBoard& src) {
-	
-	discs[BLACK] = src.discs[BLACK];
-	discs[WHITE] = src.discs[WHITE];
-	
-	player = src.player;
-	n_empty = src.n_empty;
+    // 1. Copie directe des variables simples et des Bitboards
+    discs[BLACK] = src.discs[BLACK];
+    discs[WHITE] = src.discs[WHITE];
+    player = src.player;
+    n_empty = src.n_empty;
     parity = src.parity;
-	n_nodes = src.n_nodes;
-	
-	/* create emptiesList */
-	RXSquareList* iEmpties = empties_list;	//empties[0]
-	iEmpties->position = NOMOVE;			//sentinel
-	iEmpties->previous = nullptr;				//nullptr
-	iEmpties->next = iEmpties + 1;
-	iEmpties = iEmpties->next;
+    n_nodes = src.n_nodes;
+
+    // 2. On copie TOUS les maillons de manière brute (sans recalculer les bitboards)
+    for(int i = 0; i < 62; i++) {
+        this->empties_list[i].position = src.empties_list[i].position;
+        // On réinitialise temporairement les pointeurs pour des raisons de sécurité
+        this->empties_list[i].next = nullptr;
+        this->empties_list[i].previous = nullptr;
+    }
+
+    // 3. On reconstruit la table de correspondance position -> nouveau maillon
+    for(int i = 0; i < 62; i++) {
+        if (this->empties_list[i].position != NOMOVE) {
+            this->position_to_empties[this->empties_list[i].position] = &this->empties_list[i];
+        }
+    }
+
+    // 4. On re-tisse la liste active exactement comme vous le faisiez
+    RXSquareList* previous = this->empties_list; // Tête de liste de la copie
     
-    const unsigned long long occupied_squares = discs[BLACK] | discs[WHITE];
-	
-	for(int i = 0; i<60; i++) {
-		if(((occupied_squares) & (0x1ULL<<PRESORTED_POSITION[i])) == 0) {
-			iEmpties->position = PRESORTED_POSITION[i];
-			iEmpties->previous = iEmpties - 1;
-			iEmpties->next = iEmpties + 1 ;
-			
-			position_to_empties[PRESORTED_POSITION[i]] = iEmpties;
-			iEmpties = iEmpties->next;
-		}
-	}
-	iEmpties->position = NOMOVE;			//sentinel
-	iEmpties->previous = iEmpties - 1; 
-	iEmpties->next = 0;						//nullptr
-	
-	/*BE CAREFULL*/
-	/*copy actual empties list */
-	RXSquareList* previous = empties_list;
-	for(RXSquareList* empties = src.empties_list->next; empties->position != NOMOVE; empties = empties->next) {
-		RXSquareList* empty = position_to_empties[empties->position];
-		empty->previous = previous;
-		previous->next = empty;
-		previous = previous->next;
-	}
-	empties_list[61].previous = previous;
-	previous->next = &empties_list[61];
-	
+    // On parcourt la liste active de la SOURCE
+    for(const RXSquareList* empties = src.empties_list->next; empties->position != NOMOVE; empties = empties->next) {
+        // On récupère le maillon équivalent dans la COPIE via notre table toute neuve
+        RXSquareList* empty = this->position_to_empties[empties->position];
+        
+        empty->previous = previous;
+        previous->next = empty;
+        previous = previous->next;
+    }
+    
+    // On ferme la liste avec la sentinelle de fin (index 61)
+    this->empties_list[61].previous = previous;
+    previous->next = &this->empties_list[61];
+    this->empties_list[61].next = nullptr;
 }
+
 
 
 void RXBitBoard::build(const std::string& init) {
@@ -577,24 +608,24 @@ void RXBitBoard::print_empties_list() const {
 }
 
 template<int Shift, unsigned long long Mask>
-inline bool dir_valid(unsigned long long square, unsigned long long p_discs, unsigned long long o_discs) {
+inline bool dir_valid(unsigned long long square, unsigned long long P, unsigned long long O) {
     unsigned long long x;
     
     if constexpr (Shift > 0) {
         // Shift left (vers le sud/est)
-        x = (square << Shift) & Mask & o_discs;
-        x |= (x << Shift) & Mask & o_discs;
-        x |= (x << (2 * Shift)) & Mask & o_discs;
-        x |= (x << (4 * Shift)) & Mask & o_discs;
-        return (x << Shift) & Mask & p_discs;
+        x = (square << Shift) & Mask & O;
+        x |= (x << Shift) & Mask & O;
+        x |= (x << (2 * Shift)) & Mask & O;
+        x |= (x << (4 * Shift)) & Mask & O;
+        return (x << Shift) & Mask & P;
     } else {
         // Shift right (vers le nord/ouest)
         constexpr int S = -Shift;
-        x = (square >> S) & Mask & o_discs;
-        x |= (x >> S) & Mask & o_discs;
-        x |= (x >> (2 * S)) & Mask & o_discs;
-        x |= (x >> (4 * S)) & Mask & o_discs;
-        return (x >> S) & Mask & p_discs;
+        x = (square >> S) & Mask & O;
+        x |= (x >> S) & Mask & O;
+        x |= (x >> (2 * S)) & Mask & O;
+        x |= (x >> (4 * S)) & Mask & O;
+        return (x >> S) & Mask & P;
     }
 }
 
@@ -612,22 +643,22 @@ bool RXBitBoard::isValid_square(const unsigned int pos) const {
         
         const unsigned long long square = 0x1ULL<<pos;
         
-        const unsigned long long p_discs = discs[player];
-        const unsigned long long o_discs = discs[player^1];
+        const unsigned long long P = discs[player];
+        const unsigned long long O = discs[player^1];
         
         
-        if ((p_discs | o_discs) & square) return false; // case occupée
+        if ((P | O) & square) return false; // case occupée
         
         
         return
-            dir_valid< 1, MASK_LEFT >(square, p_discs, o_discs) ||  // Est
-            dir_valid<-1, MASK_RIGHT>(square, p_discs, o_discs) ||  // Ouest
-            dir_valid< 8, MASK_ALL  >(square, p_discs, o_discs) ||  // Sud
-            dir_valid<-8, MASK_ALL  >(square, p_discs, o_discs) ||  // Nord
-            dir_valid< 9, MASK_LEFT >(square, p_discs, o_discs) ||  // Sud-Est
-            dir_valid<-9, MASK_RIGHT>(square, p_discs, o_discs) ||  // Nord-Ouest
-            dir_valid< 7, MASK_RIGHT>(square, p_discs, o_discs) ||  // Sud-Ouest
-            dir_valid<-7, MASK_LEFT >(square, p_discs, o_discs);    // Nord-Est
+            dir_valid< 1, MASK_LEFT >(square, P, O) ||  // Est
+            dir_valid<-1, MASK_RIGHT>(square, P, O) ||  // Ouest
+            dir_valid< 8, MASK_ALL  >(square, P, O) ||  // Sud
+            dir_valid<-8, MASK_ALL  >(square, P, O) ||  // Nord
+            dir_valid< 9, MASK_LEFT >(square, P, O) ||  // Sud-Est
+            dir_valid<-9, MASK_RIGHT>(square, P, O) ||  // Nord-Ouest
+            dir_valid< 7, MASK_RIGHT>(square, P, O) ||  // Sud-Ouest
+            dir_valid<-7, MASK_LEFT >(square, P, O);    // Nord-Est
     }
     
     return false;

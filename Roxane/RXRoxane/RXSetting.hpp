@@ -19,8 +19,6 @@
 #ifndef RXSETTING_HPP
 #define RXSETTING_HPP
 
-#define RELEASE
-
 #define ARCH_X86_AVX2    0
 #define ARCH_ARM_NEON    1
 
@@ -48,9 +46,6 @@
 #define USE_SPLIT_AT_ROOT
 
 //not efficient
-//#define USE_SPLIT_AT_ETC_MOBILITY
-
-//not efficient
 //#define PV_EXTENSION
 
 //LMR 10/20
@@ -64,7 +59,6 @@
 
 //for record solver
 //#define SOLVER_DRIVER
-//#define SOLVER_SETTING
 
 //check pv in endgame at 100%
 //#define EG_CHECK_PV

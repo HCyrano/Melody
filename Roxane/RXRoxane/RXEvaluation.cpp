@@ -34,11 +34,7 @@ static void check_read(const std::ifstream& stream, const std::string filename, 
 
 void RXEvaluation::load() {
     
-#ifdef RELEASE
     const std::string path = "./";
-#else
-    const std::string path = "./build/";
-#endif
 
     // --- weight.bin ---
     const std::string filename_W = "weight_v11.bin";
@@ -49,7 +45,7 @@ void RXEvaluation::load() {
         std::exit(EXIT_FAILURE);
     }
 
-    for (unsigned int iStage = 0; iStage < 60; iStage++) {
+    for (unsigned int iStage = 0; iStage < N_STAGES_EVAL; iStage++) {
         for (Feature f : all_features) {
 
             eval_w[iStage][f] = new short[sizes[f]];
@@ -108,7 +104,7 @@ void RXEvaluation::load() {
 #ifdef FACT_MACH
     
     // --- weight0.txt ---
-    const std::string filename_W0 = "weight_0_v11.txt";
+    const std::string filename_W0 = "weight_0_v12.txt";
     std::ifstream from_w0(path + filename_W0);
 
     if (!from_w0) {
@@ -128,50 +124,58 @@ void RXEvaluation::load() {
 
 
     // --- weight_V.bin ---
-    const std::string filename_V = "weight_V_v11.bin";
-    std::ifstream from_V(path + filename_V, std::ios::binary);
-    
-    if (!from_V) {
-        std::cerr << "CRITICAL ERROR: Impossible de charger " << filename_V << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
 
-    for (Feature f :all_features) {
+    for(unsigned int stage = 0; stage < N_STAGES_FM; ++stage) {
+        
+        const std::string filename_V_arr[] = {"weight_Va_v12.bin", "weight_Vb_v12.bin"};
+        const std::string filename_V = filename_V_arr[stage];
 
-        eval_V[f] = new Vec_short[sizes[f]];
-        // Lecture donnée par donnée pour ignorer le padding
-        for (unsigned int i = 0; i < sizes[f]; ++i) {
-            from_V.read(reinterpret_cast<char*>(eval_V[f][i].data), sizeof(short) * RANK);
-            check_read(from_V, filename_V, f);
+        std::ifstream from_V(path + filename_V, std::ios::binary);
+        
+        if (!from_V) {
+            std::cerr << "CRITICAL ERROR: Impossible de charger " << filename_V << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
 
-            // Précalculer les carrés
-            for (unsigned int r = 0; r < RANK; ++r) {
-                short v = eval_V[f][i].data[r];
-                eval_V[f][i].squares[r] = static_cast<int>(v) * v;
+        for (Feature f :all_features) {
+            
+            eval_V[stage][f] = new Vec_short[sizes[f]];
+            // Lecture donnée par donnée pour ignorer le padding
+            for (unsigned int i = 0; i < sizes[f]; ++i) {
+                from_V.read(reinterpret_cast<char*>(eval_V[stage][f][i].data), sizeof(short) * RANK);
+                check_read(from_V, filename_V, f);
+                
+                // Précalculer les carrés
+                for (unsigned int r = 0; r < RANK; ++r) {
+                    short v = eval_V[stage][f][i].data[r];
+                    eval_V[stage][f][i].squares[r] = static_cast<int>(v) * v;
+                }
             }
+            
+            if (f != MOB_P && f != MOB_O)
+                eval_V[stage][f] += sizes[f] / 2;
         }
         
-        if (f != MOB_P && f != MOB_O)
-            eval_V[f] += sizes[f] / 2;
-    }
+        from_V.close();
+        
+        // Static global pointers
+        gVMob_P[stage]  = RXEvaluation::eval_V[stage][MOB_P];
+        gVMob_O[stage]  = RXEvaluation::eval_V[stage][MOB_O];
+        gVDiag5[stage]  = RXEvaluation::eval_V[stage][DIAG5];
+        gVDiag6[stage]  = RXEvaluation::eval_V[stage][DIAG6];
+        gVDiag7[stage]  = RXEvaluation::eval_V[stage][DIAG7];
+        gVDiag8[stage]  = RXEvaluation::eval_V[stage][DIAG8];
+        gVEdge1[stage]  = RXEvaluation::eval_V[stage][EDGE1];
+        gVEdge2[stage]  = RXEvaluation::eval_V[stage][EDGE2];
+        gVEdge3[stage]  = RXEvaluation::eval_V[stage][EDGE3];
+        gVEdge4[stage]  = RXEvaluation::eval_V[stage][EDGE4];
+        gVHv2[stage]    = RXEvaluation::eval_V[stage][HV2];
+        gVHv3[stage]    = RXEvaluation::eval_V[stage][HV3];
+        gVHv4[stage]    = RXEvaluation::eval_V[stage][HV4];
+        gVCorner[stage] = RXEvaluation::eval_V[stage][CORNER];
 
-    from_V.close();
+    }
     
-    // Static global pointers
-    gVMob_P  = RXEvaluation::eval_V[MOB_P];
-    gVMob_O  = RXEvaluation::eval_V[MOB_O];
-    gVDiag5  = RXEvaluation::eval_V[DIAG5];
-    gVDiag6  = RXEvaluation::eval_V[DIAG6];
-    gVDiag7  = RXEvaluation::eval_V[DIAG7];
-    gVDiag8  = RXEvaluation::eval_V[DIAG8];
-    gVEdge1  = RXEvaluation::eval_V[EDGE1];
-    gVEdge2  = RXEvaluation::eval_V[EDGE2];
-    gVEdge3  = RXEvaluation::eval_V[EDGE3];
-    gVEdge4  = RXEvaluation::eval_V[EDGE4];
-    gVHv2    = RXEvaluation::eval_V[HV2];
-    gVHv3    = RXEvaluation::eval_V[HV3];
-    gVHv4    = RXEvaluation::eval_V[HV4];
-    gVCorner = RXEvaluation::eval_V[CORNER];
 
     
         
@@ -180,56 +184,61 @@ void RXEvaluation::load() {
     // Après load(), diagnostic eval_V
     // Titre principal
     std::cout << "\n=== Diagnostic eval_V (RANK=" << RANK << ") ===\n" << std::endl;
-
-    // Ligne d'en-tête (Titres)
-    std::cout << std::left  << std::setw(10) << "Feature" << "  "
-              << std::right << std::setw(8)  << "zeros%"  << "  "
-              << std::setw(13) << "in[-127,127]%" << "  " // Note: 13 pour correspondre au tiret ci-dessous
-              << std::setw(8)  << "min"     << "  "
-              << std::setw(8)  << "max"     << "  "
-              << std::setw(8)  << "std"     << std::endl;
-
-    // Ligne de séparation (Tirets)
-    std::cout << std::left  << std::setw(10) << "-------" << "  "
-              << std::right << std::setw(8)  << "------"  << "  "
-              << std::setw(13) << "-------------" << "  "
-              << std::setw(8)  << "---"     << "  "
-              << std::setw(8)  << "---"     << "  "
-              << std::setw(8)  << "---"     << std::endl;
     
-    for (Feature f : all_features) {
-        int      interval = (f == MOB_P || f == MOB_O) ? 0 : sizes[f] / 2;
-        long long zeros   = 0, in127 = 0, total = 0;
-        short    fmin = 32767, fmax = -32768;
-        long long fsum = 0, fsumsq = 0;
-
-        for (int idx = -interval; idx <= (int)(sizes[f] - 1 - interval); idx++) {
-            for (unsigned int r = 0; r < RANK; r++) {
-                short v = eval_V[f][idx][r];
-                if (v == 0)             zeros++;
-                if (v >= -127 && v <= 127) in127++;
-                if (v < fmin) fmin = v;
-                if (v > fmax) fmax = v;
-                fsum   += v;
-                fsumsq += (long long)v * v;
-                total++;
+    for(unsigned int stage = 0; stage < N_STAGES_FM; ++stage) {
+        
+        std::cout << "stage : " << stage << std::endl;
+        
+        // Ligne d'en-tête (Titres)
+        std::cout << std::left  << std::setw(10) << "Feature" << "  "
+        << std::right << std::setw(8)  << "zeros%"  << "  "
+        << std::setw(13) << "in[-127,127]%" << "  " // Note: 13 pour correspondre au tiret ci-dessous
+        << std::setw(8)  << "min"     << "  "
+        << std::setw(8)  << "max"     << "  "
+        << std::setw(8)  << "std"     << std::endl;
+        
+        // Ligne de séparation (Tirets)
+        std::cout << std::left  << std::setw(10) << "-------" << "  "
+        << std::right << std::setw(8)  << "------"  << "  "
+        << std::setw(13) << "-------------" << "  "
+        << std::setw(8)  << "---"     << "  "
+        << std::setw(8)  << "---"     << "  "
+        << std::setw(8)  << "---"     << std::endl;
+        
+        for (Feature f : all_features) {
+            int      interval = (f == MOB_P || f == MOB_O) ? 0 : sizes[f] / 2;
+            long long zeros   = 0, in127 = 0, total = 0;
+            short    fmin = 32767, fmax = -32768;
+            long long fsum = 0, fsumsq = 0;
+            
+            for (int idx = -interval; idx <= (int)(sizes[f] - 1 - interval); idx++) {
+                for (unsigned int r = 0; r < RANK; r++) {
+                    short v = eval_V[stage][f][idx][r];
+                    if (v == 0)             zeros++;
+                    if (v >= -127 && v <= 127) in127++;
+                    if (v < fmin) fmin = v;
+                    if (v > fmax) fmax = v;
+                    fsum   += v;
+                    fsumsq += (long long)v * v;
+                    total++;
+                }
             }
+            
+            double mean   = (double)fsum   / total;
+            double stddev = std::sqrt((double)fsumsq / total - mean * mean);
+            
+            std::cout << std::left  << std::setw(10) << names[f] << "  "
+            << std::right << std::fixed    << std::setprecision(1)
+            << std::setw(7)  << (100.0 * zeros / total) << "%  "
+            << std::setw(12) << (100.0 * in127 / total) << "%    "
+            << std::setw(6)  << fmin << "    "
+            << std::setw(6)  << fmax << "    "
+            << std::setw(6)  << std::setprecision(1) << stddev
+            << std::endl;
         }
-
-        double mean   = (double)fsum   / total;
-        double stddev = std::sqrt((double)fsumsq / total - mean * mean);
-
-        std::cout << std::left  << std::setw(10) << names[f] << "  "
-                  << std::right << std::fixed    << std::setprecision(1)
-                  << std::setw(7)  << (100.0 * zeros / total) << "%  "
-                  << std::setw(12) << (100.0 * in127 / total) << "%    "
-                  << std::setw(6)  << fmin << "    "
-                  << std::setw(6)  << fmax << "    "
-                  << std::setw(6)  << std::setprecision(1) << stddev
-                  << std::endl;
+        
+        std::cout << std::endl;
     }
-    
-    std::cout << std::endl;
     
 #endif
     
@@ -252,20 +261,24 @@ void RXEvaluation::unload() {
     }
 
 #ifdef FACT_MACH
-    for (Feature f : all_features) {
-
-        if (f != MOB_P && f != MOB_O)
-            eval_V[f] -= sizes[f] / 2;
-        delete[] eval_V[f];
-        eval_V[f] = nullptr;
+    for(int stage = 0; stage <2; ++stage) {
+        
+        for (Feature f : all_features) {
+            
+            if (f != MOB_P && f != MOB_O)
+                eval_V[stage][f] -= sizes[f] / 2;
+            delete[] eval_V[stage][f];
+            eval_V[stage][f] = nullptr;
+        }
+        
+        // Invalidate FM global pointers
+        gVMob_P[stage] = gVMob_O[stage] = nullptr;
+        gVDiag5[stage] = gVDiag6[stage] = gVDiag7[stage] = gVDiag8[stage] = nullptr;
+        gVEdge1[stage] = gVEdge2[stage] = gVEdge3[stage] = gVEdge4[stage] = nullptr;
+        gVHv2[stage]   = gVHv3[stage]   = gVHv4[stage]   = nullptr;
+        gVCorner[stage] = nullptr;
+        
     }
-    
-    // Invalidate FM global pointers
-    gVMob_P = gVMob_O = nullptr;
-    gVDiag5 = gVDiag6 = gVDiag7 = gVDiag8 = nullptr;
-    gVEdge1 = gVEdge2 = gVEdge3 = gVEdge4 = nullptr;
-    gVHv2   = gVHv3   = gVHv4   = nullptr;
-    gVCorner = nullptr;
     
 #endif
     

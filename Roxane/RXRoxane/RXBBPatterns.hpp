@@ -172,7 +172,10 @@ inline int RXBBPatterns::final_score() const {
 // Evaluates the board score using a hybrid Linear + Factorization Machine model.
 // Called with precalculated mobilities
 // -----------------------------------------------------------------------------
-template <const bool UseFM = true>
+template <const bool UseFM = true,
+          int FM_STAGE_MIN  = 9,
+          int FM_STAGE_MAX  = 55,
+          int FM_STAGE_SWAP = 33>
 inline int acc_score(const int   stage,
                           const int   color,
                           const int*  __restrict p,
@@ -378,7 +381,9 @@ inline int acc_score(const int   stage,
     
     if constexpr (UseFM) {
         
-        if (stage > 9 && stage < 55) {
+        if (stage > FM_STAGE_MIN && stage < FM_STAGE_MAX) {
+            
+            int id = stage < FM_STAGE_SWAP ? 0:1; //Midgame/Endgame
             
             eval += RXEvaluation::eval_w0[stage];
             
@@ -458,20 +463,20 @@ inline int acc_score(const int   stage,
             
 #endif  // __ARM_NEON
             
-            const Vec_short* const& vMob_P  = RXEvaluation::gVMob_P;
-            const Vec_short* const& vMob_O  = RXEvaluation::gVMob_O;
-            const Vec_short* const& vDiag5  = RXEvaluation::gVDiag5;
-            const Vec_short* const& vDiag6  = RXEvaluation::gVDiag6;
-            const Vec_short* const& vDiag7  = RXEvaluation::gVDiag7;
-            const Vec_short* const& vDiag8  = RXEvaluation::gVDiag8;
-            const Vec_short* const& vEdge1  = RXEvaluation::gVEdge1;
-            const Vec_short* const& vEdge2  = RXEvaluation::gVEdge2;
-            const Vec_short* const& vEdge3  = RXEvaluation::gVEdge3;
-            const Vec_short* const& vEdge4  = RXEvaluation::gVEdge4;
-            const Vec_short* const& vHv2    = RXEvaluation::gVHv2;
-            const Vec_short* const& vHv3    = RXEvaluation::gVHv3;
-            const Vec_short* const& vHv4    = RXEvaluation::gVHv4;
-            const Vec_short* const& vCorner = RXEvaluation::gVCorner;
+            const Vec_short* const& vMob_P  = RXEvaluation::gVMob_P[id];
+            const Vec_short* const& vMob_O  = RXEvaluation::gVMob_O[id];
+            const Vec_short* const& vDiag5  = RXEvaluation::gVDiag5[id];
+            const Vec_short* const& vDiag6  = RXEvaluation::gVDiag6[id];
+            const Vec_short* const& vDiag7  = RXEvaluation::gVDiag7[id];
+            const Vec_short* const& vDiag8  = RXEvaluation::gVDiag8[id];
+            const Vec_short* const& vEdge1  = RXEvaluation::gVEdge1[id];
+            const Vec_short* const& vEdge2  = RXEvaluation::gVEdge2[id];
+            const Vec_short* const& vEdge3  = RXEvaluation::gVEdge3[id];
+            const Vec_short* const& vEdge4  = RXEvaluation::gVEdge4[id];
+            const Vec_short* const& vHv2    = RXEvaluation::gVHv2[id];
+            const Vec_short* const& vHv3    = RXEvaluation::gVHv3[id];
+            const Vec_short* const& vHv4    = RXEvaluation::gVHv4[id];
+            const Vec_short* const& vCorner = RXEvaluation::gVCorner[id];
             
             
             // Selection of branch-friendly table

@@ -48,7 +48,7 @@ int main (int argc, char * const argv[]) {
     unsigned int offset_start = 0;
     unsigned int n_games = 1000;
 
-    bool rsme_flag = false;
+    bool metrix_flag = false;
     int stage_start = 0;
     int stage_end   = 59;
 
@@ -72,9 +72,9 @@ int main (int argc, char * const argv[]) {
             iss_offset >> offset_start;
             std::istringstream iss_game(argv[++i]);
             iss_game >> n_games;
-        } else if(arg == "-rmse" && i+2<argc) {
+        } else if(arg == "-metrix" && i+2<argc) {
             
-            rsme_flag = true;
+            metrix_flag = true;
             std::istringstream iss_start(argv[++i]);
             iss_start >> stage_start;
             std::istringstream iss_end(argv[++i]);
@@ -87,7 +87,7 @@ int main (int argc, char * const argv[]) {
 		}
 	}
 
-    std::string version = "build-2026-05-21 10h40";
+    std::string version = "build-2026-06-06 09h30";
     std::string vers_eval = RXEvaluation::get_version();
 
 	std::cout << "Version Melody " << version << std::endl;
@@ -137,7 +137,7 @@ int main (int argc, char * const argv[]) {
     
 #endif
     
-    if(rsme_flag) {
+    if(metrix_flag) {
         stage_start= std::max(0, stage_start);
         stage_end = std::min(59, std::max(stage_start, stage_end));
         
@@ -145,7 +145,7 @@ int main (int argc, char * const argv[]) {
 
         
         for(int stage = stage_start; stage<= stage_end; ++stage)
-            roxane.RSME(stage);
+            roxane.metrix(stage);
     }
      
     

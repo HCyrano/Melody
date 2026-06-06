@@ -336,7 +336,6 @@ void RXEngine::MG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
     RXBBPatterns& sBoard = sp->sBoardStack[threadID];
     sBoard = *(sp->sBoard); //operator=
     RXBitBoard& board = sBoard.board;
-    board.n_nodes = 0;
     
     //here sp->beta is const
     while(sp->alpha < sp->beta && !abort.load() && !thread_should_stop(threadID)) {
@@ -454,7 +453,7 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
     if (pv && use_pv_ext && board.n_empty <= depth_pv_extension) {
         
         if (board.n_empty <= EG_MEDIUM_HI_TO_LOW)
-            return EG_PVS_hash_mobility(threadID, board, true, lower, upper, passed);
+            return EG_PVS_ETC_LTT(threadID, board, true, lower, upper, passed);
         
         return EG_PVS_ETC_mobility(threadID, sBoard, true, lower, upper, passed);
         
@@ -513,21 +512,28 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
         
         RXMove* move = list + 1;
         RXMove* previous = list;
+
+        const unsigned long long current_P = board.discs[board.player];
+        const unsigned long long current_O = board.discs[board.player^1];
         
+        const int etc_depth = depth-1;
+
         //ENHANCED TRANSPOSITION CUTOFF
         if(bestmove != NOMOVE) {
             
             board.generate_flips(bestmove, *move);
-            ++board.n_nodes;
-            
+
+
             //synchronized acces
 #ifdef USE_ETC
             if(!pv) {
-                const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
-                const unsigned long long O = board.discs[board.player] | (move->square | move->flipped);
-                const unsigned long long hashcode_after_move = RXBitBoard::hashcode(P, O);
-                
-                if(hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth>=depth-1) {
+                ++board.n_nodes;
+
+                const unsigned long long next_P = current_O ^ move->flipped;
+                const unsigned long long next_O = current_P | (move->square | move->flipped);
+                const unsigned long long next_hashcode = RXBitBoard::hashcode(next_P, next_O);
+
+                if(hTable->get(next_hashcode, next_P, next_O, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth>=etc_depth) {
                     
                     if(-entry.upper >= upper) {
                         return -entry.upper ;
@@ -552,7 +558,6 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                 legal_movesBB ^= bit;
                 
                 board.generate_flips(pos, *move);
-                ++board.n_nodes;
                 
                 move->score = 0;
                 
@@ -560,11 +565,13 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
 #ifdef USE_ETC
                 
                 if(!pv) {
-                    const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
-                    const unsigned long long O = board.discs[board.player] | (move->square | move->flipped);
-                    const unsigned long long hashcode_after_move = RXBitBoard::hashcode(P, O);
-                    
-                    if(hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth>=depth-1) {
+                    ++board.n_nodes;
+
+                    const unsigned long long next_P = current_O ^ move->flipped;
+                    const unsigned long long next_O = current_P | (move->square | move->flipped);
+                    const unsigned long long next_hashcode = RXBitBoard::hashcode(next_P, next_O);
+
+                    if(hTable->get(next_hashcode, next_P, next_O, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth>=etc_depth) {
                         
                         if(-entry.upper >= upper) {
                             return -entry.upper ;
@@ -851,7 +858,6 @@ void RXEngine::MG_SP_search_deep(RXSplitPoint* sp, const unsigned int threadID) 
     RXBBPatterns& sBoard = sp->sBoardStack[threadID];
     sBoard = *(sp->sBoard); //operator=
     RXBitBoard& board = sBoard.board;
-    board.n_nodes = 0;
     
     //here sp->beta is const
     while(sp->alpha < sp->beta && !abort.load()  && !thread_should_stop(threadID)) {
@@ -992,7 +998,7 @@ int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, 
     if (pv && use_pv_ext && (board.n_empty - depth) <= depth_pv_extension) {
         
         if (board.n_empty <= EG_MEDIUM_HI_TO_LOW)
-            return EG_PVS_hash_mobility(threadID, board, true, alpha, beta, passed);
+            return EG_PVS_ETC_LTT(threadID, board, true, alpha, beta, passed);
         
         return EG_PVS_ETC_mobility(threadID, sBoard, true, alpha, beta, passed);
         
@@ -1211,7 +1217,7 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
     
     //param mpc
     int lower_probcut, upper_probcut;
-    int depth_probcut = (depth/4)*2 + (depth & 1);
+    const int depth_probcut = (depth/4)*2 + (depth & 1);
     probcut_bounds(board, selectivity, depth, depth_probcut, pvDev, alpha, alpha+1, lower_probcut, upper_probcut);
     
     
@@ -1236,19 +1242,25 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
 
         RXMove* move = list + 1;
         RXMove* previous = list;
+ 
+        const unsigned long long current_P = board.discs[board.player];
+        const unsigned long long current_O =  board.discs[board.player^1];
         
+        const int etc_depth = depth-1;
+
         //ENHANCED TRANSPOSITION CUTOFF
         if(bestmove != NOMOVE) {
             
             board.generate_flips(bestmove, *move);
-            ++board.n_nodes;
             
 #ifdef USE_ETC
-            const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
-            const unsigned long long O = board.discs[board.player] | (move->square | move->flipped);
-            const unsigned long long hashcode_after_move = RXBitBoard::hashcode(P, O);
+            ++board.n_nodes;
 
-            if(hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth >= depth-1) {
+            const unsigned long long next_P = current_O ^ move->flipped;
+            const unsigned long long next_O = current_P | (move->square | move->flipped);
+            const unsigned long long next_hashcode = RXBitBoard::hashcode(next_P, next_O);
+
+            if(hTable->get(next_hashcode, next_P, next_O, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth >= etc_depth) {
                 
                 if(-entry.upper > alpha) {
                     return -entry.upper ;
@@ -1275,17 +1287,17 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
                       legal_movesBB ^= bit;
                       
                       board.generate_flips(pos, *move);
-                      ++board.n_nodes;
                       
                       move->score = 0;
                       
 #ifdef USE_ETC
-                      const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
-                      const unsigned long long O = board.discs[board.player] | (move->square | move->flipped);
-                      const unsigned long long hashcode_after_move = RXBitBoard::hashcode(P, O);
+                      ++board.n_nodes;
 
-                      
-                      if(hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.depth>=depth-1) {
+                      const unsigned long long next_P = current_O ^ move->flipped;
+                      const unsigned long long next_O = current_P | (move->square | move->flipped);
+                      const unsigned long long next_hashcode = RXBitBoard::hashcode(next_P, next_O);
+
+                      if(hTable->get(next_hashcode, next_P, next_O, type_hashtable, entry) && entry.depth>=etc_depth) {
                           
                           if(entry.selectivity >= selectivity && -entry.upper > alpha) {
                               return -entry.upper ;
@@ -1376,7 +1388,7 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
 #endif
             
             // Split?
-            if(activeThreads > 1 && depth>MIN_DEPTH_SPLITPOINT && iter->next != nullptr && !abort.load()
+            if(activeThreads > 1 && (depth-depth_reduction)>MIN_DEPTH_SPLITPOINT && iter->next != nullptr && !abort.load()
                && !thread_should_stop(threadID && idle_thread_exists(threadID))
                && split(sBoard, false, pvDev, depth, depth_reduction, selectivity, alpha, (alpha+1), bestscore, bestmove, list, threadID, RXSplitPoint::MID_XPROBCUT)) {
                 
@@ -1432,7 +1444,6 @@ void RXEngine::MG_SP_search_XProbcut(RXSplitPoint* sp, const unsigned int thread
     RXBBPatterns& sBoard = sp->sBoardStack[threadID];
     sBoard = *(sp->sBoard);                                 //operator=
     RXBitBoard& board = sBoard.board;
-    board.n_nodes = 0;
     
     unsigned int depth_reduction = sp->depth_reduction;
 

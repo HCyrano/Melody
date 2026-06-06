@@ -41,6 +41,10 @@ struct alignas(64) Vec_short {
 
 class alignas(64) RXEvaluation {
     
+    static constexpr unsigned int N_STAGES_EVAL = 60;
+    static constexpr unsigned int N_STAGES_FM = 2;
+
+
     static constexpr unsigned int N_FEATURES = 14;
     static constexpr unsigned int sizes[N_FEATURES] = {24, 24, 243, 729, 2187, 6561, 59049, 59049, 59049, 59049, 6561, 6561, 6561, 177147};
     
@@ -72,32 +76,32 @@ class alignas(64) RXEvaluation {
     static void unload();
     
     static std::string get_version() {
-            return "FM_R16i16 2026-04-10";
+            return "FM_R16i16 2026-05-28";
         }
 
     
-    alignas(64) static inline short* eval_w[60][N_FEATURES] = {};
+    alignas(64) static inline short* eval_w[N_STAGES_EVAL][N_FEATURES] = {};
     
 #ifdef FACT_MACH
     
-    alignas(64) static inline int eval_w0[60];
-    alignas(64) static inline Vec_short* eval_V[N_FEATURES] = {};
+    alignas(64) static inline int eval_w0[N_STAGES_EVAL];
+    alignas(64) static inline Vec_short* eval_V[N_STAGES_FM][N_FEATURES] = {};
 
     // FM static global pointer declarations
-    static inline const Vec_short* gVMob_P  = nullptr;
-    static inline const Vec_short* gVMob_O  = nullptr;
-    static inline const Vec_short* gVDiag5  = nullptr;
-    static inline const Vec_short* gVDiag6  = nullptr;
-    static inline const Vec_short* gVDiag7  = nullptr;
-    static inline const Vec_short* gVDiag8  = nullptr;
-    static inline const Vec_short* gVEdge1  = nullptr;  // EDGE2X
-    static inline const Vec_short* gVEdge2  = nullptr;  // EDGE64
-    static inline const Vec_short* gVEdge3  = nullptr;  // EDGE2*(3/2)
-    static inline const Vec_short* gVEdge4  = nullptr;  // EDGE2*5
-    static inline const Vec_short* gVHv2    = nullptr;
-    static inline const Vec_short* gVHv3    = nullptr;
-    static inline const Vec_short* gVHv4    = nullptr;
-    static inline const Vec_short* gVCorner = nullptr;
+    static inline const Vec_short* gVMob_P[N_STAGES_FM]  = {nullptr, nullptr};
+    static inline const Vec_short* gVMob_O[N_STAGES_FM]  = {nullptr, nullptr};
+    static inline const Vec_short* gVDiag5[N_STAGES_FM]  = {nullptr, nullptr};
+    static inline const Vec_short* gVDiag6[N_STAGES_FM]  = {nullptr, nullptr};
+    static inline const Vec_short* gVDiag7[N_STAGES_FM]  = {nullptr, nullptr};
+    static inline const Vec_short* gVDiag8[N_STAGES_FM]  = {nullptr, nullptr};
+    static inline const Vec_short* gVEdge1[N_STAGES_FM]  = {nullptr, nullptr};  // EDGE2X
+    static inline const Vec_short* gVEdge2[N_STAGES_FM]  = {nullptr, nullptr};  // EDGE64
+    static inline const Vec_short* gVEdge3[N_STAGES_FM]  = {nullptr, nullptr};  // EDGE2*(3/2)
+    static inline const Vec_short* gVEdge4[N_STAGES_FM]  = {nullptr, nullptr};  // EDGE2*5
+    static inline const Vec_short* gVHv2[N_STAGES_FM]    = {nullptr, nullptr};
+    static inline const Vec_short* gVHv3[N_STAGES_FM]    = {nullptr, nullptr};
+    static inline const Vec_short* gVHv4[N_STAGES_FM]    = {nullptr, nullptr};
+    static inline const Vec_short* gVCorner[N_STAGES_FM] = {nullptr, nullptr};
 
 #endif
 

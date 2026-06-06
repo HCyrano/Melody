@@ -125,7 +125,7 @@ public :
     void get_move_fixed_depth(const std::string& position, const int depth, const int selectivity);
     void get_move_time_limited(const std::string& position, const int time_remaining);
     
-    void RSME(const int stage);
+    void metrix(const int stage);
 
 };
 

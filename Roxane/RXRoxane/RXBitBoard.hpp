@@ -44,7 +44,7 @@
 #endif
 
 
-class alignas(32) RXSquareList {
+class RXSquareList {
     
     public :
     
@@ -67,58 +67,23 @@ class alignas(32) RXBitBoard {
     
     static void edge_stability_init();
     
-    typedef unsigned long long  (*type_do_flips)(const unsigned long long& discs_player, const unsigned long long& discs_opponent);
 
 
     // move functions
 #if ARCH == ARCH_ARM_NEON
-
-#define func(pos) static unsigned long long do_flips_##pos(const unsigned long long& discs_player, const unsigned long long& discs_opponent) \
-
-    func(A1); func(B1); func(C1); func(D1); func(E1); func(F1); func(G1); func(H1);
-    func(A2); func(B2); func(C2); func(D2); func(E2); func(F2); func(G2); func(H2);
-    func(A3); func(B3); func(C3); func(D3); func(E3); func(F3); func(G3); func(H3);
-    func(A4); func(B4); func(C4);                     func(F4); func(G4); func(H4);
-    func(A5); func(B5); func(C5);                     func(F5); func(G5); func(H5);
-    func(A6); func(B6); func(C6); func(D6); func(E6); func(F6); func(G6); func(H6);
-    func(A7); func(B7); func(C7); func(D7); func(E7); func(F7); func(G7); func(H7);
-    func(A8); func(B8); func(C8); func(D8); func(E8); func(F8); func(G8); func(H8);
-    
-#undef func
         
     static int count_flips_NEON(int pos, unsigned long long P);
     void generate_flips_NEON(const int pos, RXMove& move) const;
-    
-    static type_do_flips const do_flips_NEON[];
+    static unsigned long long do_flips_NEON(const int pos, const unsigned long long P, const unsigned long long O);
+    static unsigned long long do_flips_NEON(const int pos1, const int pos2, const unsigned long long P, const unsigned long long O, unsigned long long& res2);
 
     
-#elif ARCH == ARCH_X86_AVX2
-    
-    void generate_flips_AVX2(const int pos, RXMove& move) const;
-    static int count_flips_AVX2(int pos, unsigned long long P);
-    static unsigned long long do_flips_AVX2(const int pos, const unsigned long long P, const unsigned long long O);
-
 #else
     
-#define func(pos) static int count_flips_##pos(const unsigned long long& discs_player)\
-
-    func(A1); func(B1); func(C1); func(D1); func(E1); func(F1); func(G1); func(H1);
-    func(A2); func(B2); func(C2); func(D2); func(E2); func(F2); func(G2); func(H2);
-    func(A3); func(B3); func(C3); func(D3); func(E3); func(F3); func(G3); func(H3);
-    func(A4); func(B4); func(C4);                     func(F4); func(G4); func(H4);
-    func(A5); func(B5); func(C5);                     func(F5); func(G5); func(H5);
-    func(A6); func(B6); func(C6); func(D6); func(E6); func(F6); func(G6); func(H6);
-    func(A7); func(B7); func(C7); func(D7); func(E7); func(F7); func(G7); func(H7);
-    func(A8); func(B8); func(C8); func(D8); func(E8); func(F8); func(G8); func(H8);
-    
-#undef func
-    
-    typedef int (*type_count_flips)(const unsigned long long& discs_player);
-    static type_count_flips const count_flips_X86[];
-
-    void generate_flips_X86(const int pos, RXMove& move) const;
-    static type_do_flips const do_flips_X86[];
-
+    static int count_flips_AVX2(int pos, unsigned long long P);
+    void generate_flips_AVX2(const int pos, RXMove& move) const;
+    static unsigned long long do_flips_AVX2(const int pos, const unsigned long long P, const unsigned long long O);
+    static unsigned long long do_flips_AVX2(const int pos1, const int pos2, const unsigned long long P, const unsigned long long O, unsigned long long& res2);
     
 #endif
 
@@ -194,21 +159,22 @@ class alignas(32) RXBitBoard {
     static inline int count_flips(const int pos, const unsigned long long P);
     inline void generate_flips(const int pos, RXMove& move) const;
     static inline unsigned long long do_flips(const int pos, const unsigned long long P, const unsigned long long O);
+    static inline unsigned long long do_flips(const int pos1, const int pos2, const unsigned long long P, const unsigned long long O, unsigned long long& flipped_2);
 
     /* bool check_move(const int position, const int color) const; */
 
     unsigned int n_moves() const;
     void moves_producing(RXMove* start, unsigned long long exclude_mask = 0) const;
     
-    //    static uint64_t calc_legal(const uint64_t P, const uint64_t O);
+    //    static unsigned long long calc_legal(const unsigned long long P, const unsigned long long O);
     inline unsigned long long get_legal_moves() const;
     static unsigned long long get_legal_moves(const unsigned long long discs_player, const unsigned long long discs_opponent);
     
     
     bool isValid_square(const unsigned int pos) const;
     
-    static int count_potential_moves(const unsigned long long p_discs, const unsigned long long o_discs);
-    static void dual_potential_mobility(const unsigned long long p_discs, const unsigned long long o_discs, int &p_pmob, int &o_pmob);
+    static int count_potential_moves(const unsigned long long P, const unsigned long long O);
+    static void dual_potential_mobility(const unsigned long long P, const unsigned long long O, int &p_pmob, int &o_pmob);
 
     
 
@@ -275,7 +241,7 @@ inline RXBitBoard& RXBitBoard::operator=(const RXBitBoard& src) {
     player = src.player;
     n_empty = src.n_empty;
     parity = src.parity;
-    n_nodes = src.n_nodes;
+    n_nodes = 0;
 
     // Reconstruction de la liste sans branchement
     RXSquareList* __restrict__ current_dest_base = this->empties_list;
@@ -306,17 +272,17 @@ inline RXBitBoard& RXBitBoard::operator=(const RXBitBoard& src) {
 inline void RXBitBoard::moves_producing(RXMove* start, unsigned long long exclude_mask) const {
     RXMove *list = start + 1, *previous = start;
     
-    unsigned long long remaining = get_legal_moves(discs[player], discs[player^1]);
-    remaining &= ~exclude_mask;
+    unsigned long long legal_moves = get_legal_moves(discs[player], discs[player^1]);
+    legal_moves &= ~exclude_mask;
     
     for(RXSquareList* empties = empties_list->next;
-        remaining && empties->position != NOMOVE;
+        legal_moves;
         empties = empties->next)
     {
         const int pos = empties->position;
         const unsigned long long bit = 0x1ULL << pos;
-        if(remaining & bit) {
-            remaining ^= bit;
+        if(legal_moves & bit) {
+            legal_moves ^= bit;
             (this)->generate_flips(pos, *list);
             list->score = 0;
             previous = previous->next = list++;
@@ -409,9 +375,19 @@ inline void RXBitBoard::generate_flips(const int pos, RXMove& move) const {
 __attribute__((always_inline))
 inline unsigned long long RXBitBoard::do_flips(const int pos, unsigned long long P, unsigned long long O) {
 #if ARCH == ARCH_ARM_NEON
-    return do_flips_NEON[pos](P, O);
+    return RXBitBoard::do_flips_NEON(pos, P, O);
 #else
     return RXBitBoard::do_flips_AVX2(pos, P, O);
+#endif
+}
+
+// dispatch do_flips
+__attribute__((always_inline))
+inline unsigned long long RXBitBoard::do_flips(const int pos1, const int pos2, const unsigned long long P, const unsigned long long O, unsigned long long& flipped_2) {
+#if ARCH == ARCH_ARM_NEON
+    return RXBitBoard::do_flips_NEON(pos1, pos2, P, O, flipped_2);
+#else
+    return RXBitBoard::do_flips_AVX2(pos1, pos2, P, O, flipped_2);
 #endif
 }
 
@@ -424,9 +400,9 @@ inline unsigned long long RXBitBoard::do_flips(const int pos, unsigned long long
  @param O                    a bitboard representing opponent
  @return count all legal moves
  */
-inline int RXBitBoard::get_mobility(const unsigned long long p_discs, const unsigned long long o_discs) {
+inline int RXBitBoard::get_mobility(const unsigned long long P, const unsigned long long O) {
     
-    const unsigned long long legals = get_legal_moves(p_discs, o_discs);
+    const unsigned long long legals = get_legal_moves(P, O);
     return __builtin_popcountll(legals)  +  __builtin_popcountll(legals & 0x8100000000000081ULL);
     
 }
@@ -486,16 +462,40 @@ inline unsigned long long RXBitBoard::get_stable_edge(const unsigned long long P
 __attribute__((always_inline))
 inline int RXBitBoard::get_corner_stability(const unsigned long long& discs_player) {
     
-    unsigned long long stables = discs_player & 0x8100000000000081ULL;
+//    unsigned long long stables = discs_player & 0x8100000000000081ULL;
+//    
+//    stables |= (discs_player & (stables << 1)) & 0x0200000000000002ULL;
+//    stables |= (discs_player & (stables >> 1)) & 0x4000000000000040ULL;
+//    stables |= (discs_player & (stables << 8)) & 0x0000000000008100ULL;
+//    stables |= (discs_player & (stables >> 8)) & 0x0081000000000000ULL;
     
-    stables |= (discs_player & (stables << 1)) & 0x0200000000000002ULL;
-    stables |= (discs_player & (stables >> 1)) & 0x4000000000000040ULL;
-    stables |= (discs_player & (stables << 8)) & 0x0000000000008100ULL;
-    stables |= (discs_player & (stables >> 8)) & 0x0081000000000000ULL;
+    const  unsigned long long stables = ((((  0x0100000000000001ULL & discs_player) << 1) | ((0x8000000000000080ULL & discs_player) >> 1)
+                                          | ((0x0000000000000081ULL & discs_player) << 8) | ((0x8100000000000000ULL & discs_player) >> 8)
+                                          |  0x8100000000000081ULL) & discs_player);
+
     
     return __builtin_popcountll(stables);
     
 }
+
+__attribute__((always_inline))
+inline int RXBitBoard::count_potential_moves(const unsigned long long P, const unsigned long long O) {
+
+    const unsigned long long inner_opp_7E = O & 0x7E7E7E7E7E7E7E7EULL;
+    const unsigned long long inner_opp_FF = O & 0x00FFFFFFFFFFFF00ULL;
+
+    unsigned long long
+    pot_moves = (inner_opp_7E << 1 | inner_opp_7E >> 1) | (inner_opp_FF << 8 | inner_opp_FF >> 8);
+
+    const unsigned long long inner_opp = O & 0x007E7E7E7E7E7E00ULL;
+    pot_moves |= (inner_opp << 7 | inner_opp >> 7) | (inner_opp << 9 | inner_opp >> 9);
+    
+    pot_moves &= ~(P|O);
+    
+    return __builtin_popcountll(pot_moves);
+
+}
+
 
 inline int RXBitBoard::final_score_1 () const {
     int score = 63-2*__builtin_popcountll(discs[player^1]);
@@ -525,16 +525,17 @@ inline int RXBitBoard::final_score_2(int alpha, const int beta) const {
 //unroll
 inline int RXBitBoard::final_score_2(const unsigned long long discs_player, const unsigned long long discs_opponent, const int alpha, const int beta, const int idSquare1, const int idSquare2) const {
     
-    unsigned long long flipped, n_player, n_opponent;
+    unsigned long long flipped_1, n_player, n_opponent;
     
     int n_flips, bestscore = UNDEF_SCORE;
     ++n_nodes;
     
+    
     // try to play on the first available square
-    if((discs_opponent & NEIGHBOR[idSquare1]) && (flipped = do_flips(idSquare1, discs_player, discs_opponent))) {
+    if((discs_opponent & NEIGHBOR[idSquare1]) && (flipped_1 = do_flips(idSquare1, discs_player, discs_opponent))) {
         ++n_nodes;
         
-        n_opponent = discs_opponent ^ flipped;
+        n_opponent = discs_opponent ^ flipped_1;
         
         bestscore = 62 - 2*__builtin_popcountll(n_opponent);
         
@@ -564,10 +565,10 @@ inline int RXBitBoard::final_score_2(const unsigned long long discs_player, cons
     }
     
     // if needed, try to play on the second & last available square
-    if((discs_opponent & NEIGHBOR[idSquare2]) && (flipped = do_flips(idSquare2, discs_player, discs_opponent))) {
+    if((discs_opponent & NEIGHBOR[idSquare2]) && (flipped_1 = do_flips(idSquare2, discs_player, discs_opponent))) {
         ++n_nodes;
         
-        n_opponent = discs_opponent ^ flipped;
+        n_opponent = discs_opponent ^ flipped_1;
         
         int score = 62 - 2*__builtin_popcountll(n_opponent);
         
@@ -596,14 +597,17 @@ inline int RXBitBoard::final_score_2(const unsigned long long discs_player, cons
         return bestscore;
         
     }
-    
+
     // if no move were available
     if(bestscore == UNDEF_SCORE) {
-        
-        if((flipped = do_flips(idSquare1, discs_opponent, discs_player))) {
+
+        unsigned long long flipped_2 = 0;
+        flipped_1 = do_flips(idSquare1, idSquare2, discs_opponent, discs_player, flipped_2);
+
+        if(flipped_1) {
             ++n_nodes;
             
-            n_player = discs_player ^ flipped;
+            n_player = discs_player ^ flipped_1;
             
             bestscore = 62 - 2*__builtin_popcountll(n_player);
             
@@ -634,10 +638,10 @@ inline int RXBitBoard::final_score_2(const unsigned long long discs_player, cons
         }
         
         // if needed, try to play on the second & last available square
-        if((flipped = do_flips(idSquare2, discs_opponent, discs_player))) {
+        if(flipped_2) {
             ++n_nodes;
             
-            n_player = discs_player ^ flipped;
+            n_player = discs_player ^ flipped_2;
             
             int score = 62 - 2*__builtin_popcountll(n_player);
             
@@ -809,8 +813,8 @@ inline int RXBitBoard::final_score_4(int alpha, int beta, const bool passed) con
     
     int diff_discs = (2*__builtin_popcountll(discs[player]) - 60);
     
-    if (beta >= 6|| (beta >= 0 && (diff_discs <= beta - 6))) {
-        
+    if (!passed && (beta >= 6 || (beta >= 0 && (diff_discs <= beta - 6)))) {
+
         int stability_bound = 64- 2 * get_stability(player^1);
         if ( stability_bound <= alpha )
             return stability_bound; //alpha

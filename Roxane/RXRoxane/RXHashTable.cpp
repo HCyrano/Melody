@@ -38,8 +38,8 @@
 //
 //}
 
-RXHashValue::RXHashValue(uint64_t packed) {
-    std::memcpy(this, &packed, sizeof(uint64_t));
+RXHashValue::RXHashValue(unsigned long long packed) {
+    std::memcpy(this, &packed, sizeof(unsigned long long));
 }
 
 

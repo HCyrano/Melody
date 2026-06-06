@@ -32,7 +32,7 @@
 #include "RXBitBoard.hpp"
 
 typedef union {
-    alignas(64) uint64_t v1[8];
+    alignas(64) unsigned long long v1[8];
     __m256i    v4[2];
 } V8DI;
 
@@ -110,16 +110,13 @@ const V8DI LR_MASK[66] = {
  * Compute flipped discs when playing on square pos.
  *
  * @param pos player's move.
- * @param OP opponent & player's disc pattern.
+ * @param PP , OO  player's & opponent disc pattern.
  * @return partially reduced flipped disc pattern.
  */
 
-__m128i mm_flip(const __m128i OP, int pos)
+__m128i mm_flip(const __m256i PP, const __m256i OO, int pos)
 {
-	__m256i	PP, OO, flip, mask, rP, rS, rE, lO, lF;
-
-	PP = _mm256_broadcastq_epi64(OP);
-	OO = _mm256_broadcastq_epi64(_mm_unpackhi_epi64(OP, OP));
+	__m256i	flip, mask, rP, rS, rE, lO, lF;
 
 	mask = LR_MASK[pos].v4[1];
 	// right: shadow mask lower than leftmost P
@@ -143,11 +140,30 @@ __m128i mm_flip(const __m128i OP, int pos)
 	return _mm_or_si128(_mm256_castsi256_si128(flip), _mm256_extracti128_si256(flip, 1));
 }
 
+unsigned long long  RXBitBoard::do_flips_AVX2(const int pos1, const int pos2, const unsigned long long P, const unsigned long long O, unsigned long long& flipped_2) {
+
+    const __m256i PP = _mm256_set1_epi64x(P);
+    const __m256i OO = _mm256_set1_epi64x(O);
+    
+    __m128i flip = mm_flip(PP, OO, pos2);
+    __m128i rflip = _mm_or_si128(flip, _mm_shuffle_epi32(flip, 0x4e));
+    flipped_2 = _mm_cvtsi128_si64(rflip);
+
+    flip = mm_flip(PP, OO, pos1);
+    rflip = _mm_or_si128(flip, _mm_shuffle_epi32(flip, 0x4e));
+    return (unsigned long long) _mm_cvtsi128_si64(rflip);
+}
+
+
 
 unsigned long long  RXBitBoard::do_flips_AVX2(const int pos, const unsigned long long P, const unsigned long long O) {
-	__m128i flip = mm_flip(_mm_set_epi64x((O), (P)), pos);
+    
+    const __m256i PP = _mm256_set1_epi64x(P);
+    const __m256i OO = _mm256_set1_epi64x(O);
+    
+	__m128i flip = mm_flip(PP, OO, pos);
 	__m128i rflip = _mm_or_si128(flip, _mm_shuffle_epi32(flip, 0x4e));
-	return (uint64_t) _mm_cvtsi128_si64(rflip);
+	return (unsigned long long) _mm_cvtsi128_si64(rflip);
 }
 
 void RXBitBoard::generate_flips_AVX2(const int pos, RXMove& move) const {

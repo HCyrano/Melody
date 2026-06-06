@@ -16,12 +16,126 @@
  */
 
 #include <iostream>
+#include <cstdint>
 
 
 #include "RXEngine.hpp"
 #include "RXRoxane.hpp"
 #include "RXBitBoard.hpp"
 #include "RXSetting.hpp"
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LocalTT — table de transposition locale par thread, sans spinlock
+// Adapted from acepck's pull request for Egaroucid.
+//
+// Couvre les Methodes EG_alphabeta_parity < n_empty <= EG_PVS_ETC_LTT
+// soit typiquement 7/8 < n_empty <= 13/14 (selon SOLVER_SETTING)
+//
+// Dimensionnement :
+//   DEPTH_RANGE = EG_MEDIUM_HI_TO_LOW_MAX - EG_MEDIUM_TO_SHALLOW_MAX -1
+//               = 14 - 8 - 1 = 7 niveaux  (indices 0..6 pour n_empty 7..13)
+//   SIZE        = 2048 entrées par niveau (~336 ko par thread, 0 contention)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// RXEngine constants mirror (required for compilation)
+static constexpr int LTT_END_FAST  = RXEngine::EG_MEDIUM_TO_SHALLOW-1; // 8-1 = 7
+static constexpr int LTT_END_DEEP  = RXEngine::EG_MEDIUM_HI_TO_LOW;  // 14
+
+struct LocalTT {
+
+    static constexpr int DEPTH_RANGE = LTT_END_DEEP - LTT_END_FAST; // 7 niveaux : 6-12 or 7-13 cases vides
+    static constexpr int SIZE        = 2048;
+    static constexpr int MASK        = SIZE - 1;
+
+    //24 bytes (18 data + 6 padding)
+    struct Entry {
+        unsigned long long player   = 0;
+        unsigned long long opponent = 0;
+        int8_t   lower    = -64;
+        int8_t   upper    =  64;
+    };
+
+    // Défini dans local_tt.cpp
+    thread_local static Entry table[DEPTH_RANGE][SIZE];
+    
+    struct LookupResult {
+        Entry*  entry;      // nullptr = miss
+        int     alpha;      // alpha potentiellement resserré
+        int     beta;       // beta  potentiellement resserré
+        bool    cutoff;     // true = retourner score immédiatement
+        int     score;      // score à retourner si cutoff == true
+    };
+
+    // Retourne l'entrée si cache hit, nullptr si cache miss
+    static Entry* lookup(const unsigned long long P, const unsigned long long O, const unsigned int n_empty,  const unsigned long long hash) {
+        const int idx = n_empty - LTT_END_FAST;
+        assert(idx >= 0 && idx < DEPTH_RANGE);
+        Entry* e = &table[idx][hash & MASK];
+        return (e->player == P &&
+                e->opponent == O) ? e : nullptr;
+    }
+
+    // Retourne l'entrée si hit, nullptr si miss
+    static LookupResult probe(const RXBitBoard& board,
+                                     const unsigned long long hash,
+                                     const int alpha, const int beta) {
+        
+        Entry* e = lookup(board.discs[board.player], board.discs[board.player^1], board.n_empty, hash);
+        if (!e)
+            return {nullptr, alpha, beta, false, 0};
+
+        if (e->lower == e->upper) return {e, alpha, beta, true,  e->lower};
+        if (e->lower >= beta)     return {e, alpha, beta, true,  e->lower};
+        if (e->upper <= alpha)    return {e, alpha, beta, true,  e->upper};
+
+        int new_alpha = (e->lower > alpha) ? e->lower : alpha;
+        int new_beta  = (e->upper < beta)  ? e->upper : beta;
+        return {e, new_alpha, new_beta, false, 0};
+    }
+
+    // Retourne l'entrée si hit, nullptr si miss
+    static LookupResult probe(const unsigned long long P,
+                              const unsigned long long O,
+                              const unsigned int n_empty,
+                              const unsigned long long hash,
+                              const int alpha, const int beta) {
+        
+        Entry* e = lookup(P, O, n_empty, hash);
+        if(e)
+            return {e, e->lower, e->upper, false, 0};
+        return {nullptr, alpha, beta, false, 0};
+
+
+    }
+
+    // e == nullptr → collision (reset + réécriture), sinon mise à jour incrémentale
+    // Passer alpha originale (avant resserrement), beta courant
+    static void store(Entry* e, unsigned long long hash,
+                      const RXBitBoard& board, int score, int alpha, int beta) {
+        if (!e) {
+            const int idx = board.n_empty - LTT_END_FAST;
+            e = &table[idx][hash & MASK];
+            e->player   = board.discs[board.player];
+            e->opponent = board.discs[board.player^1];
+            e->lower    = -64;
+            e->upper    =  64;
+        }
+        if      (score <= alpha && score < e->upper) e->upper = static_cast<int8_t>(score);
+        else if (score >= beta  && score > e->lower) e->lower = static_cast<int8_t>(score);
+        else {
+            e->lower = e->upper = static_cast<int8_t>(score);
+        }
+    }
+};
+
+
+// ─────────────────────────────────────────────
+// Définition obligatoire du stockage thread_local
+// (une seule TU, sinon linker error)
+// ─────────────────────────────────────────────
+thread_local LocalTT::Entry LocalTT::table[LocalTT::DEPTH_RANGE][LocalTT::SIZE];
+
 
 const int RXEngine::stability_threshold[] =
 {   65, 65, 65, 65,  6,  8, 10, 14,
@@ -33,19 +147,6 @@ const int RXEngine::stability_threshold[] =
     65, 65, 65, 65, 65, 65, 65, 65,
     65, 65, 65, 65, 65, 65, 65, 65};
 
-#ifdef SOLVER_SETTING
-/* for record fforum-40-59 setting*/
-const int RXEngine::EG_DEEP_TO_MEDIUM = 16;
-const int RXEngine::EG_MEDIUM_HI_TO_LOW = 13;
-const int RXEngine::EG_MEDIUM_TO_SHALLOW = 7;
-const int RXEngine::MIN_DEPTH_USE_ENDCUT = 16;
-#else
-/* standart setting */
-const int RXEngine::EG_DEEP_TO_MEDIUM = 17;
-const int RXEngine::EG_MEDIUM_HI_TO_LOW = 14;
-const int RXEngine::EG_MEDIUM_TO_SHALLOW = 8;
-const int RXEngine::MIN_DEPTH_USE_ENDCUT = 16;
-#endif
 
 
 
@@ -68,7 +169,7 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
     int score, bestscore = UNDEF_SCORE;
     
 #ifdef USE_STABILITY
-    if ( beta >= stability_threshold[board.n_empty]) {
+    if ( !passed && beta >= stability_threshold[board.n_empty]) {
         
         int stability_bound = 64- 2 * board.get_stability(board.player^1);
         if ( stability_bound <= alpha )
@@ -92,6 +193,7 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
             for (int parity = 1; parity >= 0; parity--) {
                 unsigned long long movesBB = legal_movesBB & parity_movesBB;
                 
+                // Enforce JWC sort order—this is the only ordering.
                 for(RXSquareList* empties = board.empties_list->next; movesBB; empties = empties->next) {
                     const int pos = empties->position;
                     const unsigned long long bit = 0x1ULL << pos;
@@ -146,6 +248,7 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
             
             if(board.parity == 0 || board.parity == 0xF) {
                 
+                // Enforce JWC sort order—this is the only ordering.
                 RXSquareList* empties = board.empties_list;
                 do {
                     empties = empties->next;
@@ -181,6 +284,7 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                 for (int parity = 1; parity >= 0; parity--) {
                     unsigned long long movesBB = legal_movesBB & parity_movesBB;
                     
+                    // Enforce JWC sort order—this is the only ordering.
                     for(RXSquareList* empties = board.empties_list->next; movesBB; empties = empties->next) {
                         const int pos = empties->position;
                         const unsigned long long bit = 0x1ULL << pos;
@@ -226,22 +330,17 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
 }
 
 
-//7 empty
-int RXEngine::EG_alphabeta_hash_mobility(const unsigned int threadID, RXBitBoard& board, const bool pv, int alpha, const int beta, const bool passed) {
+//6 or 7 empty
+//Non recursive, called only one
+int RXEngine::EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, int alpha, const int beta, const bool passed) {
     
-    int bestscore = UNDEF_SCORE;
     int lower = alpha;
     int upper = beta;
     
-    unsigned int bestmove = NOMOVE;
-    
-    const unsigned long long  hash_code = board.hashcode();
-    
-    
-    
+
 #ifdef USE_STABILITY
     
-    if ( upper >= stability_threshold[board.n_empty] ) {
+    if ( !passed && upper >= stability_threshold[board.n_empty] ) {
         
         int stability_bound = 64- 2 * board.get_stability(board.player^1);
         if ( stability_bound <= lower )
@@ -253,145 +352,102 @@ int RXEngine::EG_alphabeta_hash_mobility(const unsigned int threadID, RXBitBoard
     }
 #endif
     
-    
-    RXHashValue entry;
-    if(hTable->get(hash_code, board, type_hashtable, entry)) {
-        
-        if(entry.selectivity == NO_SELECT && entry.depth >= board.n_empty) { //
-            
-            if (upper > entry.upper) {
-                upper = entry.upper;
-                if (upper <= lower)
-                    return upper;
-            }
-            if (!pv && lower < entry.lower) {
-                lower = entry.lower;
-                if (lower >= upper)
-                    return lower;
-            }
-            
-            //04/02/2025
-//            if(board.isValid_square(entry.move))
-                bestmove = entry.move;
+    const unsigned long long  hash_code = board.hashcode();
 
-        }
-    }
+    // TT local (no lock)
+    auto ltt = LocalTT::probe(board, hash_code, lower, upper);
+    if (ltt.cutoff) return ltt.score;
+    lower = ltt.alpha;
+    upper = ltt.beta;
+
+
+    int bestscore = UNDEF_SCORE;
+
+    //for all empty square
+    unsigned long long legal_movesBB = board.get_legal_moves();
     
-    
-    if(bestmove != PASS) {
+    if(legal_movesBB) {
         
         RXMove* list = threads[threadID]._move[board.n_empty];
         RXMove* move = list + 1;
         
+        RXMove* previous = list;
         
-        if(bestmove != NOMOVE) {
+        if(__builtin_popcountll(legal_movesBB) == 1) { //only 1 move
             
-            board.generate_flips(bestmove, *move);
+            const int pos = __builtin_ctzll(legal_movesBB);  // Get the index of the lowest set bit
+
+            board.generate_flips(pos, *move);
             
-            // first move
+            previous = previous->next = move++;
+                
+            
+        } else { //multiple moves : prepare for sort
+            
+            const unsigned long long current_P = board.discs[board.player];
+            const unsigned long long current_O = board.discs[board.player^1];
+            
+            // Skipping JWC order is faster, but JWC tie-breaking for equal scores is lost.
+            do {
+                
+                const int pos = __builtin_ctzll(legal_movesBB); // Get the index of the lowest set bit
+                legal_movesBB &= legal_movesBB - 1;             // Clear the lowest set bit
+
+                board.generate_flips(pos, *move);
+                
+                ++board.n_nodes;
+                
+                const unsigned long long next_O = current_P | (move->flipped | move->square);
+                const unsigned long long next_P = current_O ^ move->flipped;
+                
+                move->score = (RXBitBoard::count_potential_moves(next_P, next_O)<<4)
+                - (RXBitBoard::get_corner_stability(next_O)<<2)
+                - (((board.parity & RXBitBoard::QUADRANT_ID[move->position])>>RXBitBoard::QUADRANT_SHIFT[move->position])<<4);
+                
+                previous = previous->next = move++;
+                
+            } while (legal_movesBB);
+        }
+        
+        previous->next = nullptr;
+
+        
+        int score;
+        do {
+            
+            move = list->next;
+            
+            if(move->next != nullptr)
+                move = list->pick_next_promising_move();
+            
+            
             board.do_move(*move);
-            bestscore = -EG_alphabeta_parity(threadID, board, -upper, -lower, false);
+            score = -EG_alphabeta_parity(threadID, board, -upper, -lower, false);
             board.undo_move(*move);
             
-            if (bestscore > lower)
-                lower = bestscore;
-            
-        }
-        
-        if(lower < upper) {
-            
-            //for all empty square
-            unsigned long long legal_movesBB = board.get_legal_moves();
-            if(bestmove !=NOMOVE)
-                legal_movesBB ^=  0x1ULL<<bestmove;
-            
-            if(legal_movesBB) {
-                
-                RXMove* previous = list;
-                RXSquareList* empties = board.empties_list;
-                do {
-                    empties = empties->next;
-                    
-                    const int pos = empties->position;
-                    const unsigned long long bit = 0x1ULL << pos;
-
-                    if(legal_movesBB & bit) {
-                        legal_movesBB ^= bit;
-                        
-                        board.generate_flips(pos, *move);
-                        
-                        previous = previous->next = move++;
-                    }
-                    
-                } while(legal_movesBB);
-                
-                previous->next = nullptr;
-                
-                if((list->next)->next != nullptr) { //nb moves > 1
-                    
-                    const int p = board.player;
-                    const int o = p^1;
-                    
-                    //sort list by mobility
-                    for(RXMove* iter = list->next; iter != nullptr; iter = iter->next) {
-                        
-                        ++board.n_nodes;
-                        
-                        const unsigned long long p_discs = board.discs[p] | (iter->flipped | iter->square);
-                        const unsigned long long o_discs = board.discs[o] ^ iter->flipped;
-                        
-                        iter->score = (RXBitBoard::count_potential_moves(o_discs, p_discs)<<4)
-                        - (RXBitBoard::get_corner_stability(p_discs)<<2)
-                        - (((board.parity & RXBitBoard::QUADRANT_ID[iter->position])>>RXBitBoard::QUADRANT_SHIFT[iter->position])<<4);
-                        
-                    }
-                    
-                    
-                }
-                
-                
-                int score;
-                do {
-                    
-                    move = list->next;
-                    
-                    if(move->next != nullptr)
-                        move = list->pick_next_promising_move();
-                    
-                    
-                    board.do_move(*move);
-                    score = -EG_alphabeta_parity(threadID, board, -upper, -lower, false);
-                    board.undo_move(*move);
-                    
-                    if (score > bestscore) {
-                        bestscore = score;
-                        bestmove  = move->position;
-                        if (bestscore > lower)
-                            lower = bestscore;
-                    }
-                    
-                    list = list->next;
-                    
-                } while(lower < upper && list->next != nullptr);
+            if (score > bestscore) {
+                bestscore = score;
+                if (bestscore > lower)
+                    lower = bestscore;
             }
-        }
-    }
-    
-    
-    //if PASS
-    if (bestscore == UNDEF_SCORE) {
+            
+            list = list->next;
+            
+        } while(lower < upper && list->next != nullptr);
+        
+    } else  {
+        
         if (passed) {
             return board.final_score();
          } else {
             board.do_pass();
-            bestscore = -EG_alphabeta_hash_mobility(threadID, board, pv, -upper, -lower, true);
+            bestscore = -EG_alphabeta_LTT(threadID, board, pv, -upper, -lower, true);
             board.do_pass();
-            bestmove = PASS;
         }
     }
     
-    hTable->update(hash_code, board, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
-    
+    LocalTT::store(ltt.entry, hash_code, board, bestscore, alpha, upper);
+
     return bestscore;
 }
 
@@ -409,19 +465,19 @@ int RXEngine::EG_alphabeta_hash_mobility(const unsigned int threadID, RXBitBoard
  * \param passed     a flag indicating if previous move was a pass.
  * \return the final score, as a disc difference.
  */
-int RXEngine::EG_PVS_hash_mobility(const unsigned int threadID, RXBitBoard& board, const bool pv, int alpha, const int beta, const bool passed)
+
+//12 ou 13 empty
+int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, int alpha, const int beta, const bool passed)
 {
     
 
     if (board.n_empty < EG_MEDIUM_TO_SHALLOW)
-        return EG_alphabeta_hash_mobility(threadID, board, pv, alpha, beta, passed);
+        return EG_alphabeta_LTT(threadID, board, pv, alpha, beta, passed);
 
     
-    unsigned int bestmove = NOMOVE;
     int lower = alpha;
     int upper = beta;
     
-    const unsigned long long  hash_code = board.hashcode();
     
         
 #ifdef USE_STABILITY
@@ -435,7 +491,7 @@ int RXEngine::EG_PVS_hash_mobility(const unsigned int threadID, RXBitBoard& boar
      */
     
     
-    if ( upper >= stability_threshold[board.n_empty] ) {
+    if ( !passed && upper >= stability_threshold[board.n_empty] ) {
         
         int stability_bound = 64- 2 * board.get_stability(board.player^1);
         if ( stability_bound <= lower )
@@ -448,164 +504,141 @@ int RXEngine::EG_PVS_hash_mobility(const unsigned int threadID, RXBitBoard& boar
     
 #endif
     
-    
-    RXHashValue entry;
-    if(hTable->get(hash_code, board, type_hashtable, entry)) {
-        
-        if(entry.selectivity == NO_SELECT && entry.depth >= board.n_empty) { //
-            
-            
-            if (upper > entry.upper) {
-                upper = entry.upper;
-                if (upper <= lower)
-                    return upper;
-            }
-            if (!pv && lower < entry.lower) {
-                lower = entry.lower;
-                if (lower >= upper)
-                    return lower;
-            }
-            
-            //04/02/2025
-//            if(board.isValid_square(entry.move))
-                bestmove = entry.move;
+    const unsigned long long  hash_code = board.hashcode();
 
-        }
-    }
-    
+    // TT local (no lock)
+    auto ltt = LocalTT::probe(board, hash_code, lower, upper);
+    if (ltt.cutoff) return ltt.score;
+    lower = ltt.alpha;
+    upper = ltt.beta;
+
     int bestscore = UNDEF_SCORE;
     
-    if(bestmove != PASS) {
-        
+    //for all empty square
+    unsigned long long legal_movesBB = board.get_legal_moves();
+    
+    if(legal_movesBB) {
+                
         RXMove* list = threads[threadID]._move[board.n_empty];
         RXMove* move = list + 1;
         
-        if(bestmove != NOMOVE) {
-            
-            board.generate_flips(bestmove, *move);
-            
-            /* first move */
-            board.do_move(*move);
-            bestscore = -EG_PVS_hash_mobility(threadID, board, pv, -upper, -lower, false);
-            board.undo_move(*move);
-            
-            
-            //bestmove = move->position;
-            if (bestscore > lower)
-                lower = bestscore;
-            
-        }
-        
-        if(lower < upper) {
-            
-            //for all empty square
-            unsigned long long legal_movesBB = board.get_legal_moves();
-            if(bestmove !=NOMOVE)
-                legal_movesBB ^= 0x1ULL<<bestmove;
-            
-            if(legal_movesBB) {
+        RXMove* previous = list;
                 
-                RXMove* previous = list;
-                
-                RXSquareList* empties = board.empties_list;
-                do {
-                    empties = empties->next;
-                    
-                    const int pos = empties->position;
-                    const unsigned long long bit = 0x1ULL << pos;
+        const unsigned long long current_P = board.discs[board.player];
+        const unsigned long long current_O = board.discs[board.player^1];
 
-                    if(legal_movesBB & bit) {
-                        legal_movesBB ^= bit;
-                        
-                        board.generate_flips(empties->position, *move);
-                        previous = previous->next = move++;
-                    }
-                } while(legal_movesBB);
-                
-                previous->next = nullptr;
-                
-                
-                if((list->next)->next != nullptr) { //nb moves > 1
-                    
-                    const int p = board.player;
-                    const int o = p^1;
-                    
-                    //sort list by mobility
-                    for(RXMove* iter = list->next; iter != nullptr; iter = iter->next) {
-                        
-                        ++board.n_nodes;
-                        
-                        const unsigned long long p_discs = board.discs[p] | (iter->flipped | iter->square);
-                        const unsigned long long o_discs = board.discs[o] ^ iter->flipped;
-                        
-                        iter->score = (RXBitBoard::get_mobility(o_discs, p_discs)<<5)
-                        - (RXBitBoard::get_corner_stability(p_discs)<<2)
-                        + (RXBitBoard::count_potential_moves(o_discs, p_discs))
-                        - ((board.parity & RXBitBoard::QUADRANT_ID[iter->position])>>RXBitBoard::QUADRANT_SHIFT[iter->position]);
-                        
-                    }
-                    
-                    
-                }
-                
-                
-                if(bestmove == NOMOVE) {
-                    
-                    move = list->pick_next_promising_move();
-                    
-                    board.do_move(*move);
-                    bestscore = -EG_PVS_hash_mobility(threadID, board, pv, -upper, -lower, false);
-                    board.undo_move(*move);
-                    
-                    bestmove = move->position;
-                    if (bestscore > lower)
-                        lower = bestscore;
-                    
-                    // next move
-                    list = list->next;
-                    
-                }
-                
-                
-                // other moves : try to refute the first/best one
-                int score;
-                for(; lower < upper && list->next != nullptr; list = list->next) {
-                    
-                    move = list->pick_next_promising_move();
+        // Skipping JWC order is faster, but JWC tie-breaking for equal scores is lost.
+        do {
+            const int pos = __builtin_ctzll(legal_movesBB);  // Get the index of the lowest set bit
+            legal_movesBB &= legal_movesBB - 1;              // Clear the lowest set bit
 
-                    board.do_move(*move);
-                    
-                    score = -EG_PVS_hash_mobility(threadID, board, false, -lower-1, -lower, false);
-                    if (lower < score && score < upper)
-                        score = -EG_PVS_hash_mobility(threadID, board, pv, -upper, -score, false);
-                    
-                    board.undo_move(*move);
-                    
-                    if (score > bestscore) {
-                        bestscore = score;
-                        bestmove = move->position;
-                        if (bestscore > lower)
-                            lower = bestscore;
+            board.generate_flips(pos, *move);
+
+            if(!pv ) {
+                //ETC LTT
+
+                ++board.n_nodes;
+
+                const unsigned long long next_O = current_P | (move->flipped | move->square);
+                const unsigned long long next_P = current_O ^ move->flipped;
+
+                const unsigned long long next_hashcode = board.hashcode(next_P, next_O);
+                
+                auto etc_ltt = LocalTT::probe(next_P, next_O, board.n_empty-1, next_hashcode, lower, upper);
+                if (etc_ltt.entry) {
+                    if(-etc_ltt.beta>lower) {
+                        if(-etc_ltt.beta>=upper)
+                            return -etc_ltt.beta;
+                        lower = -etc_ltt.beta;
+                        bestscore = -etc_ltt.beta;
+                    }
+                    //remove from list
+                    else if(-etc_ltt.alpha <= lower) {
+                        if(bestscore < -etc_ltt.alpha)
+                            bestscore = -etc_ltt.alpha;
+                        continue;
                     }
                 }
             }
+
+            previous = previous->next = move++;
+            
+        } while (legal_movesBB);
+
+        
+        previous->next = nullptr;
+        
+        // Tous les coups éliminés par ETC
+        if(previous == list && bestscore != UNDEF_SCORE)
+            return bestscore;
+
+        if((list->next)->next != nullptr) { //nb moves > 1
+            
+            //sort list by mobility
+            for(RXMove* iter = list->next; iter != nullptr; iter = iter->next) {
+                
+                ++board.n_nodes;
+
+                const unsigned long long next_O = current_P | (iter->flipped | iter->square);
+                const unsigned long long next_P = current_O ^ iter->flipped;
+                
+                iter->score = (RXBitBoard::get_mobility(next_P, next_O)<<5)
+                - (RXBitBoard::get_corner_stability(next_O)<<2)
+                + (RXBitBoard::count_potential_moves(next_P, next_O))
+                - ((board.parity & RXBitBoard::QUADRANT_ID[iter->position])>>RXBitBoard::QUADRANT_SHIFT[iter->position]);
+                
+            }
         }
-    }
     
-    
-    if (bestscore == UNDEF_SCORE) {
+        
+        //first move
+        move = list->pick_next_promising_move();
+        
+        board.do_move(*move);
+        bestscore = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -lower, false);
+        board.undo_move(*move);
+        
+        if (bestscore > lower)
+            lower = bestscore;
+        
+        // next move
+        list = list->next;
+        
+        
+        
+        // other moves : try to refute the first/best one
+        int score;
+        for(; lower < upper && list->next != nullptr; list = list->next) {
+            
+            move = list->pick_next_promising_move();
+            
+            board.do_move(*move);
+            
+            score = -EG_PVS_ETC_LTT(threadID, board, false, -lower-1, -lower, false);
+            if (lower < score && score < upper)
+                score = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -score, false);
+            
+            board.undo_move(*move);
+            
+            if (score > bestscore) {
+                bestscore = score;
+                if (bestscore > lower)
+                    lower = bestscore;
+            }
+        }
+        
+    } else {
+        
         if (passed) {
             return board.final_score();
         } else {
             board.do_pass();
-            bestscore = -EG_PVS_hash_mobility(threadID, board, pv, -upper, -lower, true);
+            bestscore = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -lower, true);
             board.do_pass();
-            bestmove = PASS;
         }
     }
     
-    hTable->update(hash_code, board, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
-    
+    LocalTT::store(ltt.entry, hash_code, board, bestscore, alpha, upper);
     return bestscore;
 }
 
@@ -627,7 +660,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
 {
     
     if (sBoard.board.n_empty < EG_MEDIUM_HI_TO_LOW)
-        return EG_PVS_hash_mobility(threadID, sBoard.board, pv, alpha, beta, passed);
+        return EG_PVS_ETC_LTT(threadID, sBoard.board, pv, alpha, beta, passed);
 
      
     if(abort.load() || thread_should_stop(threadID))
@@ -662,13 +695,13 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
         }
         
 //        if(board.isValid_square(entry.move))
-            bestmove = entry.move;
+        bestmove = entry.move;
 
     }
     
 #ifdef USE_STABILITY
     
-    if(bestmove == NOMOVE) {
+    if(!passed && bestmove == NOMOVE) {
         
         /*
          calculated stability is less than or equal to the real stability
@@ -697,13 +730,21 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
     RXMove* list = threads[threadID]._move[board.n_empty];
     list->next = nullptr;
     
+    const unsigned long long current_P = board.discs[board.player];
+    const unsigned long long current_O = board.discs[board.player^1];
+
+    
     if(bestmove != PASS) {
         
         RXMove* move = list + 1;
         RXMove* previous = list;
         
+        
+        const int etc_depth = board.n_empty-1;
+
+        
 #ifdef USE_ETC
-        unsigned long long  hashcode_after_move;
+        unsigned long long  next_hashcode;
 #endif
         
         //ENHANCED TRANSPOSITION CUTOFF
@@ -712,11 +753,14 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
             board.generate_flips(bestmove, *move);
             ++board.n_nodes;
             
+            const unsigned long long next_P = current_O ^ move->flipped;
+            const unsigned long long next_O = current_P | (move->flipped | move->square);
+
+            
             
 #ifdef USE_ENHANCED_STABLILITY
-            if (lower <= -stability_threshold[board.n_empty-1]  ) {
-                const unsigned long long d_player = board.discs[board.player] | (move->flipped | move->square);
-                int stability_bound = 2 * board.get_stability(d_player, board.discs[board.player^1] ^ move->flipped) - 64;
+            if (lower <= -stability_threshold[etc_depth]) {
+                int stability_bound = 2 * board.get_stability(next_O, next_P) - 64;
                 if ( stability_bound >= upper ) {
                     return stability_bound;
                 }
@@ -727,28 +771,31 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
 #endif
             
 #ifdef USE_ETC
-            const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
-            const unsigned long long O = board.discs[board.player] | (move->square | move->flipped );
 
-            hashcode_after_move = board.hashcode(P, O);
             bool bestmove_eliminated = false;
 
-            //synchronized acces
-            if(!pv && hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.selectivity == NO_SELECT && entry.depth>=(board.n_empty-1)) {
+            if(board.n_empty != EG_MEDIUM_HI_TO_LOW) {
                 
-                // beta cut
-                if(-entry.upper > lower) {
-                    if(-entry.upper >= upper)
-                        return -entry.upper;  // fail high
-                    lower = -entry.upper;     // Alpha narrowing
-                    bestscore = -entry.upper;
-                }
                 
-                // Remove from list : upper bound under alpha
-                else if(-entry.lower <= lower) {
-                    if(bestscore < -entry.lower)
-                        bestscore = -entry.lower;
-                    bestmove_eliminated = true;
+                next_hashcode = board.hashcode(next_P, next_O);
+                
+                //synchronized acces
+                if(!pv && hTable->get(next_hashcode, next_P, next_O, type_hashtable, entry) && entry.selectivity == NO_SELECT && entry.depth>=etc_depth) {
+                    
+                    // beta cut
+                    if(-entry.upper > lower) {
+                        if(-entry.upper >= upper)
+                            return -entry.upper;  // fail high
+                        lower = -entry.upper;     // Alpha narrowing
+                        bestscore = -entry.upper;
+                    }
+                    
+                    // Remove from list : upper bound under alpha
+                    else if(-entry.lower <= lower) {
+                        if(bestscore < -entry.lower)
+                            bestscore = -entry.lower;
+                        bestmove_eliminated = true;
+                    }
                 }
             }
             
@@ -773,11 +820,13 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
                 board.generate_flips(pos, *move);
                 ++board.n_nodes;
                 
+                const unsigned long long next_P = current_O ^ move->flipped;
+                const unsigned long long next_O = current_P | (move->flipped | move->square);
+
                 
 #ifdef USE_ENHANCED_STABLILITY
-                if (lower <= -stability_threshold[board.n_empty-1]  ) {
-                    const unsigned long long d_player = board.discs[board.player] | (move->flipped | move->square);
-                    int stability_bound = 2 * board.get_stability(d_player, board.discs[board.player^1] ^ move->flipped) - 64;
+                if (lower <= -stability_threshold[etc_depth]) {
+                    int stability_bound = 2 * board.get_stability(next_O, next_P) - 64;
                     if ( stability_bound >= upper ) {
                         return stability_bound;
                     }
@@ -790,34 +839,34 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
                 move->score = 0; //not in Hash
                 
 #ifdef USE_ETC
-                const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
-                const unsigned long long O = board.discs[board.player] | (move->square | move->flipped );
-
-                hashcode_after_move = board.hashcode(P, O);
-
-                //synchronized acces
-                if(hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.depth>=(board.n_empty-1)) {
+                if(board.n_empty != EG_MEDIUM_HI_TO_LOW) {
                     
-                    if (!pv && entry.selectivity == NO_SELECT) {
+                    next_hashcode = board.hashcode(next_P, next_O);
+                    
+                    //synchronized acces
+                    if(hTable->get(next_hashcode, next_P, next_O, type_hashtable, entry) && entry.depth>=etc_depth) {
                         
-                        // beta cut
-                        if(-entry.upper > lower) {
-                            if(-entry.upper >= upper)
-                                return -entry.upper;
-                            lower = -entry.upper;
-                            bestscore = -entry.upper;
+                        if (!pv && entry.selectivity == NO_SELECT) {
+                            
+                            // beta cut
+                            if(-entry.upper > lower) {
+                                if(-entry.upper >= upper)
+                                    return -entry.upper;
+                                lower = -entry.upper;
+                                bestscore = -entry.upper;
+                            }
+                            
+                            // Remove fron list
+                            else if(-entry.lower <= lower) {
+                                if(bestscore < -entry.lower)
+                                    bestscore = -entry.lower;
+                                continue;
+                            }
                         }
                         
-                        // Remove fron list
-                        else if(-entry.lower <= lower) {
-                            if(bestscore < -entry.lower)
-                                bestscore = -entry.lower;
-                            continue;
-                        }
+                        move->score = -2;  //in hash : bonus
+                        
                     }
-
-                    move->score = -2;  //in hash : bonus
-                    
                 }
 #endif
                 
@@ -866,20 +915,17 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
             
             if((list->next)->next != nullptr) {
                 
-                const int p = board.player;
-                const int o = p^1;
-                
                 //calc answer move->score
                 for(RXMove* iter = list->next; iter != nullptr; iter = iter->next) {
                     
                     ++board.n_nodes;
                     
-                    const unsigned long long p_discs = board.discs[p] | (iter->flipped | iter->square);
-                    const unsigned long long o_discs = board.discs[o] ^ iter->flipped;
+                    const unsigned long long next_O = current_P | (iter->flipped | iter->square);
+                    const unsigned long long next_P = current_O ^ iter->flipped;
                     
                     //score for try : mobility - corner_stability * 8
-                    iter->score += (2*RXBitBoard::get_mobility(o_discs, p_discs) - RXBitBoard::get_corner_stability(p_discs));
-                    /*+ (RXBitBoard::count_potential_moves(o_discs, p_discs)>>2); */
+                    iter->score += (2*RXBitBoard::get_mobility(next_P, next_O) - RXBitBoard::get_corner_stability(next_O));
+                    /*+ (RXBitBoard::count_potential_moves(next_P, next_O)>>2); */
                     /*- (((board.parity & RXBitBoard::QUADRANT_ID[iter->position])>>RXBitBoard::QUADRANT_SHIFT[iter->position])>>2); */
                     
                     
@@ -890,8 +936,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
             
             if(bestmove == NOMOVE) {
                 
-                //find moves with worst answer
-                
+                //first best moves 
                 RXMove* move = list->pick_next_promising_move();
                 
                 board.do_move(*move);
@@ -913,25 +958,8 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
             for(;lower < upper && list->next != nullptr; list = list->next) {
                 
                 //find moves with worst answer
-                
-                RXMove* move = list->next;
-                if(move->next != nullptr) {
-                    
-#ifdef USE_SPLIT_AT_ETC_MOBILITY
-                    
-                    // Split? not efficient : unused
-                    if(activeThreads > 1  && !abort.load()
-                       && !thread_should_stop(threadID) && idle_thread_exists(threadID)
-                       && split(sBoard, pv, 0, board.n_empty, LMR_NO_REDUCTION, NO_SELECT, lower, upper, bestscore, bestmove, list, threadID, RXSplitPoint::END_ETC_MOBILITY)) {
-                        
-                        break;
-                    }
-                    
-#endif
-                    move = list->pick_next_promising_move();
+                RXMove* move = list->pick_next_promising_move();
 
-                }
-                
                 board.do_move(*move);
                 score = -EG_PVS_ETC_mobility(threadID, sBoard, false, -lower-1, -lower, false);
                 if (lower < score && score < upper)
@@ -958,87 +986,6 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
     return bestscore;
 }
 
-// EG_SP_search_ETC_Mobility() is used to search from a PV split point.  This function
-// is called by each thread working at the split point.  It is similar to
-// the normal EG_PVS_ETC_Mobility() function, but simpler.  Because we have already
-// probed the hash table and searched the first move before splitting, we
-// don't have to repeat all this work in EG_SP_search_ETC_Mobility().  We also don't
-// need to store anything to the hash table here:  This is taken care of
-// after we return from the split point.
-
-void RXEngine::EG_SP_search_ETC_Mobility(RXSplitPoint* sp, const unsigned int threadID) {
-    
-    
-    RXBBPatterns& sBoard = sp->sBoardStack[threadID];
-    sBoard = *(sp->sBoard); //operator=
-    RXBitBoard& board = sBoard.board;
-    board.n_nodes = 0;
-    
-    
-    //here sp->beta is const
-    while(sp->alpha < sp->beta && !abort.load()  && !thread_should_stop(threadID)) {
-        
-        pthread_mutex_lock(&(sp->lock));
-        
-        if(sp->list->next == nullptr) {
-            pthread_mutex_unlock(&(sp->lock));
-            break;
-        }
-        
-        RXMove* move = sp->list->next;
-        sp->list = move;
-        
-        pthread_mutex_unlock(&(sp->lock));
-        
-        
-        const int alpha = sp->alpha; //local copy
-
-        board.do_move(*move);
-
-        int score = -EG_PVS_ETC_mobility(threadID, sBoard, false, -alpha-1, -alpha, false);
-        if (alpha < score && score < sp->beta)
-            score = -EG_PVS_ETC_mobility(threadID, sBoard, sp->pv, -sp->beta, -score, false);
-        
-        board.undo_move(*move);
-        
-        //first without mutex
-        if(score > sp->bestscore) {
-            
-            //update
-            pthread_mutex_lock(&(sp->lock));
-            
-            if(sp->explored == false) {
-                
-                // New best move?
-                if(score > sp->bestscore) {
-                    sp->bestscore = score;
-                    sp->bestmove = move->position;
-                    if(score > sp->alpha) {
-                        
-                        if(score >= sp->beta) {
-                            sp->explored =true;
-                        } else {
-                            sp->alpha = score;
-                        }
-                    }
-                }
-            }
-                
-            
-            pthread_mutex_unlock(&(sp->lock));
-        }
-        
-    }
-    
-    pthread_mutex_lock(&(sp->lock));
-    
-    sp->sBoard->board.n_nodes += board.n_nodes;
-    
-    sp->slaves[threadID] = false;
-    sp->n_Slaves--;
-    
-    pthread_mutex_unlock(&(sp->lock));
-}
 
 
 
@@ -1090,7 +1037,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
         }
         
 //        if(board.isValid_square(entry.move))
-            bestmove = entry.move;
+        bestmove = entry.move;
 
     }
     
@@ -1150,17 +1097,25 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
         RXMove* move = list + 1;
         RXMove* previous = list;
         
+        const unsigned long long current_P = board.discs[board.player];
+        const unsigned long long current_O = board.discs[board.player^1];
+        
+        const int etc_depth = board.n_empty-1;
+        
         //ENHANCED TRANSPOSITION CUTOFF
         if(bestmove != NOMOVE) {
             
             board.generate_flips(bestmove, *move);
             ++board.n_nodes;
             
+            const unsigned long long next_P = current_O ^ move->flipped;
+            const unsigned long long next_O = current_P | (move->flipped | move->square);
+
+            
 #ifdef USE_ENHANCED_STABLILITY
             
-            if (lower <= -stability_threshold[board.n_empty-1]  ) {
-                const unsigned long long d_player = board.discs[board.player] | (move->flipped | move->square);
-                int stability_bound = 2 * board.get_stability(d_player, board.discs[board.player^1] ^ move->flipped) - 64;
+            if (lower <= -stability_threshold[etc_depth]) {
+                int stability_bound = 2 * board.get_stability(next_O, next_P) - 64;
                 if ( stability_bound >= upper ) {
                     return stability_bound;
                 }
@@ -1172,12 +1127,10 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
             
 #ifdef USE_ETC
             if(!pv) {
-                const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
-                const unsigned long long O = board.discs[board.player] | (move->square | move->flipped );
-                const unsigned long long hashcode_after_move = RXBitBoard::hashcode(P, O);
+                const unsigned long long next_hashcode = RXBitBoard::hashcode(next_P, next_O);
                 
                 //synchronized acces
-                if(hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth>=(board.n_empty-1)) {
+                if(hTable->get(next_hashcode, next_P, next_O, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth>=etc_depth) {
                     
                     if(-entry.upper >= upper) {
                         return -entry.upper ;
@@ -1206,11 +1159,13 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                 board.generate_flips(pos, *move);
                 ++board.n_nodes;
                 
+                const unsigned long long next_P = current_O ^ move->flipped;
+                const unsigned long long next_O = current_P | (move->flipped | move->square);
+
 #ifdef USE_ENHANCED_STABLILITY
                 
-                if (lower <= -stability_threshold[board.n_empty-1]  ) {
-                    const unsigned long long d_player = board.discs[board.player] | (move->flipped | move->square);
-                    int stability_bound = 2 * board.get_stability(d_player, board.discs[board.player^1] ^ move->flipped) - 64;
+                if (lower <= -stability_threshold[etc_depth]) {
+                    int stability_bound = 2 * board.get_stability(next_O, next_P) - 64;
                     if ( stability_bound >= upper ) {
                         return stability_bound;
                     }
@@ -1224,12 +1179,10 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                 
 #ifdef USE_ETC
                 if(!pv) {
-                    const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
-                    const unsigned long long O = board.discs[board.player] | (move->square | move->flipped);
-                    const unsigned long long hashcode_after_move = RXBitBoard::hashcode(P, O);
+                    const unsigned long long next_hashcode = RXBitBoard::hashcode(next_P, next_O);
                     
                     //synchronized acces
-                    if(hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.depth>=(board.n_empty-1)) {
+                    if(hTable->get(next_hashcode, next_P, next_O, type_hashtable, entry) && entry.depth>=etc_depth) {
                         
                         move->score = -3;    //in hash
                         
@@ -1303,7 +1256,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                     
                      for(RXMove* iter = list->next; iter!=nullptr; iter = iter->next) {
                         
-                         sBoard.patterns_update(*iter);
+                        sBoard.patterns_update(*iter);
                         
                         sBoard.do_move(*iter);
                         
@@ -1402,10 +1355,10 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                         sBoard.patterns_update(*iter);
                         
                         ++board.n_nodes;
-                        const unsigned long long p_discs = board.discs[p] | (iter->flipped | iter->square);
+                        const unsigned long long next_O = board.discs[p] | (iter->flipped | iter->square);
                         
                         //test 1 : score + 2*mobility_adv + corner_stability/4
-                        iter->score += sBoard.get_score<WITHOUT_FM>(*iter) + (8*(RXBitBoard::get_mobility(board.discs[o] ^ iter->flipped, p_discs)) - RXBitBoard::get_corner_stability(p_discs))/3;
+                        iter->score += sBoard.get_score<WITHOUT_FM>(*iter) + (8*(RXBitBoard::get_mobility(board.discs[o] ^ iter->flipped, next_O)) - RXBitBoard::get_corner_stability(next_O))/3;
                     }
                     
                 }
@@ -1460,7 +1413,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                     
                     score = -EG_NWS_XEndCut(threadID, sBoard, 1, selectivity, -lower-1, false); //pvDev == 1
                     if (lower < score && score < upper)
-                        score = -EG_PVS_deep(threadID, sBoard, pv, selectivity, -upper, -lower, false); //-score
+                        score = -EG_PVS_deep(threadID, sBoard, pv, selectivity, -upper, -lower, false); // (score == lower+1) ? -lower : -score
                     
                 } else {
                     
@@ -1508,7 +1461,6 @@ void RXEngine::EG_SP_search_DEEP(RXSplitPoint* sp, const unsigned int threadID) 
     RXBBPatterns& sBoard = sp->sBoardStack[threadID];
     sBoard = *(sp->sBoard); //operator=
     RXBitBoard& board = sBoard.board;
-    board.n_nodes = 0;
     
     
     //here sp->beta is const
@@ -1623,10 +1575,10 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
                 return  entry.upper;
             
 //            if(board.isValid_square(entry.move))
-                bestmove = entry.move;
+            bestmove = entry.move;
 
         }
-        
+
         
     }
     
@@ -1672,9 +1624,14 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
         
         RXMove* move = list + 1;
         RXMove* previous = list;
+
+        const unsigned long long current_P = board.discs[board.player];
+        const unsigned long long current_O = board.discs[board.player^1];
         
+        const int etc_depth = board.n_empty-1;
+
 #ifdef USE_ETC
-        unsigned long long  hashcode_after_move;
+        unsigned long long  next_hashcode;
 #endif
         
         //ENHANCED TRANSPOSITION CUTOFF
@@ -1683,11 +1640,12 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
             board.generate_flips(bestmove, *move);
             ++board.n_nodes;
             
-            
+            const unsigned long long next_P = current_O ^ move->flipped;
+            const unsigned long long next_O = current_P | (move->flipped | move->square);
+
 #ifdef USE_ENHANCED_STABLILITY
-            if (alpha <= -stability_threshold[board.n_empty-1]  ) {
-                const unsigned long long d_player = board.discs[board.player] | (move->flipped | move->square);
-                int stability_bound = 2 * board.get_stability(d_player, board.discs[board.player^1] ^ move->flipped) - 64;
+            if (alpha <= -stability_threshold[etc_depth]) {
+                int stability_bound = 2 * board.get_stability(next_O, next_P) - 64;
                 if ( stability_bound > alpha ) {
                     return stability_bound; // alpha
                 }
@@ -1696,13 +1654,11 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
             
             //synchronized acces
 #ifdef USE_ETC
-            const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
-            const unsigned long long O = board.discs[board.player] | (move->square | move->flipped);
-            hashcode_after_move = RXBitBoard::hashcode(P, O);
+            next_hashcode = RXBitBoard::hashcode(next_P, next_O);
             
             bool bestmove_eliminated = false;
 
-            if(hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth >= (board.n_empty-1)) {
+            if(hTable->get(next_hashcode, next_P, next_O, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth >= (etc_depth)) {
                 
                 if(-entry.upper > alpha) {
                     return -entry.upper;
@@ -1739,11 +1695,13 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
                 board.generate_flips(pos, *move);
                 ++board.n_nodes;
                 
+                const unsigned long long next_P = current_O ^ move->flipped;
+                const unsigned long long next_O = current_P | (move->flipped | move->square);
+
                 
 #ifdef USE_ENHANCED_STABLILITY
-                if (alpha <= -stability_threshold[board.n_empty-1]  ) {
-                    const unsigned long long d_player = board.discs[board.player] | (move->flipped | move->square);
-                    int stability_bound = 2 * board.get_stability(d_player, board.discs[board.player^1] ^ move->flipped) - 64;
+                if (alpha <= -stability_threshold[etc_depth]) {
+                    int stability_bound = 2 * board.get_stability(next_O, next_P) - 64;
                     if ( stability_bound > alpha ) {
                         return stability_bound; // alpha
                     }
@@ -1754,11 +1712,10 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
                 
                 //synchronized acces
 #ifdef USE_ETC
-                const unsigned long long P = board.discs[board.player^1] ^ move->flipped;
-                const unsigned long long O = board.discs[board.player] | (move->square | move->flipped);
-                hashcode_after_move = RXBitBoard::hashcode(P, O);
+                
+                next_hashcode = RXBitBoard::hashcode(next_P, next_O);
 
-                if(hTable->get(hashcode_after_move, P, O, type_hashtable, entry) && entry.depth>=(board.n_empty-1)) {
+                if(hTable->get(next_hashcode, next_P, next_O, type_hashtable, entry) && entry.depth>=etc_depth) {
                     
                     move->score = -3;
                     
@@ -1773,11 +1730,11 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
                     }
                     
                     // Remove from list
-                     else if(entry.selectivity >= selectivity && -entry.lower <= alpha) {
-                          if(bestscore < -entry.lower)
-                              bestscore = -entry.lower;
-                          continue;
-                      }
+                    else if(entry.selectivity >= selectivity && -entry.lower <= alpha) {
+                        if(bestscore < -entry.lower)
+                            bestscore = -entry.lower;
+                        continue;
+                    }
 
                     
                 }
@@ -1813,7 +1770,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
 
         //param mpc
         int lower_probcut, upper_probcut;
-        int depth_probcut = (board.n_empty/4)*2 + (board.n_empty & 0x1UL);
+        const int depth_probcut = (board.n_empty/4)*2 + (board.n_empty & 0x1UL);
         probcut_bounds(board, selectivity, board.n_empty, depth_probcut, pvDev, alpha, alpha+1, lower_probcut, upper_probcut);
 
         //XProbcut
@@ -1861,7 +1818,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
             }
             
             
-            if(board.n_empty<MIN_DEPTH_USE_ENDCUT) {
+            if(board.n_empty < MIN_DEPTH_USE_ENDCUT) {
                 board.do_move(*iter);
                 score = -EG_PVS_ETC_mobility(threadID, sBoard, false, -alpha-1, -alpha, false);
                 board.undo_move(*iter);
@@ -1909,7 +1866,6 @@ void RXEngine::EG_SP_search_XEndcut(RXSplitPoint* sp, const unsigned int threadI
     RXBBPatterns& sBoard = sp->sBoardStack[threadID];
     sBoard = *(sp->sBoard); //operator=
     RXBitBoard& board = sBoard.board;
-    board.n_nodes = 0;
     
     //here sp->alpha is const
     while(sp->bestscore <= sp->alpha && !abort.load()  && !thread_should_stop(threadID)) {
@@ -2023,7 +1979,7 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, int alph
     } else if (board.n_empty < EG_MEDIUM_TO_SHALLOW) {
         bestscore = -EG_alphabeta_parity(0, board, -upper, -lower, false);
     } else if (board.n_empty < EG_MEDIUM_HI_TO_LOW) {
-        bestscore = -EG_PVS_hash_mobility(0, board, true, -upper, -lower, false);
+        bestscore = -EG_PVS_ETC_LTT(0, board, true, -upper, -lower, false);
     } else  if (board.n_empty < EG_DEEP_TO_MEDIUM) {
         bestscore = -EG_PVS_ETC_mobility(0, sBoard, true, -upper, -lower, false);
     } else {
@@ -2080,7 +2036,7 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, int alph
                 if (board.n_empty < EG_MEDIUM_TO_SHALLOW)
                     score = -EG_alphabeta_parity(0, board, -lower-1, -lower, false);
                 else if (board.n_empty < EG_MEDIUM_HI_TO_LOW)
-                    score = -EG_PVS_hash_mobility(0, board, false, -lower-1, -lower, false);
+                    score = -EG_PVS_ETC_LTT(0, board, false, -lower-1, -lower, false);
                 else if (board.n_empty < EG_DEEP_TO_MEDIUM)
                     score = -EG_PVS_ETC_mobility(0, sBoard, false, -lower-1, -lower, false); //simple-PV pv == false ????
                 else
@@ -2099,7 +2055,7 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, int alph
                     if (board.n_empty < EG_MEDIUM_TO_SHALLOW)
                         score = -EG_alphabeta_parity(0, board, -upper, -score, false);
                     else if (board.n_empty < EG_MEDIUM_HI_TO_LOW)
-                        score = -EG_PVS_hash_mobility(0, board, true, -upper, -score, false);
+                        score = -EG_PVS_ETC_LTT(0, board, true, -upper, -score, false);
                     else if (board.n_empty < EG_DEEP_TO_MEDIUM)
                         score = -EG_PVS_ETC_mobility(0, sBoard, true, -upper, -score, false);
                     else {
@@ -2186,7 +2142,6 @@ void RXEngine::EG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
     RXBBPatterns& sBoard = sp->sBoardStack[threadID];
     sBoard = *(sp->sBoard); //operator=
     RXBitBoard& board = sBoard.board;
-    board.n_nodes = 0;
     
     //here sp->beta is const
     while(sp->alpha < sp->beta && !abort.load() && !thread_should_stop(threadID)) {

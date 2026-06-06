@@ -601,8 +601,7 @@ void RXRoxane::get_move(const std::string& file_name) {
     
 }
 
-void RXRoxane::RSME(const int stage) {
-    
+void RXRoxane::metrix(const int stage) {
     
     pthread_mutex_lock(&mutex);
         
@@ -613,21 +612,20 @@ void RXRoxane::RSME(const int stage) {
     std::ostringstream oss;
     oss << std::setw(2) << std::setfill('0') << stage;
     
-    
     std::string file_name = dir_str + "/database/Edax_Egrcd_Roxane/stages/stage_" + oss.str() + ".txt";
 
-    
     std::ifstream in(file_name.c_str());
     
     if(in) {
         
-        
         std::string line;
 
-        // Accumulateurs RMSE
-        double sum_sq_err = 0.0;
+        // Accumulateurs RMSE / MAE
+        double sum_sq_err    = 0.0;
         double fm_sum_sq_err = 0.0;
-        long   n_positions = 0;
+        double sum_abs_err   = 0.0;
+        double fm_sum_abs_err= 0.0;
+        long   n_positions   = 0;
 
         while(!resume_flag.load() && std::getline(in, line)) {
             
@@ -641,42 +639,45 @@ void RXRoxane::RSME(const int stage) {
             RXBBPatterns sBoard;
             sBoard.build(othellier);
             
-            int eval = sBoard.get_score<false>();
+            int eval    = sBoard.get_score<false>();
             int eval_fm = sBoard.get_score();
 
-            // Calcul du RMSE
+            // RMSE
             double err = static_cast<double>(eval - score);
             sum_sq_err += err * err;
-            err = static_cast<double>(eval_fm - score);
-            fm_sum_sq_err += err * err;
+            sum_abs_err += std::abs(err);
+
+            double err_fm = static_cast<double>(eval_fm - score);
+            fm_sum_sq_err  += err_fm * err_fm;
+            fm_sum_abs_err += std::abs(err_fm);
 
             ++n_positions;
-
-            
         }
 
-        // Affichage RMSE du stage
         if(n_positions > 0) {
-            double rmse = std::sqrt(sum_sq_err / static_cast<double>(n_positions));
-            double rmse_fm = std::sqrt(fm_sum_sq_err / static_cast<double>(n_positions));
+            const double n = static_cast<double>(n_positions);
+
+            double rmse    = std::sqrt(sum_sq_err    / n);
+            double rmse_fm = std::sqrt(fm_sum_sq_err / n);
+            double mae     = sum_abs_err    / n;
+            double mae_fm  = fm_sum_abs_err / n;
 
             std::cout << "stage " << oss.str()
-            << "  RMSE= " << std::fixed << std::setprecision(4) << rmse
-            << "  RMSE FM= " << std::fixed << std::setprecision(4) << rmse_fm
-            << "  delta= " << std::fixed << std::setprecision(4) << (rmse-rmse_fm)
-            << "  n positions= " << n_positions
-            << std::endl;
+                      << "  RMSE= "    << std::fixed << std::setprecision(4) << rmse
+                      << "  MAE= "     << std::fixed << std::setprecision(4) << mae
+                      << "  RMSE FM= " << std::fixed << std::setprecision(4) << rmse_fm
+                      << "  MAE FM= "  << std::fixed << std::setprecision(4) << mae_fm
+                      << "  delta= "   << std::fixed << std::setprecision(4) << (rmse - rmse_fm)
+                      << "  n positions= " << n_positions
+                      << std::endl;
         } else {
             std::cout << "  aucune position " << std::endl;
         }
         
         in.close();
-
-        
     }
     
     pthread_mutex_unlock(&mutex);
-    
 }
 
 
@@ -905,7 +906,7 @@ void RXRoxane::rawdata(const std::string& dir_name, const int offset_start, cons
             
             RXMove move;
             
-            for( int id_move = 0; id_move < moves_tab.size(); ++id_move) {
+            for( int id_move = 0; id_move < static_cast<int>(moves_tab.size()); ++id_move) {
                 
                 
                 if(14 < board.n_empty) {
@@ -914,13 +915,13 @@ void RXRoxane::rawdata(const std::string& dir_name, const int offset_start, cons
                     search.beta        = +MAX_SCORE;
                     if (26 < board.n_empty){
                         search.depth       = 13;
-                        search.selectivity = 1; //MG_SELECT
+                        search.selectivity = RXEngine::MG_SELECT;
                     } else if(22 < board.n_empty) {
                         search.depth       = board.n_empty;
                         search.selectivity = 3; //91%
                     } else {
                         search.depth       = board.n_empty;
-                        search.selectivity = 7; //NO_SELECT 100%
+                        search.selectivity = RXEngine::NO_SELECT;
                     }
                     
                     
