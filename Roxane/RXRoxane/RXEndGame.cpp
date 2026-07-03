@@ -2556,7 +2556,7 @@ void RXEngine::EG_CHECK_PV(RXBBPatterns& sBoard, const int score) {
 
     // check PV
     if(!pv.empty())
-       EG_CHECK_SOLVER(pv, sBoard, -score);
+       EG_CHECK_PV(pv, sBoard, -score);
 
 }
 
