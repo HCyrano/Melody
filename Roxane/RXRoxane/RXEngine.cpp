@@ -584,7 +584,6 @@ int RXEngine::PVS_last_ply(const unsigned int threadID, RXBBPatterns& sBoard, co
                 return entry.lower;
             }
             
-//            if(board.isValid_square(entry.move))
             bestmove = entry.move;
 
         }
@@ -782,8 +781,7 @@ int RXEngine::alphabeta_last_three_ply(const unsigned int threadID, RXBBPatterns
 
         //}
         
-//        if(board.isValid_square(entry.move))
-            bestmove = entry.move;
+        bestmove = entry.move;
     }
     
     int bestscore = UNDEF_SCORE;

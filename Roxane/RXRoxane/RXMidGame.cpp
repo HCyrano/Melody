@@ -481,8 +481,7 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
             
         }
         
-//        if(board.isValid_square(entry.move))
-            bestmove = entry.move;
+        bestmove = entry.move;
     }
     
     // IID
@@ -494,8 +493,7 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
             return INTERRUPT_SEARCH;
         
         if(hTable->get(hash_code, board, type_hashtable, entry)){
-//            if(board.isValid_square(entry.move))
-                bestmove = entry.move;
+            bestmove = entry.move;
         }
 
     }
@@ -1027,9 +1025,7 @@ int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, 
                 return  entry.upper;
             }
             
-            //modification 17/03/2025
-//            if(board.isValid_square(entry.move))
-                bestmove = entry.move;
+            bestmove = entry.move;
 
         }
         
@@ -1195,8 +1191,7 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
             
         }
         
-//        if(board.isValid_square(entry.move))
-            bestmove = entry.move;
+        bestmove = entry.move;
 
 
     }

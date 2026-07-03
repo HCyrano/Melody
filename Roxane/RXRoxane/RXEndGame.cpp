@@ -1095,23 +1095,6 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
     if(hTable->get(hash_code, board, type_hashtable, entry)) {
         
         
-//        if(!pv &&  entry.selectivity >= selectivity && entry.depth >= board.n_empty) {
-//            
-//            if (upper > entry.upper) {
-//                
-//                upper = entry.upper;
-//                if (upper <= lower)
-//                    return upper;
-//            }
-//            
-//            if (lower < entry.lower) {
-//                
-//                lower = entry.lower;
-//                if (lower >= upper)
-//                    return lower;
-//            }
-//            
-//        }
         
         if(entry.selectivity >= selectivity && entry.depth >= board.n_empty) {
             
@@ -1127,8 +1110,6 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
             
         }
 
-        
-//        if(board.isValid_square(entry.move))
         bestmove = entry.move;
 
     }
@@ -1171,7 +1152,6 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
             return INTERRUPT_SEARCH;
         
         if(hTable->get(hash_code, board, type_hashtable, entry)) {
-//            if(board.isValid_square(entry.move))
                 bestmove = entry.move;
         }
 
