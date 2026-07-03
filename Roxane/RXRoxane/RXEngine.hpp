@@ -191,7 +191,6 @@ public:
     
     
     std::atomic<thread_state> state{UNINITIALISED};
-    //std::atomic<thread_state> state{UNINITIALISED};
     
     //le parametre maxThread est utile pour splitPointStack
     RXThread(int maxThreads, int maxActiveSplitPoint = 8) : splitPoint(nullptr), activeSplitPoints(0),
@@ -339,7 +338,7 @@ class RXEngine: public Runnable {
     int get_select_search() const;
     
     
-    std::string variationPrincipal(RXBitBoard& sBoard, int depth) const;
+    std::string variationPrincipal(RXBitBoard& sBoard, int depthLine) const;
     std::string showPV(RXBitBoard& board, int depthLine) const;
     std::string showHashmove(const RXBitBoard& board, RXHashValue& entry) const;
     std::string showBestmove(const int depth, const int selectivity, const int alpha, const int beta, const int score, const unsigned int bestmove) const;
@@ -349,14 +348,14 @@ class RXEngine: public Runnable {
     inline float sigma(const int n_empty, const int depth, const int depth_probcut) const;
     int probcut_bounds(const RXBitBoard& board, const int selectivity, const int depth, const int depth_probcut, const int pvDev, const int alpha, const int beta, int& lower_bound, int& upper_bound) const;
     
-    void sort_moves(const unsigned int threadID, const bool endgame, RXBBPatterns& sBoard, const int depth, const int selectivity, const int alpha, const int beta, RXMove* list);
+    void sort_moves(const unsigned int threadID, const bool endgame, RXBBPatterns& sBoard, const int depth, const int selectivity, const int alpha, const int beta, RXMove* list, const bool hashMove = false);
     
     int probcut(const unsigned int threadID, RXBBPatterns& sBoard, const int selectivity, const int alpha, const int depth, const int depth_probcut, const int lower_probcut, const int upper_probcut, RXMove* list, const bool hashMove);
     
     template <const bool UseFM = true>
-    int PVS_last_ply(const unsigned int threadID, RXBBPatterns& sBoard, const int depth, int alpha, const int beta, const bool passed);
+    int PVS_last_ply(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int depth, int alpha, const int beta, const bool passed);
     template <const bool UseFM = true>
-    int alphabeta_last_three_ply(const unsigned int threadID, RXBBPatterns& sBoard, int alpha, const int beta, const bool passed);
+    int alphabeta_last_three_ply(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, int alpha, const int beta, const bool passed);
     template <const bool UseFM = true>
     int alphabeta_last_two_ply(const unsigned int threadID, RXBBPatterns& sBoard, int alpha, const int beta, const bool passed);
     
@@ -399,7 +398,7 @@ class RXEngine: public Runnable {
 public :
     static constexpr int EG_DEEP_TO_MEDIUM = 17;
     static constexpr int EG_MEDIUM_HI_TO_LOW = 14;
-    static constexpr int EG_MEDIUM_TO_SHALLOW = 8;
+    static constexpr int EG_MEDIUM_TO_SHALLOW = 7; //8
     static constexpr int MIN_DEPTH_USE_ENDCUT = 16;
 
 private:
@@ -408,8 +407,8 @@ private:
     static const int EG_HIGH_SELECT;
     
     
-    void EG_check_PV(RXBBPatterns& sBoard, const int score);
-    bool EG_check_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard, const int score);
+    void EG_CHECK_PV(RXBBPatterns& sBoard, const int score);
+    bool EG_CHECK_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard, const int score);
 
     
     void EG_driver(RXBBPatterns& board, int selectivity, int end_selectivity, RXMove* list);

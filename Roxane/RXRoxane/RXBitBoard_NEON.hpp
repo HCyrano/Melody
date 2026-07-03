@@ -15,17 +15,35 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-typedef struct {
-    uint64x2_t PP;
-    uint64x2_t rPP;
-    uint64x2_t OO;
-    uint64x2_t rOO;
-    uint64x2_t one;
-} NeonBoardCtx;
+struct NeonBoardCtx {
+    uint64x2_t PP, rPP, OO, rOO, one;
 
+    // Constructeur : initialise tout proprement à la création
+    inline NeonBoardCtx(uint64_t P, uint64_t O) {
+        PP  = vdupq_n_u64(P);
+        OO  = vdupq_n_u64(O);
+        one = vdupq_n_u64(1);
 
-// forward declaration - définie dans RXBBDoFlips_AVX2.cpp
-uint64x2_t do_flip_NEON(const NeonBoardCtx *ctx, int pos);
+        // Ton excellente astuce d'inversion SIMD
+        uint64x2_t OP  = vzip1q_u64(PP, OO); // [ O | P ]
+        uint64x2_t rOP = vreinterpretq_u64_u8(
+                            vrev64q_u8(
+                                vrbitq_u8(
+                                    vreinterpretq_u8_u64(OP)))); // [ rO | rP ]
+
+        rPP = vdupq_lane_u64(vget_low_u64(rOP), 0);  // Duplique rP -> [ rP | rP ]
+        rOO = vdupq_lane_u64(vget_high_u64(rOP), 0); // Duplique rO -> [ rO | rO ]
+    }
+
+    // Permet d'alterner les rôles Joueur/Adversaire instantanément
+    inline void swap_sides() {
+        std::swap(PP, OO);
+        std::swap(rPP, rOO);
+    }
+};
+
+// forward declaration - définie dans RXBBDoFlips_NEON.cpp
+unsigned long long do_flip_NEON(const NeonBoardCtx *ctx, int pos);
 
 inline unsigned int RXBitBoard::count_stable_edge(const unsigned long long P, const unsigned long long O) {
     return __builtin_popcountll(RXBitBoard::get_stable_edge(P, O));
@@ -51,7 +69,7 @@ inline int RXBitBoard::get_stability(const unsigned long long discs_player, cons
     h8 = vcreate_u8(filled);                l79 = r79 = vreinterpretq_u64_u8(vcombine_u8(h8, vrev64_u8(h8)));
     h8 = vceq_u8(h8, vdup_n_u8(0xff));      l79 = vandq_u64(l79, vornq_u64(vshrq_n_u64(l79, 9), e790));
     h = vget_lane_u64(vreinterpret_u64_u8(h8), 0);
-    r79 = vandq_u64(r79, vornq_u64(vshlq_n_u64(r79, 9), e791));
+                                            r79 = vandq_u64(r79, vornq_u64(vshlq_n_u64(r79, 9), e791));
     v = filled;                             l79 = vbicq_u64(l79, vbicq_u64(e792, vshrq_n_u64(l79, 18)));
     v &= (v >> 8) | (v << 56);              r79 = vbicq_u64(r79, vshlq_n_u64(vbicq_u64(e792, r79), 18));
     v &= (v >> 16) | (v << 48);             l79 = vandq_u64(vandq_u64(l79, r79), vorrq_u64(e793, vsliq_n_u64(vshrq_n_u64(l79, 36), r79, 36)));
@@ -202,10 +220,10 @@ inline uint64x2_t RXBitBoard::dual_count_legal_moves() const {
 }
 
 inline uint64x2_t RXBitBoard::dual_count_legal_moves(
-        const unsigned long long p,
-        const unsigned long long o)
+        const unsigned long long P,
+        const unsigned long long O)
 {
-    const uint64x2_t legals = dual_legal_moves(p, o);
+    const uint64x2_t legals = dual_legal_moves(P, O);
 
     // Popcount NEON : canonique et optimal
     const uint8x16_t  cnt8  = vcntq_u8(vreinterpretq_u8_u64(legals));

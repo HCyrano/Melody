@@ -33,7 +33,6 @@ std::ostream& operator<<(std::ostream& os, RXBBPatterns& sBoard) {
 
 RXBBPatterns::RXBBPatterns(): pattern(new RXPattern()) {
     
-    
     pattern->set_WHITE_D4();
     pattern->set_BLACK_E4();
     pattern->set_BLACK_D5();

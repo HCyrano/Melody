@@ -500,13 +500,14 @@ void RXRoxane::get_move(const std::string& file_name) {
         
         while(!resume_flag.load() && std::getline(in, line)) {
             
-#ifdef EG_CHECK_PV
+#ifdef EG_CHECK_SOLVER
             std::stringstream ss;
             int score = UNDEF_SCORE;
             
             ss << line.substr(line.find(":")+1);
             
             ss >> score;
+            
 #endif
             
             search.htable->reset();
@@ -534,7 +535,7 @@ void RXRoxane::get_move(const std::string& file_name) {
                 ofs << line << ":" << std::setw(3) << std::setfill(' ') << search.bestMove.score << std::endl;
 #endif
                 
-#ifdef EG_CHECK_PV
+#ifdef EG_CHECK_SOLVER
                 if(score != (UNDEF_SCORE) && search.bestMove.score != score) {
                     std::cout << "critical error in solver" << std::endl;
                     std::cout << search.sBoard.board << std::endl;
@@ -1057,7 +1058,11 @@ void* RXRoxane::run() {
             IOClient->Print("move " + RXMove::index_to_coord(s.bestMove.position));
             
         }
-    }
+    } else { //test bug
+       std::cerr << "run(): move suppressed by resume_flag"
+                 << " move=" << RXMove::index_to_coord(s.bestMove.position)
+                 << std::endl;
+   }
     
     return nullptr;
 	

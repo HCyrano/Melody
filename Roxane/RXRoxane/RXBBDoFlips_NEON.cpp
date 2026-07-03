@@ -94,7 +94,7 @@ alignas(16) const uint64x2_t MASK_LR_v4[64][4] = {
 
 
 
-uint64x2_t do_flip_NEON(const NeonBoardCtx *ctx, int pos)
+unsigned long long do_flip_NEON(const NeonBoardCtx *ctx, int pos)
 {
     uint64x2_t flip, oflank0, oflank1;
     
@@ -107,6 +107,9 @@ uint64x2_t do_flip_NEON(const NeonBoardCtx *ctx, int pos)
     // Precomputed rPP∩mask — parallelizable
     const uint64x2_t rPPm0 = vandq_u64(ctx->rPP, mask_r0);
     const uint64x2_t rPPm1 = vandq_u64(ctx->rPP, mask_r1);
+    // Precomputed PP∩mask — masks already in registers
+    const uint64x2_t PPm0 = vandq_u64(ctx->PP, mask_l0);
+    const uint64x2_t PPm1 = vandq_u64(ctx->PP, mask_l1);
 
     // --- right/bottom (bit-reversed) ---
     oflank0 = vaddq_u64(vornq_u64(ctx->rOO, mask_r0), ctx->one);
@@ -118,10 +121,6 @@ uint64x2_t do_flip_NEON(const NeonBoardCtx *ctx, int pos)
     flip = vbslq_u64(mask_r1, oflank1, vandq_u64(mask_r0, oflank0));
     flip = vreinterpretq_u64_u8(vrev64q_u8(vrbitq_u8(vreinterpretq_u8_u64(flip))));
 
-    // Precomputed PP∩mask — masks already in registers
-    const uint64x2_t PPm0 = vandq_u64(ctx->PP, mask_l0);
-    const uint64x2_t PPm1 = vandq_u64(ctx->PP, mask_l1);
-
     // --- left/top (regular-bit) ---
     oflank0 = vaddq_u64(vornq_u64(ctx->OO, mask_l0), ctx->one);
     oflank1 = vaddq_u64(vornq_u64(ctx->OO, mask_l1), ctx->one);
@@ -131,47 +130,25 @@ uint64x2_t do_flip_NEON(const NeonBoardCtx *ctx, int pos)
     oflank1 = vqsubq_u64(oflank1, ctx->one);
     flip = vbslq_u64(mask_l1, oflank1, vbslq_u64(mask_l0, oflank0, flip));
 
-    return vorrq_u64(flip, vextq_u64(flip, flip, 1));
+    return vgetq_lane_u64(vorrq_u64(flip, vextq_u64(flip, flip, 1)), 0);
 }
 
 unsigned long long RXBitBoard::do_flips_NEON(const int pos1, const int pos2, const unsigned long long P, const unsigned long long O, unsigned long long& res2) {
     
     //Prepare the context for both positions
-    NeonBoardCtx ctx;
-    ctx.PP = vdupq_n_u64(P);
-    ctx.OO = vdupq_n_u64(O);
-    ctx.one = vdupq_n_u64(1);
-
-    uint64x2_t OP = vzip1q_u64(ctx.PP, ctx.OO); // {P, O}, évite vcombine+vcreate
-    uint64x2_t rOP = vreinterpretq_u64_u8(vrev64q_u8(vrbitq_u8(vreinterpretq_u8_u64(OP))));
+    NeonBoardCtx ctx(P, O);
     
-    ctx.rPP = vdupq_lane_u64(vget_low_u64(rOP), 0);
-    ctx.rOO = vdupq_lane_u64(vget_high_u64(rOP), 0);
-
     // Pipeline calculations, reusing hot registers
-    uint64x2_t flip_res1 = do_flip_NEON(&ctx, pos1);
-    uint64x2_t flip_res2 = do_flip_NEON(&ctx, pos2);
-    
-    res2 = vgetq_lane_u64(flip_res2, 0);
-    return vgetq_lane_u64(flip_res1, 0);
+    res2 = do_flip_NEON(&ctx, pos2);
+    return do_flip_NEON(&ctx, pos1);
 }
 
 unsigned long long RXBitBoard::do_flips_NEON(const int pos, const unsigned long long P, const unsigned long long O) {
     
     //Prepare the context for the position
-    NeonBoardCtx ctx;
-    ctx.PP = vdupq_n_u64(P);
-    ctx.OO = vdupq_n_u64(O);
-    ctx.one = vdupq_n_u64(1);
-
-    uint64x2_t OP = vzip1q_u64(ctx.PP, ctx.OO); // {P, O}, évite vcombine+vcreate
-    uint64x2_t rOP = vreinterpretq_u64_u8(vrev64q_u8(vrbitq_u8(vreinterpretq_u8_u64(OP))));
-
-    ctx.rPP = vdupq_lane_u64(vget_low_u64(rOP), 0);
-    ctx.rOO = vdupq_lane_u64(vget_high_u64(rOP), 0);
-
-    uint64x2_t flip_res1 = do_flip_NEON(&ctx, pos);
-    return vgetq_lane_u64(flip_res1, 0);
+    NeonBoardCtx ctx(P, O);
+    
+    return do_flip_NEON(&ctx, pos);
 }
 
 void RXBitBoard::generate_flips_NEON(const int pos, RXMove& move) const {

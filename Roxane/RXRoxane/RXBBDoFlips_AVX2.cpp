@@ -114,7 +114,7 @@ const V8DI LR_MASK[66] = {
  * @return partially reduced flipped disc pattern.
  */
 
-__m128i mm_flip(const __m256i PP, const __m256i OO, int pos)
+unsigned long long mm_flip(const __m256i PP, const __m256i OO, int pos)
 {
 	__m256i	flip, mask, rP, rS, rE, lO, lF;
 
@@ -137,7 +137,11 @@ __m128i mm_flip(const __m256i PP, const __m256i OO, int pos)
 	// erase lF if lO = lF (i.e. MSB is not P)
 	flip = _mm256_or_si256(flip, _mm256_andnot_si256(_mm256_cmpeq_epi64(lF, lO), lF));
 
-	return _mm_or_si128(_mm256_castsi256_si128(flip), _mm256_extracti128_si256(flip, 1));
+    
+    __m128i flip_1  = _mm_or_si128(_mm256_castsi256_si128(flip), _mm256_extracti128_si256(flip, 1));
+    __m128i rflip = _mm_or_si128(flip_1, _mm_shuffle_epi32(flip_1, 0x4e));
+    return static_cast<unsigned long long>( _mm_cvtsi128_si64(rflip));
+
 }
 
 unsigned long long  RXBitBoard::do_flips_AVX2(const int pos1, const int pos2, const unsigned long long P, const unsigned long long O, unsigned long long& flipped_2) {
@@ -145,13 +149,9 @@ unsigned long long  RXBitBoard::do_flips_AVX2(const int pos1, const int pos2, co
     const __m256i PP = _mm256_set1_epi64x(P);
     const __m256i OO = _mm256_set1_epi64x(O);
     
-    __m128i flip = mm_flip(PP, OO, pos2);
-    __m128i rflip = _mm_or_si128(flip, _mm_shuffle_epi32(flip, 0x4e));
-    flipped_2 = _mm_cvtsi128_si64(rflip);
+    flipped_2 = mm_flip(PP, OO, pos2);
 
-    flip = mm_flip(PP, OO, pos1);
-    rflip = _mm_or_si128(flip, _mm_shuffle_epi32(flip, 0x4e));
-    return (unsigned long long) _mm_cvtsi128_si64(rflip);
+    return mm_flip(PP, OO, pos1);
 }
 
 
@@ -161,9 +161,7 @@ unsigned long long  RXBitBoard::do_flips_AVX2(const int pos, const unsigned long
     const __m256i PP = _mm256_set1_epi64x(P);
     const __m256i OO = _mm256_set1_epi64x(O);
     
-	__m128i flip = mm_flip(PP, OO, pos);
-	__m128i rflip = _mm_or_si128(flip, _mm_shuffle_epi32(flip, 0x4e));
-	return (unsigned long long) _mm_cvtsi128_si64(rflip);
+    return mm_flip(PP, OO, pos);
 }
 
 void RXBitBoard::generate_flips_AVX2(const int pos, RXMove& move) const {

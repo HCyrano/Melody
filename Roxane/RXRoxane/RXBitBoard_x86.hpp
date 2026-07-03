@@ -20,7 +20,7 @@
 #include <x86intrin.h>
 
 // forward declaration - définie dans RXBBDoFlips_AVX2.cpp
-__m128i mm_flip(const __m256i PP, const __m256i OO, int pos);
+unsigned long long mm_flip(const __m256i PP, const __m256i OO, int pos);
 
 
 /*
@@ -93,15 +93,15 @@ inline int RXBitBoard::get_stability(const unsigned long long discs_player, cons
     const __m128i e792 = _mm_set1_epi64x(0x00003f3f3f3f3f3f);
     const __m128i e793 = _mm_set1_epi64x(0x0f0f0f0ff0f0f0f0);
 
-    l01 = l79 = _mm_cvtsi64_si128(filled);    l79 = r79 = _mm_unpacklo_epi64(l79, _mm_cvtsi64_si128(rdisc));
-    l01 = _mm_cmpeq_epi8(kff, l01);         l79 = _mm_and_si128(l79, _mm_or_si128(e790, _mm_srli_epi64(l79, 9)));
+    l01 = l79 = _mm_cvtsi64_si128(filled);      l79 = r79 = _mm_unpacklo_epi64(l79, _mm_cvtsi64_si128(rdisc));
+    l01 = _mm_cmpeq_epi8(kff, l01);             l79 = _mm_and_si128(l79, _mm_or_si128(e790, _mm_srli_epi64(l79, 9)));
     h = _mm_cvtsi128_si64(l01);
-    r79 = _mm_and_si128(r79, _mm_or_si128(e791, _mm_slli_epi64(r79, 9)));
-    l8 = filled;                              l79 = _mm_andnot_si128(_mm_andnot_si128(_mm_srli_epi64(l79, 18), e792), l79);
-    l8 &= (l8 >> 8) | (l8 << 56);           r79 = _mm_andnot_si128(_mm_slli_epi64(_mm_andnot_si128(r79, e792), 18), r79);
-    l8 &= (l8 >> 16) | (l8 << 48);          l79 = _mm_and_si128(_mm_and_si128(l79, r79), _mm_or_si128(e793, _mm_or_si128(_mm_srli_epi64(l79, 36), _mm_slli_epi64(r79, 36))));
-    l8 &= (l8 >> 32) | (l8 << 32);          d9 = _mm_cvtsi128_si64(l79);
-    v = l8;                                 d7 = __builtin_bswap64(_mm_cvtsi128_si64(_mm_unpackhi_epi64(l79, l79)));
+                                                r79 = _mm_and_si128(r79, _mm_or_si128(e791, _mm_slli_epi64(r79, 9)));
+    l8 = filled;                                l79 = _mm_andnot_si128(_mm_andnot_si128(_mm_srli_epi64(l79, 18), e792), l79);
+    l8 &= (l8 >> 8) | (l8 << 56);               r79 = _mm_andnot_si128(_mm_slli_epi64(_mm_andnot_si128(r79, e792), 18), r79);
+    l8 &= (l8 >> 16) | (l8 << 48);              l79 = _mm_and_si128(_mm_and_si128(l79, r79), _mm_or_si128(e793, _mm_or_si128(_mm_srli_epi64(l79, 36), _mm_slli_epi64(r79, 36))));
+    l8 &= (l8 >> 32) | (l8 << 32);              d9 = _mm_cvtsi128_si64(l79);
+    v = l8;                                     d7 = __builtin_bswap64(_mm_cvtsi128_si64(_mm_unpackhi_epi64(l79, l79)));
         
     stable |= (h & v & d7 & d9 & central_mask);
     
