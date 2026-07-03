@@ -457,7 +457,7 @@ void RXRoxane::get_move(const std::string& file_name) {
     
     pthread_mutex_lock(&mutex);
     
-    //	while(true) {
+    //    while(true) {
     
     resume_flag.store(false);
     
@@ -496,19 +496,57 @@ void RXRoxane::get_move(const std::string& file_name) {
 #ifdef STATS_FM
         RXBBPatterns::init_stats();
 #endif
-        
-        
+                
         while(!resume_flag.load() && std::getline(in, line)) {
             
-#ifdef EG_CHECK_SOLVER
+            
+#ifdef EG_CHECK_PV
             std::stringstream ss;
             int score = UNDEF_SCORE;
-            
+
             ss << line.substr(line.find(":")+1);
-            
+
             ss >> score;
-            
+
 #endif
+            
+            
+#ifdef EG_CHECK_SOLVER
+            std::vector<std::string> best_moves_attendus; // Contiendra uniquement les meilleurs coups (ex: ["H8", "H1"])
+            int best_score_attendu = UNDEF_SCORE;
+
+            size_t pos_coups = line.find(';');
+            if (pos_coups != std::string::npos) {
+                std::stringstream ss(line.substr(pos_coups + 1));
+                std::string token;
+                
+                while (ss >> token) {
+                    size_t double_point = token.find(':');
+                    if (double_point != std::string::npos) {
+                        std::string coord = token.substr(0, double_point);
+                        std::string score_str = token.substr(double_point + 1);
+                        if (!score_str.empty() && score_str.back() == ';') {
+                            score_str.pop_back();
+                        }
+                        int score_courant = std::stoi(score_str);
+
+                        // Premier coup analysé -> il possède obligatoirement le bestscore
+                        if (best_score_attendu == UNDEF_SCORE) {
+                            best_score_attendu = score_courant;
+                            best_moves_attendus.push_back(coord);
+                        }
+                        // Coups suivants : on les ajoute seulement s'ils ont le même score maximal
+                        else if (score_courant == best_score_attendu) {
+                            best_moves_attendus.push_back(coord);
+                        }
+                        // Dès que le score baisse, inutile d'aller plus loin (grâce au tri du fichier)
+                        else {
+                            break;
+                        }
+                    }
+                }
+            }
+#endif // EG_CHECK_SOLVER
             
             search.htable->reset();
             search.main_PV->reset();
@@ -526,7 +564,7 @@ void RXRoxane::get_move(const std::string& file_name) {
             search.bestMove.score       = UNDEF_SCORE;
             search.bestMove.selectivity = 0;
             search.bestMove.tElapsed    = 0.0;
-            search.bestMove.nodes	    = 0;
+            search.bestMove.nodes        = 0;
             
             if(search.sBoard.board.n_moves() > 1) {
                 engine[search.idEngine]->get_move(search);
@@ -535,7 +573,7 @@ void RXRoxane::get_move(const std::string& file_name) {
                 ofs << line << ":" << std::setw(3) << std::setfill(' ') << search.bestMove.score << std::endl;
 #endif
                 
-#ifdef EG_CHECK_SOLVER
+#ifdef EG_CHECK_PV
                 if(score != (UNDEF_SCORE) && search.bestMove.score != score) {
                     std::cout << "critical error in solver" << std::endl;
                     std::cout << search.sBoard.board << std::endl;
@@ -543,6 +581,39 @@ void RXRoxane::get_move(const std::string& file_name) {
                     std::cout << "resultat trouvé  : " << search.bestMove.score << std::endl;
                 }
 #endif
+                
+#ifdef EG_CHECK_SOLVER
+                if (best_score_attendu != UNDEF_SCORE) {
+                    // 1. Vérification stricte du score unique
+                    if (search.bestMove.score != best_score_attendu) {
+                        std::cout << "CRITICAL ERROR: Score incorrect!" << std::endl;
+                        
+                        std::cout << line << std::endl;
+                        std::cout << "Attendu (BestScore): " << best_score_attendu << " | Trouvé: " << search.bestMove.score << std::endl;
+                    } else {
+                        // 2. Le score est correct, on vérifie si le coup joué fait partie des BestMoves
+                        std::string coup_trouve_str = RXMove::index_to_coord(search.bestMove.position);
+                        
+                        bool coup_valide = false;
+                        for (const auto& move : best_moves_attendus) {
+                            if (move == coup_trouve_str) {
+                                coup_valide = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!coup_valide) {
+                            std::cout << "CRITICAL ERROR: Le coup trouvé n'est pas un BestMove!" << std::endl;
+                            std::cout << line << std::endl;
+
+                            std::cout << "Coup trouvé par le moteur: " << coup_trouve_str << " (Score: " << search.bestMove.score << ")" << std::endl;
+                            std::cout << "Coups valides attendus pour ce score: ";
+                            for (const auto& move : best_moves_attendus) std::cout << move << " ";
+                            std::cout << std::endl;
+                        }
+                    }
+                }
+#endif // EG_CHECK_SOLVER
             }
             
             T += search.bestMove.tElapsed;
@@ -592,7 +663,7 @@ void RXRoxane::get_move(const std::string& file_name) {
         
     }
     
-    //	}
+    //    }
 
 #ifdef GENERATE_RES_FILE
     ofs.close();

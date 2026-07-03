@@ -121,9 +121,11 @@ struct LocalTT {
             e->lower    = -64;
             e->upper    =  64;
         }
-        if      (score <= alpha && score < e->upper) e->upper = static_cast<int8_t>(score);
-        else if (score >= beta  && score > e->lower) e->lower = static_cast<int8_t>(score);
-        else {
+        if (score <= alpha) {
+            if (score < e->upper) e->upper = static_cast<int8_t>(score);
+        } else if (score >= beta) {
+            if (score > e->lower) e->lower = static_cast<int8_t>(score);
+        } else {
             e->lower = e->upper = static_cast<int8_t>(score);
         }
     }
@@ -2496,7 +2498,7 @@ void RXEngine::EG_driver(RXBBPatterns& sBoard, int selectivity, int end_selectiv
         }
         
         //check PV at 100%
-#ifdef EG_CHECK_SOLVER
+#ifdef EG_CHECK_PV
         if(!abort.load() && sBoard.board.n_empty-6 > 0 && selectivity == NO_SELECT && s_alpha <= list->next->score && list->next->score <= s_beta) {
             RXSearch::t_client save_client = search_client;
             search_client = RXSearch::kPrivate;
