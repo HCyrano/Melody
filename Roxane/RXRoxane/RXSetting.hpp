@@ -61,7 +61,7 @@
 //#define SOLVER_DRIVER
 
 //check pv in endgame at 100%
-#define EG_CHECK_PV
+//#define EG_CHECK_PV
 //#define EG_CHECK_SOLVER
 
 //generate data for probcut

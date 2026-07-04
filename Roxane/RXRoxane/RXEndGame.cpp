@@ -590,7 +590,6 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
     if (!pv && ltt.cutoff) return ltt.score;
 
     int bestscore = UNDEF_SCORE;
-    unsigned int bestmove  = NOMOVE;
 
     //for all empty square
     unsigned long long legal_movesBB = board.get_legal_moves();
@@ -602,9 +601,9 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
         
         if(__builtin_popcountll(legal_movesBB) == 1) { //only 1 move
             
-            bestmove = __builtin_ctzll(legal_movesBB);  // Get the index of the lowest set bit
+            int pos = __builtin_ctzll(legal_movesBB);  // Get the index of the lowest set bit
 
-            board.generate_flips(bestmove, *move);
+            board.generate_flips(pos, *move);
             
             board.do_move(*move);
             bestscore = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -lower, false);
@@ -641,9 +640,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
                     }
                 }
 #endif
-                
-                move->score = 0; //init
-                
+                                
 #ifdef USE_ETC
                 if(!pv ) {
                     
@@ -651,11 +648,18 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
                     
                     auto etc_ltt = LocalTT::probe(next_P, next_O, etc_depth, next_hashcode, lower, upper);
                     if (etc_ltt.entry) {
-                        if(-etc_ltt.beta>=upper)
-                            return -etc_ltt.beta;
-                        
-                        if(-etc_ltt.alpha <= lower)
-                            move->score = 4; //Malus: probably fail low
+                        if(-etc_ltt.beta>lower) {
+                            if(-etc_ltt.beta>=upper)
+                                return -etc_ltt.beta;
+                            lower = -etc_ltt.beta;
+                            bestscore = -etc_ltt.beta;
+                        }
+                        //remove from list
+                        else if(-etc_ltt.alpha <= lower) {
+                            if(bestscore < -etc_ltt.alpha)
+                                bestscore = -etc_ltt.alpha;
+                            continue;
+                        }
                     }
                 }
 #endif
@@ -667,7 +671,10 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
             
             previous->next = nullptr;
             
-            
+            // Tous les coups éliminés par ETC
+            if(previous == list && bestscore != UNDEF_SCORE)
+                return bestscore;
+
             if((list->next)->next != nullptr) { //nb moves > 1
                 
                 //sort list by mobility
@@ -678,7 +685,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
                     const unsigned long long next_O = current_P | (iter->flipped | iter->square);
                     const unsigned long long next_P = current_O ^ iter->flipped;
                     
-                    iter->score +=
+                    iter->score =
                     (RXBitBoard::get_mobility(next_P, next_O)<<5)
                     + (RXBitBoard::count_potential_moves(next_P, next_O))
                     - (RXBitBoard::get_edge_stability(next_O, next_P)<<2)
@@ -689,23 +696,23 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
                 move = list->pick_next_promising_move();
             }
             
-            
-            bestmove = list->next->position;
-            
+                        
             board.do_move(*list->next);
-            bestscore = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -lower, false);
+            int score = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -lower, false);
             board.undo_move(*list->next);
             
-            if (bestscore > lower)
-                lower = bestscore;
-            
+            if (score > bestscore) {
+                bestscore = score;
+                if (bestscore > lower)
+                    lower = bestscore;
+            }
+
             // next move
             list = list->next;
             
             
             
             // other moves : try to refute the first/best one
-            int score;
             for(; lower < upper && list->next != nullptr; list = list->next) {
                 
                 move = list->next;
@@ -721,7 +728,6 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
                 board.undo_move(*move);
                 
                 if (score > bestscore) {
-                    bestmove = move->position;
                     bestscore = score;
                     if (bestscore > lower)
                         lower = bestscore;
@@ -734,8 +740,6 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
         if (passed) {
             return board.final_score();
         } else {
-            bestmove = PASS;
-
             board.do_pass();
             bestscore = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -lower, true);
             board.do_pass();
