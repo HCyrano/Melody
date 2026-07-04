@@ -21,6 +21,7 @@
 
 #include "RXHashTable.hpp"
 #include "RXEngine.hpp"
+#include "RXSetting.hpp"
 
 //RXHashValue::RXHashValue(unsigned long long packed) {
 //
@@ -355,10 +356,10 @@ void RXHashTable::update(const unsigned long long hash_code, const RXBitBoard& b
 /* ************************************* Attention *************************************/
 
 
-std::string RXHashTable::line2String(RXBitBoard& board, const int depth, const t_hash type_hashtable) const {
+std::string RXHashTable::line2String(RXBitBoard& board, const int n_moves, const t_hash type_hashtable) const {
     
     std::vector<unsigned char> pv;
-    mainVariation(pv, board, type_hashtable, depth);
+    mainVariation(pv, board, type_hashtable, n_moves);
     
     std::ostringstream buffer;
     bool player = false;
@@ -378,28 +379,31 @@ std::string RXHashTable::line2String(RXBitBoard& board, const int depth, const t
 }
 
 
-void RXHashTable::mainVariation(std::vector<unsigned char>& pv, RXBitBoard& board, const t_hash type_hashtable, const int depth) const {
-    if(depth <= 0) return;
+void RXHashTable::mainVariation(std::vector<unsigned char>& pv, RXBitBoard& board, const t_hash type_hashtable, const int n_moves) const {
     
-    RXHashValue entry_val;
-    if(get(board, type_hashtable, entry_val) && entry_val.move != NOMOVE) {
+    if(n_moves <= 0) return;
+    
+    RXHashValue entry;
+    if(board.n_empty >= RXEngine::EG_MEDIUM_HI_TO_LOW && get(board, type_hashtable, entry) && entry.move != NOMOVE) {
         
-        pv.push_back(entry_val.move);
-        
-        if(entry_val.move == PASS) {
-            board.do_pass();
-            mainVariation(pv, board, type_hashtable, depth - 1);
-            board.do_pass();
-        } else {
-            RXMove local_move; // Local pour thread-safety
-            board.generate_flips(entry_val.move, local_move);
-            board.do_move(local_move);
-            mainVariation(pv, board, type_hashtable, depth - 1);
-            board.undo_move(local_move);
-        }
+            
+            pv.push_back(entry.move);
+            
+            if(entry.move == PASS) {
+                board.do_pass();
+                mainVariation(pv, board, type_hashtable, n_moves - 1);
+                board.do_pass();
+            } else {
+                RXMove local_move; // Local pour thread-safety
+                board.generate_flips(entry.move, local_move);
+                board.do_move(local_move);
+                mainVariation(pv, board, type_hashtable, n_moves - 1);
+                board.undo_move(local_move);
+            }
+
     } else {
         pv.push_back(NOMOVE);
-        mainVariation(pv, board, type_hashtable, depth-1);
+        mainVariation(pv, board, type_hashtable, n_moves-1);
     }
 
 }
@@ -443,8 +447,6 @@ bool RXHashTable::get_record(const RXBitBoard& board, const t_hash type_hashtabl
  */
 void RXHashTable::copyPV_shared_to_color(RXBitBoard& board, const int color) {
 
-//    std::cout << "copyPV_shared_to_color" << std::endl;
-//    std::cout << "source : " << line2String(board, 12, HASH_SHARED) << std::endl;
 
     if(color == BLACK) {
         copyPV(board, HASH_SHARED, HASH_BLACK);
@@ -452,7 +454,6 @@ void RXHashTable::copyPV_shared_to_color(RXBitBoard& board, const int color) {
         copyPV(board, HASH_SHARED, HASH_WHITE);
     }
 
-//    std::cout << "dest   : " << line2String(board, 12, (color==BLACK? HASH_BLACK:HASH_WHITE)) << std::endl;
 
 }
 
@@ -461,8 +462,6 @@ void RXHashTable::copyPV_shared_to_color(RXBitBoard& board, const int color) {
  */
 void RXHashTable::copyPV_color_to_shared (RXBitBoard& board, const int color) {
 
-//    std::cout << "copyPV_color_to_shared" << std::endl;
-//    std::cout << "source : " << line2String(board, 12, (color==BLACK? HASH_BLACK:HASH_WHITE)) << std::endl;
     
     if(color == BLACK) {
         copyPV(board, HASH_BLACK, HASH_SHARED);
@@ -470,7 +469,6 @@ void RXHashTable::copyPV_color_to_shared (RXBitBoard& board, const int color) {
         copyPV(board, HASH_WHITE, HASH_SHARED);
     }
     
-//    std::cout << "dest   : " << line2String(board, 12, HASH_SHARED) << std::endl;
 
 }
 

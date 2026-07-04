@@ -507,7 +507,6 @@ void RXRoxane::get_move(const std::string& file_name) {
             ss << line.substr(line.find(":")+1);
 
             ss >> score;
-
 #endif
             
             

@@ -531,9 +531,6 @@ int RXEngine::EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, c
     
     LocalTT::store(ltt.entry, hash_code, board, bestscore, alpha, upper);
 
-    if(pv)
-        hTable->update(hash_code, board, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
-
     return bestscore;
 }
 
@@ -747,8 +744,6 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
 
 
     LocalTT::store(ltt.entry, hash_code, board, bestscore, alpha, upper);
-    if(pv)
-        hTable->update(hash_code, board, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
 
     return bestscore;
 }
@@ -2482,7 +2477,7 @@ void RXEngine::EG_driver(RXBBPatterns& sBoard, int selectivity, int end_selectiv
         if(!abort.load() && sBoard.board.n_empty-6 > 0 && selectivity == NO_SELECT && s_alpha <= list->next->score && list->next->score <= s_beta) {
             RXSearch::t_client save_client = search_client;
             search_client = RXSearch::kPrivate;
-            EG_CHECK_PV(search_sBoard, list->next->score);
+            EG_check_PV(search_sBoard, list->next->score);
             search_client = save_client;
         }
 #endif
@@ -2514,7 +2509,7 @@ void RXEngine::EG_driver(RXBBPatterns& sBoard, int selectivity, int end_selectiv
  */
 
 
-void RXEngine::EG_CHECK_PV(RXBBPatterns& sBoard, const int score) {
+void RXEngine::EG_check_PV(RXBBPatterns& sBoard, const int score) {
         
     //collect PV
     std::vector<unsigned char> pv;
@@ -2538,11 +2533,11 @@ void RXEngine::EG_CHECK_PV(RXBBPatterns& sBoard, const int score) {
 
     // check PV
     if(!pv.empty())
-       EG_CHECK_PV(pv, sBoard, -score);
+       EG_check_PV(pv, sBoard, -score);
 
 }
 
-bool RXEngine::EG_CHECK_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard, const int score) {
+bool RXEngine::EG_check_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard, const int score) {
 
     bool good_pv = true;
     RXBitBoard& board = sBoard.board;
@@ -2565,7 +2560,7 @@ bool RXEngine::EG_CHECK_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard,
         if(!pv.empty() && pv.front() != NOMOVE) {
             
             if(pv.front() == PASS) {
-                good_pv = EG_CHECK_PV(pv, sBoard, -score);
+                good_pv = EG_check_PV(pv, sBoard, -score);
             } else {
                 RXMove* list = threads[0]._move[board.n_empty];
                 board.moves_producing(list);
@@ -2581,10 +2576,11 @@ bool RXEngine::EG_CHECK_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard,
                 int result = list->next->score;
                 
                 if(result == score)
-                    good_pv = EG_CHECK_PV(pv, sBoard, -score);
+                    good_pv = EG_check_PV(pv, sBoard, -score);
                 else {
                     
                     std::cout << "RED ALERT : wrong PV" << std::endl;
+                    std::cout << "at depth : " << sBoard.board.n_empty << std::endl;
                     std::cout << "bad move : " << RXMove::index_to_coord(pos) << std::endl;
                     std::cout << "score = " << -score << " result = " << result << std::endl;
 

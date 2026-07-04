@@ -967,11 +967,11 @@ int RXEngine::alphabeta_last_two_ply(const unsigned int threadID, RXBBPatterns& 
     return bestscore;
 }
 
-std::string RXEngine::variationPrincipal(RXBitBoard& board, int depthLine) const {
-    return hTable->line2String(board, depthLine, type_hashtable);
+std::string RXEngine::variationPrincipal(RXBitBoard& board, int n_moves) const {
+    return hTable->line2String(board, n_moves, type_hashtable);
 }
 
-std::string RXEngine::showPV(RXBitBoard& board, int depthLine) const {
+std::string RXEngine::showPV(RXBitBoard& board, int n_moves) const {
     std::ostringstream buffer;
     
     // unsynchronized acces
@@ -1003,7 +1003,7 @@ std::string RXEngine::showPV(RXBitBoard& board, int depthLine) const {
         
         buffer << std::fixed << std::showpos << std::setprecision(0) << (static_cast<float>(score));
         
-        buffer << "  Pv : " << hTable->line2String(board, depthLine, type_hashtable);
+        buffer << "  Pv : " << hTable->line2String(board, n_moves, type_hashtable);
     }
     
     return buffer.str();

@@ -56,7 +56,7 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-h 20 -t 1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-h 24 -t 1"
@@ -68,7 +68,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-h 24 -t 16"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/caussebruno/Desktop/bug_endgame.txt"
@@ -76,7 +76,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/caussebruno/Documents/developpement/Melody/scripts/endgame_6_24.obf"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/caussebruno/Documents/developpement/Melody/scripts/endgame_24_26_30.script"
@@ -84,7 +84,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/caussebruno/Documents/developpement/Melody/scripts/fforum-20-39.obf"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/caussebruno/Documents/developpement/Melody/scripts/fforum-40-49.obf"

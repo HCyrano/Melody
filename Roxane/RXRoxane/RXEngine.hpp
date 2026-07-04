@@ -338,8 +338,8 @@ class RXEngine: public Runnable {
     int get_select_search() const;
     
     
-    std::string variationPrincipal(RXBitBoard& sBoard, int depthLine) const;
-    std::string showPV(RXBitBoard& board, int depthLine) const;
+    std::string variationPrincipal(RXBitBoard& sBoard, int n_moves) const;
+    std::string showPV(RXBitBoard& board, int n_moves) const;
     std::string showHashmove(const RXBitBoard& board, RXHashValue& entry) const;
     std::string showBestmove(const int depth, const int selectivity, const int alpha, const int beta, const int score, const unsigned int bestmove) const;
     std::string display(RXBitBoard& board, const int type, const int allowed_display = 0, int score = 0, const int time = 0, const int time_level = 0);
@@ -407,8 +407,8 @@ private:
     static const int EG_HIGH_SELECT;
     
     
-    void EG_CHECK_PV(RXBBPatterns& sBoard, const int score);
-    bool EG_CHECK_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard, const int score);
+    void EG_check_PV(RXBBPatterns& sBoard, const int score);
+    bool EG_check_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard, const int score);
 
     
     void EG_driver(RXBBPatterns& board, int selectivity, int end_selectivity, RXMove* list);
@@ -416,7 +416,7 @@ private:
     void EG_PVS_root(RXBBPatterns& board, const int selectivity, int alpha, const int beta, RXMove* list);
     void EG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID);
     
-    int    EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int selectivity, int alpha, const int beta, const bool passed);
+    int  EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int selectivity, int alpha, const int beta, const bool passed);
     void EG_SP_search_DEEP(RXSplitPoint* sp, const unsigned int threadID);
     
     int EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, int alpha, const int beta, const bool passed);
