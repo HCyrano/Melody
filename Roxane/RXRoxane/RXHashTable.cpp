@@ -356,10 +356,10 @@ void RXHashTable::update(const unsigned long long hash_code, const RXBitBoard& b
 /* ************************************* Attention *************************************/
 
 
-std::string RXHashTable::line2String(RXBitBoard& board, const int n_moves, const t_hash type_hashtable) const {
+std::string RXHashTable::line2String(RXBitBoard& board, const int PV_length, const t_hash type_hashtable) const {
     
     std::vector<unsigned char> pv;
-    mainVariation(pv, board, type_hashtable, n_moves);
+    mainVariation(pv, board, type_hashtable, PV_length);
     
     std::ostringstream buffer;
     bool player = false;
@@ -379,9 +379,9 @@ std::string RXHashTable::line2String(RXBitBoard& board, const int n_moves, const
 }
 
 
-void RXHashTable::mainVariation(std::vector<unsigned char>& pv, RXBitBoard& board, const t_hash type_hashtable, const int n_moves) const {
+void RXHashTable::mainVariation(std::vector<unsigned char>& pv, RXBitBoard& board, const t_hash type_hashtable, const int PV_length) const {
     
-    if(n_moves <= 0) return;
+    if(PV_length <= 0) return;
     
     RXHashValue entry;
     if(board.n_empty >= RXEngine::EG_MEDIUM_HI_TO_LOW && get(board, type_hashtable, entry) && entry.move != NOMOVE) {
@@ -391,19 +391,19 @@ void RXHashTable::mainVariation(std::vector<unsigned char>& pv, RXBitBoard& boar
             
             if(entry.move == PASS) {
                 board.do_pass();
-                mainVariation(pv, board, type_hashtable, n_moves - 1);
+                mainVariation(pv, board, type_hashtable, PV_length - 1);
                 board.do_pass();
             } else {
                 RXMove local_move; // Local pour thread-safety
                 board.generate_flips(entry.move, local_move);
                 board.do_move(local_move);
-                mainVariation(pv, board, type_hashtable, n_moves - 1);
+                mainVariation(pv, board, type_hashtable, PV_length - 1);
                 board.undo_move(local_move);
             }
 
     } else {
         pv.push_back(NOMOVE);
-        mainVariation(pv, board, type_hashtable, n_moves-1);
+        mainVariation(pv, board, type_hashtable, PV_length-1);
     }
 
 }

@@ -300,8 +300,8 @@ class RXHashTable {
     void update(const unsigned long long hash_code, const RXBitBoard& board, const t_hash type_hashtable,
                              const unsigned char selectivity, const unsigned char depth, const int alpha, const int score, const char move);
 
-    std::string line2String(RXBitBoard& board, const int n_moves, const t_hash type_hashtable) const;
-    void mainVariation(std::vector<unsigned char>& pv, RXBitBoard& board, const t_hash type_hashtable, const int n_moves) const;
+    std::string line2String(RXBitBoard& board, const int PV_length, const t_hash type_hashtable) const;
+    void mainVariation(std::vector<unsigned char>& pv, RXBitBoard& board, const t_hash type_hashtable, const int PV_length) const;
 
     void new_search(const unsigned int color, const int n_empty);
     int get_date(const unsigned int color) { return date[_shared ? 0:color];};

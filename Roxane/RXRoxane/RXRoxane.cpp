@@ -501,11 +501,14 @@ void RXRoxane::get_move(const std::string& file_name) {
             
             
 #ifdef EG_CHECK_PV
+            
+            std::cout << line << std::endl;
+            
             std::stringstream ss;
             int score = UNDEF_SCORE;
 
             ss << line.substr(line.find(":")+1);
-
+            
             ss >> score;
 #endif
             
@@ -571,16 +574,7 @@ void RXRoxane::get_move(const std::string& file_name) {
 #ifdef GENERATE_RES_FILE
                 ofs << line << ":" << std::setw(3) << std::setfill(' ') << search.bestMove.score << std::endl;
 #endif
-                
-#ifdef EG_CHECK_PV
-                if(score != (UNDEF_SCORE) && search.bestMove.score != score) {
-                    std::cout << "critical error in solver" << std::endl;
-                    std::cout << search.sBoard.board << std::endl;
-                    std::cout << "resultat attendu : " << score << std::endl;
-                    std::cout << "resultat trouvé  : " << search.bestMove.score << std::endl;
-                }
-#endif
-                
+                                
 #ifdef EG_CHECK_SOLVER
                 if (best_score_attendu != UNDEF_SCORE) {
                     // 1. Vérification stricte du score unique

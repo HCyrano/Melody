@@ -742,15 +742,21 @@ std::string RXBitBoard::string_rawdata() {
     for(int iPosition = A1; iPosition>=H8; --iPosition) {
         unsigned long long _mask = 0x1ULL<<iPosition;
         if((discs[player] & _mask) != 0) {
-            line +="X";
+            line += player == BLACK ?"X": "O";
         } else if((discs[player^1] & _mask) !=0) {
-            line += "O";
+            line += player != BLACK ?"X": "O";
         } else {
             line += "-";
         }
         
     }
     
+    if(player == BLACK) {
+        line += " X";
+    } else {
+        line += " O";
+    }
+
     return line;
 }
 

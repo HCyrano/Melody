@@ -338,8 +338,8 @@ class RXEngine: public Runnable {
     int get_select_search() const;
     
     
-    std::string variationPrincipal(RXBitBoard& sBoard, int n_moves) const;
-    std::string showPV(RXBitBoard& board, int n_moves) const;
+    std::string variationPrincipal(RXBitBoard& sBoard, int PV_length) const;
+    std::string showPV(RXBitBoard& board, int PV_length) const;
     std::string showHashmove(const RXBitBoard& board, RXHashValue& entry) const;
     std::string showBestmove(const int depth, const int selectivity, const int alpha, const int beta, const int score, const unsigned int bestmove) const;
     std::string display(RXBitBoard& board, const int type, const int allowed_display = 0, int score = 0, const int time = 0, const int time_level = 0);
@@ -408,7 +408,7 @@ private:
     
     
     void EG_check_PV(RXBBPatterns& sBoard, const int score);
-    bool EG_check_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard, const int score);
+    bool EG_check_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard, int score);
 
     
     void EG_driver(RXBBPatterns& board, int selectivity, int end_selectivity, RXMove* list);

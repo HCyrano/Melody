@@ -766,6 +766,8 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
  * \param passed     a flag indicating if previous move was a pass.
  * \return the final score, as a disc difference.
  */
+
+// Implementing a skip move on TT in ETC is more complicated without any real benefit.
 int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, int alpha, const int beta, const bool passed)
 {
     
@@ -778,12 +780,12 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
         return INTERRUPT_SEARCH;
     
     RXBitBoard& board = sBoard.board;
-    
+    const unsigned long long  hash_code = board.hashcode();
+
     unsigned int bestmove = NOMOVE;
     int lower = alpha;
     int upper = beta;
     
-    const unsigned long long  hash_code = board.hashcode();
     
     RXHashValue entry;
     if(hTable->get(hash_code, board, type_hashtable, entry)) {
@@ -2387,8 +2389,10 @@ void RXEngine::EG_driver(RXBBPatterns& sBoard, int selectivity, int end_selectiv
             selectivity = std::min(selectivity, end_selectivity);
         }
         
+
         EG_PVS_root(sBoard, selectivity, alpha, beta, list);
         score = list->next->score;
+        
         
         int left = 2;
         int right = 2;
@@ -2433,10 +2437,10 @@ void RXEngine::EG_driver(RXBBPatterns& sBoard, int selectivity, int end_selectiv
                 beta  += beta%2;
             }
             
+
             EG_PVS_root(sBoard, selectivity, alpha, beta, list);
             score = list->next->score;
-            
-            
+
         };
         
         
@@ -2537,11 +2541,11 @@ void RXEngine::EG_check_PV(RXBBPatterns& sBoard, const int score) {
 
     // check PV
     if(!pv.empty())
-       EG_check_PV(pv, sBoard, -score);
+       EG_check_PV(pv, sBoard, score);
 
 }
 
-bool RXEngine::EG_check_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard, const int score) {
+bool RXEngine::EG_check_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard, int score) {
 
     bool good_pv = true;
     RXBitBoard& board = sBoard.board;
@@ -2549,15 +2553,23 @@ bool RXEngine::EG_check_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard,
     const int pos = pv.front();
     if(pos != NOMOVE) {
         
-        
+        std::cout << sBoard.board.string_rawdata() << std::endl;
+        std::cout << std::hex << std::showbase << sBoard.board.discs[board.player] << "ULL" << std::endl;
+        std::cout << std::hex << std::showbase << sBoard.board.discs[board.player^1] << "ULL" << std::endl;
+        std::cout << std::dec;
+
         RXMove& move = threads[0]._move[board.n_empty][1];
         if(pos == PASS) {
+            std::cout << "I PASS" << std::endl;
             board.do_pass();
         } else {
+            std::cout << "I PLAY : " << RXMove::index_to_coord(pos) << std::endl;
+
             board.generate_flips(pos, move);
             sBoard.patterns_update(move);
             sBoard.do_move(move);
         }
+        
         
         pv.erase(pv.begin());
         
@@ -2575,18 +2587,19 @@ bool RXEngine::EG_check_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard,
  
                 //version monogame [provoque bug affichage]
                 hTable->reset();
-                EG_PVS_root(sBoard, NO_SELECT, score-1, score+1, list);
+                EG_PVS_root(sBoard, NO_SELECT, -64, 64, list);
                 
-                int result = list->next->score;
+                int real = -list->next->score;
                 
-                if(result == score)
+                if(real == score)
                     good_pv = EG_check_PV(pv, sBoard, -score);
                 else {
                     
                     std::cout << "RED ALERT : wrong PV" << std::endl;
+                    std::cout << sBoard.board.string_rawdata() << std::endl;
                     std::cout << "at depth : " << sBoard.board.n_empty << std::endl;
                     std::cout << "bad move : " << RXMove::index_to_coord(pos) << std::endl;
-                    std::cout << "score = " << -score << " result = " << result << std::endl;
+                    std::cout << "score PV = " << score << " real = " << real << std::endl;
 
                     good_pv = false;
                 }
@@ -2598,6 +2611,7 @@ bool RXEngine::EG_check_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard,
         
         pv.insert(pv.begin(), pos);
         
+        
         if(pos == PASS) {
             board.do_pass();
         } else {
@@ -2605,11 +2619,6 @@ bool RXEngine::EG_check_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard,
         }
     }
     
-    if(!good_pv) {
-        std::cout << "hashcode : " << board.hashcode() << std::endl;
-        std::cout << board << std::endl;
-    }
-
 
     return good_pv;
     
