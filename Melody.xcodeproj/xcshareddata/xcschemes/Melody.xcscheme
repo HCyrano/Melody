@@ -56,7 +56,7 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-h 20 -t 1"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-h 24 -t 1"
@@ -68,15 +68,15 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-h 24 -t 16"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "/Users/caussebruno/Documents/developpement/Melody/scripts/wrong_PV.src"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/caussebruno/Documents/developpement/Melody/scripts/endgame_6_24.obf"
+            argument = "/Users/caussebruno/Desktop/bug_endgame.txt"
             isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/caussebruno/Documents/developpement/Melody/scripts/endgame_6_24.obf"
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/caussebruno/Documents/developpement/Melody/scripts/endgame_24_26_30.script"
