@@ -2553,18 +2553,10 @@ bool RXEngine::EG_check_PV(std::vector<unsigned char>& pv, RXBBPatterns& sBoard,
     const int pos = pv.front();
     if(pos != NOMOVE) {
         
-        std::cout << sBoard.board.string_rawdata() << std::endl;
-        std::cout << std::hex << std::showbase << sBoard.board.discs[board.player] << "ULL" << std::endl;
-        std::cout << std::hex << std::showbase << sBoard.board.discs[board.player^1] << "ULL" << std::endl;
-        std::cout << std::dec;
-
         RXMove& move = threads[0]._move[board.n_empty][1];
         if(pos == PASS) {
-            std::cout << "I PASS" << std::endl;
             board.do_pass();
         } else {
-            std::cout << "I PLAY : " << RXMove::index_to_coord(pos) << std::endl;
-
             board.generate_flips(pos, move);
             sBoard.patterns_update(move);
             sBoard.do_move(move);

@@ -502,8 +502,6 @@ void RXRoxane::get_move(const std::string& file_name) {
             
 #ifdef EG_CHECK_PV
             
-            std::cout << line << std::endl;
-            
             std::stringstream ss;
             int score = UNDEF_SCORE;
 

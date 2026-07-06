@@ -384,7 +384,7 @@ void RXHashTable::mainVariation(std::vector<unsigned char>& pv, RXBitBoard& boar
     if(PV_length <= 0) return;
     
     RXHashValue entry;
-    if(board.n_empty >= RXEngine::EG_MEDIUM_HI_TO_LOW && get(board, type_hashtable, entry) && entry.move != NOMOVE) {
+    if(board.n_empty >= RXEngine::EG_MEDIUM_HI_TO_LOW && get(board, type_hashtable, entry) && entry.move != NOMOVE && entry.lower == entry.upper) {
         
             
             pv.push_back(entry.move);
