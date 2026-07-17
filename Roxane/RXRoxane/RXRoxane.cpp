@@ -42,8 +42,6 @@ void* init_process(void* pt)  {
 
 
 RXRoxane::RXRoxane(int size_hashtable, int max_thread): GGSClient(nullptr) {
-
-	pthread_mutex_init(&mutex, nullptr);
     
     max_threads = max_thread;
     
@@ -80,7 +78,6 @@ RXRoxane::~RXRoxane() {
 	delete engine[WHITE];
 	delete engine[BLACK];
 	
-	pthread_mutex_destroy(&mutex);
 }
 
 void RXRoxane::connectGGS(CODKStream* client) {
@@ -166,8 +163,8 @@ RXEngine* RXRoxane::getEngine(const int color) const {
 //	0, A8, B8, C8, D8, E8, F8, G8, H8, 0	};
 //	
 //	
-//	mutex.lock();
-//	
+//	std::lock_guard<std::mutex> lk(mutex);
+//
 //	clientMode = RXSearch::kPrivate;
 //
 //	hTable->shared(true);
@@ -301,7 +298,6 @@ RXEngine* RXRoxane::getEngine(const int color) const {
 //		to.close();
 //	}
 //	
-//	mutex.unlock();
 //	
 //}
 
@@ -309,7 +305,7 @@ RXEngine* RXRoxane::getEngine(const int color) const {
 /* synchronized method */
 void RXRoxane::get_move(const std::string& _idg, COsGame* g) {
 	
-	pthread_mutex_lock(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
 
 	resume_flag.store(false);
     
@@ -436,18 +432,14 @@ void RXRoxane::get_move(const std::string& _idg, COsGame* g) {
 		
 	}
 	
-	pthread_attr_t attr;
-	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-	
-	
-	if(!resume_flag.load() && pthread_create(process, &attr, init_process, (void*)(this)) != 0)
-		std::cout << "Echec: Thread main Roxane" << std::endl;
-	
-	
-	pthread_attr_destroy(&attr);
-	
-	pthread_mutex_unlock(&mutex);
+    if (!resume_flag.load()) {
+        try {
+            process = std::thread(init_process, this);
+            process.detach();
+        } catch (const std::system_error&) {
+            std::cout << "Echec: Thread main Melody" << std::endl;
+        }
+    }
 }
 
 /* synchronized method */
@@ -455,7 +447,7 @@ void RXRoxane::get_move(const std::string& _idg, COsGame* g) {
 void RXRoxane::get_move(const std::string& file_name) {
     
     
-    pthread_mutex_lock(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     
     //    while(true) {
     
@@ -660,14 +652,13 @@ void RXRoxane::get_move(const std::string& file_name) {
     ofs.close();
 #endif
 
-    pthread_mutex_unlock(&mutex);
     
 }
 
 void RXRoxane::metrix(const int stage) {
     
-    pthread_mutex_lock(&mutex);
-        
+    std::lock_guard<std::mutex> lock(mutex);
+    
     resume_flag.store(false);
     
     std::string dir_str = "/Users/caussebruno/Documents/developpement/";
@@ -740,14 +731,13 @@ void RXRoxane::metrix(const int stage) {
         in.close();
     }
     
-    pthread_mutex_unlock(&mutex);
 }
 
 
 void RXRoxane::get_move_fixed_depth(const std::string& position, const int depth, const int selectivity) {
     
-    pthread_mutex_lock(&mutex);
-
+    std::lock_guard<std::mutex> lock(mutex);
+    
     resume_flag = false;
         
     hTable->shared(true);
@@ -779,26 +769,21 @@ void RXRoxane::get_move_fixed_depth(const std::string& position, const int depth
     search.bestMove.nodes        = 0;
     
     
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    
-    
-    if(!resume_flag && pthread_create(process, &attr, init_process, (void*)(this)) != 0) {
-        std::cout << "Echec: Thread main Roxane" << std::endl;
+    if (!resume_flag.load()) {
+        try {
+            process = std::thread(init_process, this);
+            process.detach();
+        } catch (const std::system_error&) {
+            std::cout << "Echec: Thread main Roxane" << std::endl;
+        }
     }
-    
-    
-    pthread_attr_destroy(&attr);
-            
-    pthread_mutex_unlock(&mutex);
 
 }
 
 void RXRoxane::get_move_time_limited(const std::string& position, const int time_remaining) {
     
-    pthread_mutex_lock(&mutex);
-
+    std::lock_guard<std::mutex> lock(mutex);
+    
     resume_flag = false;
         
     hTable->shared(true);
@@ -831,19 +816,14 @@ void RXRoxane::get_move_time_limited(const std::string& position, const int time
     search.bestMove.nodes        = 0;
     
     
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    
-    
-    if(!resume_flag && pthread_create(process, &attr, init_process, (void*)(this)) != 0) {
-        std::cout << "Echec: Thread main Roxane" << std::endl;
+    if (!resume_flag.load()) {
+        try {
+            process = std::thread(init_process, this);
+            process.detach();
+        } catch (const std::system_error&) {
+            std::cout << "Echec: Thread main Roxane" << std::endl;
+        }
     }
-    
-    
-    pthread_attr_destroy(&attr);
-            
-    pthread_mutex_unlock(&mutex);
 
 }
 
@@ -852,7 +832,7 @@ void RXRoxane::get_move_time_limited(const std::string& position, const int time
 void RXRoxane::rawdata(const std::string& dir_name, const int offset_start, const int n_games) {
 
     /* synchronized method */
-    pthread_mutex_lock(&mutex);
+    std::lock_guard<std::mutex> lock(mutex);
     
     /* preparation du moteur*/
     resume_flag.store(false);
@@ -1046,7 +1026,6 @@ void RXRoxane::rawdata(const std::string& dir_name, const int offset_start, cons
     std::time_t end_tt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     std::cout << "🏁 Fin du calcul à   : " << std::put_time(std::localtime(&end_tt), "%H:%M:%S") << std::endl;
     
-    pthread_mutex_unlock(&mutex);
 
 }
 
@@ -1057,11 +1036,9 @@ void RXRoxane::rawdata(const std::string& dir_name, const int offset_start, cons
 #ifdef TUNE_PROBCUT_MID
 void RXRoxane::get_probcut_mid_data() {
     
-    pthread_mutex_lock(&mutex);
-   
+    std::lock_guard<std::mutex> lock(mutex);
     engine[SHARED]->probcut_mid_data(hTable, main_PV);
     
-    pthread_mutex_unlock(&mutex);
 
 }
 #endif
@@ -1069,23 +1046,18 @@ void RXRoxane::get_probcut_mid_data() {
 #ifdef TUNE_PROBCUT_END
 void RXRoxane::get_probcut_end_data() {
     
-    pthread_mutex_lock(&mutex);
-   
+    std::lock_guard<std::mutex> lock(mutex);
     engine[SHARED]->probcut_end_data(hTable, main_PV);
     
-    pthread_mutex_unlock(&mutex);
-
 }
 #endif
 
 #ifdef TUNE_PROBCUT_END2
 void RXRoxane::get_probcut_end2_data(const std::string& file_name) {
     
-    pthread_mutex_lock(&mutex);
-   
+    std::lock_guard<std::mutex> lock(mutex);
     engine[SHARED]->probcut_end2_data(file_name, hTable, main_PV);
     
-    pthread_mutex_unlock(&mutex);
 
 }
 #endif

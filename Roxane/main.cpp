@@ -19,7 +19,6 @@
 #include <string>
 #include <sstream>
 #include <locale>
-#include <pthread.h>
 
 #include "ODKStream.hpp"
 #include "IOStdProtocol.hpp"
@@ -87,7 +86,7 @@ int main (int argc, char * const argv[]) {
 		}
 	}
 
-    std::string version = "build-2026-07-06 09h50";
+    std::string version = "dev-2026-07-17 08h30";
     std::string vers_eval = RXEvaluation::get_version();
 
 	std::cout << "Version Melody " << version << std::endl;

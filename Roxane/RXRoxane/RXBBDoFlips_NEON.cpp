@@ -94,7 +94,7 @@ alignas(16) const uint64x2_t MASK_LR_v4[64][4] = {
 
 
 
-unsigned long long do_flip_NEON(const NeonBoardCtx *ctx, int pos)
+unsigned long long flips_NEON(const NeonBoardCtx *ctx, int pos)
 {
     uint64x2_t flip, oflank0, oflank1;
     
@@ -139,8 +139,8 @@ unsigned long long RXBitBoard::do_flips_NEON(const int pos1, const int pos2, con
     NeonBoardCtx ctx(P, O);
     
     // Pipeline calculations, reusing hot registers
-    res2 = do_flip_NEON(&ctx, pos2);
-    return do_flip_NEON(&ctx, pos1);
+    res2 = flips_NEON(&ctx, pos2);
+    return flips_NEON(&ctx, pos1);
 }
 
 unsigned long long RXBitBoard::do_flips_NEON(const int pos, const unsigned long long P, const unsigned long long O) {
@@ -148,7 +148,7 @@ unsigned long long RXBitBoard::do_flips_NEON(const int pos, const unsigned long 
     //Prepare the context for the position
     NeonBoardCtx ctx(P, O);
     
-    return do_flip_NEON(&ctx, pos);
+    return flips_NEON(&ctx, pos);
 }
 
 void RXBitBoard::generate_flips_NEON(const int pos, RXMove& move) const {

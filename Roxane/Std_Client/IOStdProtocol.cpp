@@ -27,8 +27,6 @@
  */
 // Initialise le moteur et le mutex pour la synchronisation
 IOStdProtocol::IOStdProtocol(RXRoxane* e) : engine(e) {
-    // Initialisation du mutex (important en C++ pour l'objet StdInput)
-    pthread_mutex_init(&IOSync, nullptr);
 }
 
 /*
@@ -182,14 +180,8 @@ void IOStdProtocol::SyntaxError(const std::vector<std::string>& args)
  */
 // Conservation de la méthode Print inchangée
 void IOStdProtocol::Print(const std::string msg) const {
-    pthread_mutex_lock(&IOSync);
+    std::lock_guard<std::mutex> lock(IOSync);
 	std::cout << msg << std::endl;
-    pthread_mutex_unlock(&IOSync);
 }
 
-// Assurez-vous d'ajouter le destructeur pour libérer le mutex
-
-IOStdProtocol::~IOStdProtocol() {
-    pthread_mutex_destroy(&IOSync);
-}
 

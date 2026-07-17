@@ -43,7 +43,7 @@ struct NeonBoardCtx {
 };
 
 // forward declaration - définie dans RXBBDoFlips_NEON.cpp
-unsigned long long do_flip_NEON(const NeonBoardCtx *ctx, int pos);
+unsigned long long flips_NEON(const NeonBoardCtx *ctx, int pos);
 
 inline unsigned int RXBitBoard::count_stable_edge(const unsigned long long P, const unsigned long long O) {
     return __builtin_popcountll(RXBitBoard::get_stable_edge(P, O));

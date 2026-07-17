@@ -20,6 +20,10 @@
 
 #include <string>
 #include <atomic>
+#include <mutex>
+#include <thread>
+#include <system_error>       // std::system_error (pour les try/catch autour de std::thread)
+
 
 #include "OsObjects.hpp"
 #include "ODKStream.hpp"
@@ -48,9 +52,9 @@ class RXRoxane: public Runnable {
 	RXEngine* engine[2]; //BLACK and WHITE
 	RXSearch search;
 
-	pthread_t process[1];
+	std::thread process;
 	
-	pthread_mutex_t mutex;
+	std::mutex mutex;
 	
     std::atomic_bool resume_flag;
     

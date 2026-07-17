@@ -27,6 +27,11 @@
 #include <atomic>
 #include <cmath>
 #include <cassert>
+#include <mutex>
+#include <condition_variable>
+#include <thread>
+#include <system_error>       // std::system_error (pour les try/catch autour de std::thread)
+
 
 #include "RXBBPatterns.hpp"
 #include "RXBitBoard.hpp"
@@ -52,12 +57,6 @@ private:
 };
 
 
-
-extern "C"
-void* init_threadHelper(void* pt);
-
-extern "C"
-void* init_pthreadMain(void* pt);
 
 class RXRoxane;
 
@@ -95,12 +94,11 @@ public:
     bool pv;
     int pvDev;
     int depth;
-    int depth_reduction;
     int selectivity;
     int alpha, beta, bestscore, bestmove;
     
     
-    mutable pthread_mutex_t lock;
+    mutable std::mutex lock;
     
     
     unsigned int master;
@@ -114,21 +112,19 @@ public:
     list(nullptr) {
         n_Slaves = 0;
         explored = false;
-        pthread_mutex_init(&lock, nullptr);
     }
     
     // Copy constructor — called once at init by std::vector(count, value), never at runtime
     RXSplitPoint(const RXSplitPoint& o) :
         parent(o.parent), sBoard(o.sBoard), sBoardStack(o.sBoardStack),
         list(o.list), CBSearch(o.CBSearch),
-        pv(o.pv), pvDev(o.pvDev), depth(o.depth), depth_reduction(o.depth_reduction), selectivity(o.selectivity),
+        pv(o.pv), pvDev(o.pvDev), depth(o.depth), selectivity(o.selectivity),
         alpha(o.alpha), beta(o.beta), bestscore(o.bestscore), bestmove(o.bestmove),
         master(o.master), n_Slaves(o.n_Slaves.load()),
         slaves(o.slaves), explored(o.explored.load())
     {
-        // Le mutex est réinitialisé plutôt que copié — ce qui est correct,
-        // car copier un mutex en pleine utilisation serait dangereux.
-        pthread_mutex_init(&lock, nullptr);
+        // lock est reconstruit par défaut plutôt que copié — correct,
+        // std::mutex n'est de toute façon pas copiable
     }
     
     // Move constructor
@@ -137,24 +133,19 @@ public:
     RXSplitPoint(RXSplitPoint&& o) noexcept :
         parent(o.parent), sBoard(o.sBoard), sBoardStack(std::move(o.sBoardStack)),
         list(o.list), CBSearch(o.CBSearch),
-        pv(o.pv), pvDev(o.pvDev), depth(o.depth), depth_reduction(o.depth_reduction), selectivity(o.selectivity),
+        pv(o.pv), pvDev(o.pvDev), depth(o.depth), selectivity(o.selectivity),
         alpha(o.alpha), beta(o.beta), bestscore(o.bestscore), bestmove(o.bestmove),
         master(o.master), n_Slaves(o.n_Slaves.load()),
         slaves(std::move(o.slaves)), explored(o.explored.load())
     {
-        // Pour le mutex, il transfère la valeur de o.lock puis réinitialise celui de o
-        // geste défensif pour laisser o dans un état valide
-        lock = o.lock;
-        pthread_mutex_init(&o.lock, nullptr);
+        // std::mutex n'est pas déplaçable non plus : lock reste simplement
+        // un mutex neuf construit par défaut, comme dans le copy constructor.
     }
 
     // Required by std::vector<RXSplitPoint>, never called at runtime
     RXSplitPoint& operator=(const RXSplitPoint&) = delete;
     
-    ~RXSplitPoint() {
-        pthread_mutex_destroy(&lock);
-    }
-    
+    ~RXSplitPoint() = default;
     
 };
 
@@ -186,8 +177,8 @@ public:
     RXMove _move[61][34];
     
     
-    pthread_mutex_t lock;
-    pthread_cond_t  cond;
+    std::mutex lock;
+    std::condition_variable  cond;
     
     
     std::atomic<thread_state> state{UNINITIALISED};
@@ -195,10 +186,7 @@ public:
     //le parametre maxThread est utile pour splitPointStack
     RXThread(int maxThreads, int maxActiveSplitPoint = 8) : splitPoint(nullptr), activeSplitPoints(0),
     splitPointStack(maxActiveSplitPoint, RXSplitPoint(maxThreads)) {
-        
-        pthread_mutex_init(&lock, nullptr);
-        pthread_cond_init(&cond, nullptr);
-        
+                
     }
     
     // Non copiable - utiliser emplace_back pour construire en place
@@ -213,19 +201,9 @@ public:
         state(o.state.load())
     {
         std::memcpy(_move, o._move, sizeof(_move));
-        // Récupère les mutex/cond de l'objet source
-        lock = o.lock;
-        cond = o.cond;
-        // Invalide la source pour éviter double destroy
-        pthread_mutex_init(&o.lock, nullptr);
-        pthread_cond_init(&o.cond, nullptr);
     }
     
-    ~RXThread() {
-        pthread_cond_destroy(&cond);
-        pthread_mutex_destroy(&lock);
-        
-    }
+    ~RXThread() = default;
     
     
 };
@@ -311,9 +289,8 @@ class RXEngine: public Runnable {
     
     RXRoxane* manager;
     
-    pthread_t pthreadMain[1];
-    pthread_mutex_t mutex;
-    
+    std::thread threadMain;
+    std::recursive_mutex mutex;   // recursive: stop() peut être appelée depuis get_move() qui détient déjà ce lock
     std::atomic_bool resume_flag;
     
     bool use_pv_ext;
@@ -448,7 +425,7 @@ private:
     
     std::atomic<unsigned int> activeThreads;
     
-    pthread_mutex_t MP_sync;
+    std::mutex MP_sync;
     
     std::atomic_bool abort;
     
@@ -462,7 +439,7 @@ private:
     inline bool thread_should_stop(unsigned int threadID);
     
     bool split(RXBBPatterns& sBoard, bool pv, int pvDev,
-               int depth, int depth_reduction, int selectivity, int alpha, int beta, int& bestscore, unsigned int& bestmove,
+               int depth, int selectivity, int alpha, int beta, int& bestscore, unsigned int& bestmove,
                RXMove* list, unsigned int master, RXSplitPoint::t_callBackSearch callback);
    
     // Table de lookup statique (partagée par toutes les instances)

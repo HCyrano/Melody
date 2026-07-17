@@ -33,8 +33,6 @@ class RXMove {
     unsigned long long square;
     unsigned long long flipped;
     int score;
-    char selectivity;
-    char depth;
     
     RXMove* next;
     
@@ -100,7 +98,6 @@ inline void RXMove::sort_bestmove(unsigned int bestmove) {
 }
 
 // from smallest to biggest
-__attribute__((always_inline))
 inline void RXMove::sort_by_score() {
 	RXMove *best, *previousBest, *previous;
 	

@@ -115,8 +115,8 @@ void RXEngine::iterative_deepening(RXBBPatterns& sBoard, RXMove* list, int selec
         
         best_answer.position = list->next->position;
         best_answer.score = list->next->score;
-        best_answer.depth = list->next->depth;
-        best_answer.selectivity = CONFIDENCE[list->next->selectivity];
+        best_answer.depth = depth;
+        best_answer.selectivity = CONFIDENCE[selectivity];
         
         best_answer.nodes += sBoard.board.n_nodes;
         
@@ -250,7 +250,7 @@ void RXEngine::MG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
             // Split?
             if(activeThreads > 1 && iter->next != nullptr && depth>(MIN_DEPTH_SPLITPOINT+3) && !abort.load()
                && !thread_should_stop(0) && idle_thread_exists(0)
-               && split(sBoard, true, 0, depth, LMR_NO_REDUCTION, selectivity, lower, upper, bestscore, bestmove, iter, 0, RXSplitPoint::MID_ROOT)) {
+               && split(sBoard, true, 0, depth, selectivity, lower, upper, bestscore, bestmove, iter, 0, RXSplitPoint::MID_ROOT)) {
                 
                 break;
             }
@@ -317,7 +317,6 @@ void RXEngine::MG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
         //move to front bestmove
         list->sort_bestmove(bestmove);
         list->next->score = bestscore;
-        list->next->depth = depth;
         
         
         hTable->update(sBoard.board.hashcode(), sBoard.board, type_hashtable, selectivity, depth, alpha, upper, bestscore, bestmove);
@@ -340,18 +339,14 @@ void RXEngine::MG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
     //here sp->beta is const
     while(sp->alpha < sp->beta && !abort.load() && !thread_should_stop(threadID)) {
         
-        pthread_mutex_lock(&(sp->lock));
-        
-        if(sp->list == nullptr) {
-            pthread_mutex_unlock(&(sp->lock));
-            break;
+        RXMove* move = nullptr;
+        {
+            std::lock_guard<std::mutex> lk(sp->lock);
+            if (sp->list->next == nullptr) break;  // unlock auto via destructeur, même sur le break
+            move = sp->list->next;
+            sp->list = move;
         }
-        
-        RXMove* move = sp->list;
-        sp->list = move->next;
-        
-        pthread_mutex_unlock(&(sp->lock));
-        
+
         const int alpha = sp->alpha; //local copy
         int depth = sp->depth;
         
@@ -389,8 +384,8 @@ void RXEngine::MG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
         if(score > sp->bestscore) {
             
             //update
-            pthread_mutex_lock(&(sp->lock));
-            
+            std::lock_guard<std::mutex> lk(sp->lock);
+
             if(sp->explored == false) {
                 
                 // New best move?
@@ -413,19 +408,19 @@ void RXEngine::MG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
                 }
             }
             
-            pthread_mutex_unlock(&(sp->lock));
+
         }
         
     }
     
-    pthread_mutex_lock(&(sp->lock));
+    std::lock_guard<std::mutex> lk(sp->lock);
+
     
     sp->sBoard->board.n_nodes += board.n_nodes;
     
     sp->slaves[threadID] = false;
     sp->n_Slaves--;
     
-    pthread_mutex_unlock(&(sp->lock));
 }
 
 
@@ -780,7 +775,7 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                     // Split?
                     if(activeThreads > 1 && depth>MIN_DEPTH_SPLITPOINT && !abort.load()
                        && !thread_should_stop(threadID) && idle_thread_exists(threadID)
-                       && split(sBoard, pv, 1, depth, LMR_NO_REDUCTION, selectivity, lower, upper, bestscore, bestmove, list, threadID, RXSplitPoint::MID_PVS)) {
+                       && split(sBoard, pv, 1, depth, selectivity, lower, upper, bestscore, bestmove, list, threadID, RXSplitPoint::MID_PVS)) {
                         
                         break;
                     }
@@ -856,19 +851,14 @@ void RXEngine::MG_SP_search_deep(RXSplitPoint* sp, const unsigned int threadID) 
     //here sp->beta is const
     while(sp->alpha < sp->beta && !abort.load()  && !thread_should_stop(threadID)) {
         
-        pthread_mutex_lock(&(sp->lock));
-        
-        if(sp->list->next == nullptr) {
-            pthread_mutex_unlock(&(sp->lock));
-            break;
+        RXMove* move = nullptr;
+        {
+            std::lock_guard<std::mutex> lk(sp->lock);
+            if (sp->list->next == nullptr) break;  // unlock auto via destructeur, même sur le break
+            move = sp->list->next;
+            sp->list = move;
         }
-        
-        RXMove* move = sp->list->next;
-        sp->list = move;
-        
-        
-        pthread_mutex_unlock(&(sp->lock));
-        
+
         int score;
         const int alpha = sp->alpha; //local copy
         
@@ -897,7 +887,8 @@ void RXEngine::MG_SP_search_deep(RXSplitPoint* sp, const unsigned int threadID) 
         if(score > sp->bestscore) {
             
             //update
-            pthread_mutex_lock(&(sp->lock));
+            std::lock_guard<std::mutex> lk(sp->lock);
+
             
             if(sp->explored == false) {
                 
@@ -916,18 +907,18 @@ void RXEngine::MG_SP_search_deep(RXSplitPoint* sp, const unsigned int threadID) 
                 }
             }
             
-            pthread_mutex_unlock(&(sp->lock));
+
         }
     }
     
-    pthread_mutex_lock(&(sp->lock));
+    std::lock_guard<std::mutex> lk(sp->lock);
+
     
     sp->sBoard->board.n_nodes += board.n_nodes;
     
     sp->slaves[threadID] = false;
     sp->n_Slaves--;
     
-    pthread_mutex_unlock(&(sp->lock));
 }
 
 
@@ -1364,9 +1355,17 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
         int score;
         for(RXMove* iter = list->next; bestscore<=alpha && iter != nullptr; iter = iter->next, list = list->next) {
             
-
+            // Split?
+            if(activeThreads > 1 && (depth-depth_reduction)>MIN_DEPTH_SPLITPOINT && iter->next != nullptr && !abort.load()
+               && !thread_should_stop(threadID && idle_thread_exists(threadID))
+               && split(sBoard, false, pvDev+1, depth, selectivity, alpha, (alpha+1), bestscore, bestmove, list, threadID, RXSplitPoint::MID_XPROBCUT)) {
+                
+                break;
+            }
+            
 #ifdef USE_LMR
             
+            //before pvDev+1
             if(pvDev>1) {
                 ++n_moves;
                 if(n_moves>3 && depth>LMR_MIN_DEPTH) {
@@ -1378,20 +1377,11 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
             }
             
 #endif
-            
-            // Split?
-            if(activeThreads > 1 && (depth-depth_reduction)>MIN_DEPTH_SPLITPOINT && iter->next != nullptr && !abort.load()
-               && !thread_should_stop(threadID && idle_thread_exists(threadID))
-               && split(sBoard, false, pvDev+1, depth, depth_reduction, selectivity, alpha, (alpha+1), bestscore, bestmove, list, threadID, RXSplitPoint::MID_XPROBCUT)) {
-                
-                break;
-            }
-            
-            
+
             sBoard.do_move(*iter);
             score = -MG_NWS_XProbCut(threadID, sBoard, pvDev+1, selectivity, depth-1-depth_reduction, -alpha-1, false);
 #ifdef USE_LMR
-            if(depth_reduction>0 && score>alpha)
+            if(depth_reduction>LMR_NO_REDUCTION && score>alpha)
                 score = -MG_NWS_XProbCut(threadID, sBoard, pvDev+1, selectivity, depth-1, -alpha-1, false);
 #endif
 
@@ -1437,41 +1427,32 @@ void RXEngine::MG_SP_search_XProbcut(RXSplitPoint* sp, const unsigned int thread
     sBoard = *(sp->sBoard);                                 //operator=
     RXBitBoard& board = sBoard.board;
     
-    unsigned int depth_reduction = sp->depth_reduction;
+    unsigned int depth_reduction = LMR_NO_REDUCTION;
 
-    unsigned int n_moves = 0;
+    unsigned int n_moves = 1;
     
     //here sp->alpha is const
     while(sp->bestscore <= sp->alpha && !abort.load()  && !thread_should_stop(threadID)) {
         
-        //verouillage du splitpoint
-        pthread_mutex_lock(&(sp->lock));
-        
-        if(sp->list->next == nullptr) {
-            pthread_mutex_unlock(&(sp->lock));
-            break;
+        RXMove* move = nullptr;
+        {
+            std::lock_guard<std::mutex> lk(sp->lock);
+            if (sp->list->next == nullptr) break;  // unlock auto via destructeur, même sur le break
+            move = sp->list->next;
+            sp->list = move;
         }
-        
-        ++n_moves;
-
-        RXMove* move = sp->list->next;
-        sp->list = move;
-        
-        pthread_mutex_unlock(&(sp->lock));
-        //deverouillage de splitpoint
-
+ 
 #ifdef USE_LMR
+        
+        //after pvDev+1
+
         //LMR
-        if(sp->pvDev > 1) {
-            if(depth_reduction == LMR_NO_REDUCTION) {
-                if(n_moves>3 && sp->depth>LMR_MIN_DEPTH) {
-                    depth_reduction = DEPTH_2;
-                    if(sp->pvDev>2 && n_moves>5 && sp->depth>LMR_DEEP_DEPTH) {
-                        depth_reduction = DEPTH_4;
-                    }
-                }
-            } else if(depth_reduction == 1) {
-                if(sp->pvDev>2 && n_moves>5 && sp->depth>LMR_DEEP_DEPTH) {
+        if(sp->pvDev > 2) {
+            ++n_moves;
+
+            if(n_moves>3 && sp->depth>LMR_MIN_DEPTH) {
+                depth_reduction = DEPTH_2;
+                if(sp->pvDev>3 && n_moves>5 && sp->depth>LMR_DEEP_DEPTH) {
                     depth_reduction = DEPTH_4;
                 }
             }
@@ -1486,7 +1467,7 @@ void RXEngine::MG_SP_search_XProbcut(RXSplitPoint* sp, const unsigned int thread
         // here depth > MIN_DEPTH_SPLITPOINT <=> depth > 7
         int score = -MG_NWS_XProbCut(threadID, sBoard, sp->pvDev, sp->selectivity, sp->depth-1-depth_reduction, -alpha-1, false);
 #ifdef USE_LMR
-        if(depth_reduction > 0 && score>alpha)
+        if(depth_reduction > LMR_NO_REDUCTION && score>alpha)
             score = -MG_NWS_XProbCut(threadID, sBoard, sp->pvDev, sp->selectivity, sp->depth-1, -alpha-1, false);
 #endif
 
@@ -1496,7 +1477,8 @@ void RXEngine::MG_SP_search_XProbcut(RXSplitPoint* sp, const unsigned int thread
         if(score > sp->bestscore) {
             
             //update
-            pthread_mutex_lock(&(sp->lock));
+            std::lock_guard<std::mutex> lk(sp->lock);
+
             if(sp->explored == false) {
                                 
                 // New best move?
@@ -1510,17 +1492,15 @@ void RXEngine::MG_SP_search_XProbcut(RXSplitPoint* sp, const unsigned int thread
             }
             
             
-            pthread_mutex_unlock(&(sp->lock));
         }
     }
     
-    pthread_mutex_lock(&(sp->lock));
-    
+    std::lock_guard<std::mutex> lk(sp->lock);
+
     sp->sBoard->board.n_nodes += board.n_nodes;
     
     sp->slaves[threadID] = false;
     sp->n_Slaves--;
     
-    pthread_mutex_unlock(&(sp->lock));
 }
 

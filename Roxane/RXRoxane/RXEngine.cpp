@@ -44,40 +44,25 @@ const int RXEngine::DEPTH_BOOSTER = DEPTH_4;
 const unsigned int RXEngine::LMR_NO_REDUCTION = 0;
 
 
-extern "C"
-void* init_threadHelper(void* pt) {
-    RXEngine::ThreadLaunchArgs* args = (RXEngine::ThreadLaunchArgs*)(pt);
+static void init_threadHelper(RXEngine::ThreadLaunchArgs* args) {
     RXEngine*    engine   = args->engine;
     unsigned int threadID = args->threadID;
     delete args;  // libère la mémoire allouée dans init_threads
     engine->idle_loop(threadID, nullptr);
-    return nullptr;
 }
 
-extern "C"
-void* init_pthreadMain(void* pt)  {
-    
-    RXEngine* engine = (RXEngine*)(pt);
-    
+static void init_threadMain(RXEngine* engine) {
     engine->run();
-    
-    return nullptr;
-    
 }
-
 
 RXEngine::RXEngine(RXRoxane* _manager, std::string filename, int maxThread):
 manager(_manager), THREAD_MAX(maxThread),
 select_search(0), allThreadsShouldExit(false), allThreadsShouldSleep(true) {
     
-    // Construction en place pour éviter toute copie (pthread_mutex_t non copiable)
     threads.reserve(maxThread);
     for(int i = 0; i < maxThread; i++)
         threads.emplace_back(maxThread, ACTIVE_SPLITPOINT_MAX);
-    
-    pthread_mutex_init(&MP_sync, nullptr);
-    pthread_mutex_init(&mutex, nullptr);
-    
+        
     init_threads();
     
     hTable_shallow = new RXHashShallow(19);
@@ -108,10 +93,7 @@ RXEngine::~RXEngine() {
     delete hTable_shallow;
     
     stop_threads();
-    
-    pthread_mutex_destroy(&mutex);
-    pthread_mutex_destroy(&MP_sync);
-    
+        
 }
 
 
@@ -1180,14 +1162,14 @@ std::string RXEngine::display(RXBitBoard& board, const int type, const int allow
 void RXEngine::stop(std::string msg) {
     
     abort.store(true);
-    
-    
-    //wait end main thread
-    if(pthreadMain[0] != nullptr) {
-        pthread_join(pthreadMain[0], nullptr);
-        pthreadMain[0] = nullptr;
+
+    {
+        std::lock_guard<std::recursive_mutex> lock(mutex);
+        if (threadMain.joinable()) {
+            threadMain.join();
+        }
     }
-    
+
     hash_code_search = 0;
         
 }
@@ -1209,7 +1191,8 @@ void RXEngine::resume() {
 /* synchronized method */
 void RXEngine::get_move(RXSearch& s) {
     
-    pthread_mutex_lock(&mutex);
+
+    std::lock_guard<std::recursive_mutex> lock(mutex);
     
     resume_flag.store(false);
     
@@ -1283,22 +1266,19 @@ void RXEngine::get_move(RXSearch& s) {
         
         hTable_PV = main_PV;
         
-        pthread_attr_t attr;
-        pthread_attr_init(&attr);
-        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-        
-        if(!resume_flag.load() && pthread_create(pthreadMain, &attr, init_pthreadMain, (void*)(this)) != 0)
-            std::cout << "Echec: Thread main engine" << std::endl;
-        
-        pthread_attr_destroy(&attr);
-        
+        if (!resume_flag.load()) {
+            try {
+                threadMain = std::thread(init_threadMain, this);
+            } catch (const std::system_error&) {
+                std::cout << "Echec: Thread main engine" << std::endl;
+            }
+        }
     }
     
     
     //wait end search
-    if(pthreadMain[0] != nullptr) {
-        pthread_join(pthreadMain[0], nullptr);
-        pthreadMain[0] = nullptr;
+    if (threadMain.joinable()) {
+        threadMain.join();
     }
     
     //affectation answer
@@ -1420,15 +1400,13 @@ void RXEngine::get_move(RXSearch& s) {
         
         time_start = get_system_time();
         
-        pthread_attr_t attr;
-        pthread_attr_init(&attr);
-        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
-        
-        if(!resume_flag.load() && pthread_create(pthreadMain, &attr, init_pthreadMain, (void*)(this)) != 0)
-            std::cout << "Echec: Thread main engine" << std::endl;
-        
-        pthread_attr_destroy(&attr);
-        
+        if (!resume_flag.load()) {
+            try {
+                threadMain = std::thread(init_threadMain, this);
+            } catch (const std::system_error&) {
+                std::cout << "Echec: Thread main engine" << std::endl;
+            }
+        }
         
         
         if(s.bestMove.position == PASS) {
@@ -1441,7 +1419,6 @@ void RXEngine::get_move(RXSearch& s) {
     
     //***********************************************************************************************
     
-    pthread_mutex_unlock(&mutex);
 }
 
 
@@ -1867,43 +1844,33 @@ void RXEngine::writeLog(std::string s) {
 // objects.
 
 void RXEngine::init_threads() {
-        
-    pthread_t pthread[1]; //pointeur
-    
-    
-    for(unsigned int i = 0; i < THREAD_MAX; i++) {
-        
+
+    for (unsigned int i = 0; i < THREAD_MAX; i++) {
         threads[i].activeSplitPoints = 0;
         threads[i].state = RXThread::INITIALIZING;
-        
     }
-    
+
     threads[0].state = RXThread::SEARCHING;
-    
+
     // Launch the helper threads:
-    // RXEngine idThread est passé en paramettre avec (void*)(this)
-    for(unsigned int i = 1; i < THREAD_MAX; i++) {
-        
+    for (unsigned int i = 1; i < THREAD_MAX; i++) {
+
         ThreadLaunchArgs* args = new ThreadLaunchArgs{this, i};
-        
-        pthread_attr_t attr;
-        pthread_attr_init(&attr);
-        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-        
-        if(pthread_create(pthread, &attr, init_threadHelper, (void*)(args)) != 0) {
+
+        try {
+            std::thread t(init_threadHelper, args);
+            t.detach();
+        } catch (const std::system_error&) {
             std::cout << "Echec: Thread helper engine" << std::endl;
             delete args;
         }
-        
-        pthread_attr_destroy(&attr);
-        
+
         // le thread lit son threadID depuis args avant de le delete,
         // puis passe à AVAILABLE — on attend ça :
-        while(threads[i].state == RXThread::INITIALIZING)
+        while (threads[i].state == RXThread::INITIALIZING)
             ;
     }
 }
-
 
 // stop_threads() is called when the program exits.  It makes all the
 // helper threads exit cleanly.
@@ -1946,14 +1913,13 @@ void* RXEngine::idle_loop(unsigned int threadID, RXSplitPoint* waitSp) {
                || threads[threadID].state == RXThread::AVAILABLE ) {
             
             
-            pthread_mutex_lock(&(threads[threadID].lock));
-            
+            std::unique_lock<std::mutex> lk(threads[threadID].lock);   // unique_lock here, because cond.wait(lk)
+
             if(threads[threadID].state == RXThread::INITIALIZING)
                 threads[threadID].state = RXThread::AVAILABLE;
             
             
             if (allThreadsShouldExit || (waitSp && waitSp->n_Slaves == 0)) {
-                pthread_mutex_unlock(&(threads[threadID].lock));
                 break;
             }
             
@@ -1961,23 +1927,24 @@ void* RXEngine::idle_loop(unsigned int threadID, RXSplitPoint* waitSp) {
                || threadID >= activeThreads
                || threads[threadID].state == RXThread::AVAILABLE) {
                 
-                pthread_cond_wait(&(threads[threadID].cond), &(threads[threadID].lock));
+                threads[threadID].cond.wait(lk);    // réutilise le même lock,
+                                                    // le déverrouille pendant l'attente,
+                                                    // le reverrouille au réveil
             }
-            
-            pthread_mutex_unlock(&(threads[threadID].lock));
+
         }
         
         
         
         if(threads[threadID].state == RXThread::WORKISWAITING) {
             
-            pthread_mutex_lock(&(threads[threadID].lock));
-            
-            threads[threadID].state = RXThread::SEARCHING;
-            RXSplitPoint* splitPoint = threads[threadID].splitPoint;
-            
-            pthread_mutex_unlock(&(threads[threadID].lock));
-            
+            RXSplitPoint* splitPoint;   // déclaration hors scope
+            {
+                std::lock_guard<std::mutex> lk(threads[threadID].lock);
+                threads[threadID].state = RXThread::SEARCHING;
+                splitPoint = threads[threadID].splitPoint;   // assignation, pas de redéclaration
+            }
+
             
             //functions callback
             switch (splitPoint->CBSearch) {
@@ -2008,18 +1975,18 @@ void* RXEngine::idle_loop(unsigned int threadID, RXSplitPoint* waitSp) {
                                         
             }
             
-            pthread_mutex_lock(&(threads[threadID].lock));
-            threads[threadID].state = RXThread::AVAILABLE;
-            pthread_mutex_unlock(&(threads[threadID].lock));
+            {
+                std::lock_guard<std::mutex> lk(threads[threadID].lock);
+                threads[threadID].state = RXThread::AVAILABLE;
+            }
             
             // je dois proteger l'acces
-            pthread_mutex_lock(&threads[splitPoint->master].lock);
-            if (threadID != splitPoint->master && threads[splitPoint->master].state == RXThread::AVAILABLE) {
-                pthread_cond_signal(&(threads[splitPoint->master].cond));
-                //wake_sleeping_thread(splitPoint->master);
+            {
+                std::lock_guard<std::mutex> lk(threads[splitPoint->master].lock);
+                if (threadID != splitPoint->master && threads[splitPoint->master].state == RXThread::AVAILABLE) {
+                    threads[splitPoint->master].cond.notify_one();
+                }
             }
-            pthread_mutex_unlock(&threads[splitPoint->master].lock);
-            
             
         }
         
@@ -2030,14 +1997,12 @@ void* RXEngine::idle_loop(unsigned int threadID, RXSplitPoint* waitSp) {
                 
         //n_Slaves without mutex
         if (waitSp && waitSp->n_Slaves == 0) {
-            
-            pthread_mutex_lock(&(waitSp->lock));
-            threads[threadID].state = RXThread::SEARCHING;
-            pthread_mutex_unlock(&(waitSp->lock));
-            
+            {
+                std::lock_guard<std::mutex> lk(waitSp->lock);
+                threads[threadID].state = RXThread::SEARCHING;
+            }
             break;
         }
-        
         
     }
     
@@ -2051,25 +2016,12 @@ void RXEngine::wake_sleeping_threads() {
     
     allThreadsShouldSleep = false;
     
-    for (unsigned int i = 0; i<activeThreads; i++) {
-        pthread_mutex_lock(&(threads[i].lock));
-        pthread_cond_signal(&(threads[i].cond));
-        
-        //       wake_sleeping_thread(i);
-        pthread_mutex_unlock(&(threads[i].lock));
+    for (unsigned int i = 0; i < activeThreads; i++) {
+        std::lock_guard<std::mutex> lk(threads[i].lock);
+        threads[i].cond.notify_one();
     }
 }
 
-
-//void RXEngine::wake_sleeping_thread(unsigned int threadID) {
-//
-//
-//    assert(allThreadsShouldSleep == false);
-//
-//    pthread_cond_signal(&(threads[threadID].cond));
-//
-//
-//}
 
 
 // thread_is_available() checks whether the thread with threadID "slave" is
@@ -2154,48 +2106,45 @@ bool RXEngine::thread_is_available(unsigned int slave, unsigned int master) {
 
 
 bool RXEngine::split(RXBBPatterns& sBoard, bool pv, int pvDev,
-                     int depth, int depth_reduction, int selectivity, int alpha, int beta, int& bestscore, unsigned int& bestmove,
+                     int depth, int selectivity, int alpha, int beta, int& bestscore, unsigned int& bestmove,
                      RXMove* list, unsigned int master, RXSplitPoint::t_callBackSearch callback) {
     
     
     
-    pthread_mutex_lock(&MP_sync);
-    
-    if (threads[master].activeSplitPoints >= ACTIVE_SPLITPOINT_MAX) {
-        pthread_mutex_unlock(&MP_sync);
-        return false;
+    RXSplitPoint* splitPointPtr = nullptr;
+    {
+        std::lock_guard<std::mutex> lk_sync(MP_sync);
+        
+        if (threads[master].activeSplitPoints >= ACTIVE_SPLITPOINT_MAX) {
+            return false;  // lk_sync se détruit ici, unlock automatique même sur ce chemin
+        }
+        
+        splitPointPtr = &threads[master].splitPointStack[threads[master].activeSplitPoints];
+        splitPointPtr->n_Slaves = 1;
     }
-    
-    // Pick the next available split point object from the split point stack:
-    RXSplitPoint& splitPoint = threads[master].splitPointStack[threads[master].activeSplitPoints];
-    splitPoint.n_Slaves = 1;
-    
-    
-    pthread_mutex_unlock(&MP_sync);
-    
+    RXSplitPoint& splitPoint = *splitPointPtr;
+
     // add thread
     for(unsigned int i = 0; i < activeThreads && splitPoint.n_Slaves <= THREAD_PER_SPLITPOINT_MAX ; i++) {
         
         //first without mutex
         if(i != master && threads[i].state == RXThread::AVAILABLE) {
             
-            pthread_mutex_lock(&MP_sync);
-            
+            std::lock_guard<std::mutex> lk_sync(MP_sync);
+
             //second control with mutex
             if(thread_is_available(i, master)) {
                 
-                
-                pthread_mutex_lock(&(threads[i].lock));
-                
-                threads[i].state = RXThread::RESERVED;
-                
-                pthread_mutex_unlock(&(threads[i].lock));
+                {
+                    std::lock_guard<std::mutex> lk_thread(threads[i].lock);
+                    threads[i].state = RXThread::RESERVED;
+                }
                 
                 splitPoint.slaves[i] = true;
                 splitPoint.n_Slaves++;
             }
             
-            pthread_mutex_unlock(&MP_sync);
+
         }
         
     }
@@ -2205,14 +2154,16 @@ bool RXEngine::split(RXBBPatterns& sBoard, bool pv, int pvDev,
         return false;
     }
     
-    pthread_mutex_lock(&MP_sync);
+    {
+        std::lock_guard<std::mutex> lk_sync(MP_sync);
+        
+        threads[master].activeSplitPoints++;
+        splitPoint.parent = threads[master].splitPoint;
+        
+        splitPoint.explored = false;
+    }
     
-    threads[master].activeSplitPoints++;
-    splitPoint.parent = threads[master].splitPoint;
-    
-    splitPoint.explored = false;
-    
-    pthread_mutex_unlock(&MP_sync);
+
     
     
     // without synchronisation
@@ -2227,7 +2178,6 @@ bool RXEngine::split(RXBBPatterns& sBoard, bool pv, int pvDev,
     splitPoint.list = list;
     
     splitPoint.depth = depth;
-    splitPoint.depth_reduction = depth_reduction;
 
     splitPoint.pv = pv;
     splitPoint.pvDev = pvDev;
@@ -2249,17 +2199,15 @@ bool RXEngine::split(RXBBPatterns& sBoard, bool pv, int pvDev,
     for(unsigned int i = 0; i < activeThreads; i++)
         if(i == master || splitPoint.slaves[i]) {
             
-            pthread_mutex_lock(&threads[i].lock);
-            
+            std::lock_guard<std::mutex> lk(threads[i].lock);
+
             threads[i].splitPoint = &splitPoint;
             threads[i].state = RXThread::WORKISWAITING;
-            
+
             if (i != master) {
-                pthread_cond_signal(&(threads[i].cond));
-                //wake_sleeping_thread(i);
+                threads[i].cond.notify_one();
             }
-            pthread_mutex_unlock(&threads[i].lock);
-            
+
         }
     
     
@@ -2281,13 +2229,10 @@ bool RXEngine::split(RXBBPatterns& sBoard, bool pv, int pvDev,
     bestmove = splitPoint.bestmove;
     
     
-    pthread_mutex_lock(&MP_sync);
-    
+    std::lock_guard<std::mutex> lk_sync(MP_sync);
+
     threads[master].splitPoint = splitPoint.parent;
     threads[master].activeSplitPoints--;
-    
-    pthread_mutex_unlock(&MP_sync);
-    
     
     return true;
 }

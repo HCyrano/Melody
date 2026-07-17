@@ -83,8 +83,9 @@
 		3723270A2D1FF69D002CFAF4 /* RXSearch.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXSearch.cpp; sourceTree = "<group>"; };
 		3723270C2D1FF69D002CFAF4 /* RXTools.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXTools.hpp; sourceTree = "<group>"; };
 		3723270E2D1FF69D002CFAF4 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		373E02FF30077402001D7599 /* Melody */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Melody; sourceTree = BUILT_PRODUCTS_DIR; };
+		373E030030077979001D7599 /* Melody.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = Melody.profdata; sourceTree = "<group>"; };
 		374071FF2FAB48640095268D /* RXBBDoFlips_NEON.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBDoFlips_NEON.cpp; sourceTree = "<group>"; };
-		375698342F854075002D5B9D /* Melody.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = Melody.profdata; sourceTree = "<group>"; };
 		3771E9022EE9629900D78E2D /* IOStdProtocol.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOStdProtocol.hpp; sourceTree = "<group>"; };
 		3771E9032EE9629900D78E2D /* IOStdProtocol.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOStdProtocol.cpp; sourceTree = "<group>"; };
 		3771E9042EE9629900D78E2D /* StdInput.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = StdInput.hpp; sourceTree = "<group>"; };
@@ -92,7 +93,6 @@
 		3776E2C62E69880500FCE429 /* RXEngine.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXEngine.hpp; sourceTree = "<group>"; };
 		37A656D22F3F24E4009E0822 /* RXBitBoard_NEON.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXBitBoard_NEON.hpp; sourceTree = "<group>"; };
 		37A656D32F3F26CD009E0822 /* RXBitBoard_x86.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXBitBoard_x86.hpp; sourceTree = "<group>"; };
-		37A671752EE6E80200476E87 /* Melody */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Melody; sourceTree = BUILT_PRODUCTS_DIR; };
 		37BF368C2E268CDC0029C7F6 /* RXSetting.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXSetting.hpp; sourceTree = "<group>"; };
 		37DCA1662FAB8B6600AC3503 /* RXBBCountFlips_AVX2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBCountFlips_AVX2.cpp; sourceTree = "<group>"; };
 		37DCA1682FAB9BA900AC3503 /* RXBBDoFlips_AVX2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBDoFlips_AVX2.cpp; sourceTree = "<group>"; };
@@ -123,7 +123,7 @@
 		371D4D612D1EBFBA0072E829 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				37A671752EE6E80200476E87 /* Melody */,
+				373E02FF30077402001D7599 /* Melody */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -201,7 +201,7 @@
 		37C2DE1F2D1F0B4100B93DBD /* OptimizationProfiles */ = {
 			isa = PBXGroup;
 			children = (
-				375698342F854075002D5B9D /* Melody.profdata */,
+				373E030030077979001D7599 /* Melody.profdata */,
 			);
 			path = OptimizationProfiles;
 			sourceTree = "<group>";
@@ -232,7 +232,7 @@
 			);
 			name = Melody;
 			productName = Roxane;
-			productReference = 37A671752EE6E80200476E87 /* Melody */;
+			productReference = 373E02FF30077402001D7599 /* Melody */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -505,6 +505,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu23;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
@@ -541,6 +542,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu23;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_OPTIMIZATION_LEVEL = s;
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = NDEBUG;
 				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;

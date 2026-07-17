@@ -23,7 +23,7 @@
 #include <string>
 #include <atomic>
 #include <vector>
-#include <pthread.h>
+#include <mutex>
 
 class RXRoxane;
 
@@ -39,13 +39,12 @@ class IOStdProtocol {
 	void SyntaxError(const std::vector<std::string>& args);
 	
 	//synchro std::cout
-	mutable pthread_mutex_t IOSync;
+	mutable  std::mutex IOSync;
 
 public:
 	
 	// Le constructeur devra initialiser IOSync, si ce n'est pas déjà fait dans le .cpp
 	IOStdProtocol(RXRoxane* engine);
-    ~IOStdProtocol();
 	
 	void MainLoop(void);
 	void Print(const std::string msg) const;

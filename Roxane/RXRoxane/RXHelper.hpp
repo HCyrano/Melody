@@ -18,8 +18,6 @@
 #ifndef RXHELPER_HPP
 #define RXHELPER_HPP
 
-#include <pthread.h>
-
 
 // Interface
 class Runnable {
