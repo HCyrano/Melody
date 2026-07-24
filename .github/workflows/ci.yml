@@ -1,4 +1,4 @@
-name: Build Melody (Developer)
+name: Build Melody (Multiplateforme)
 
 on:
   push:

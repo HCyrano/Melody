@@ -19,7 +19,7 @@ struct NeonBoardCtx {
     uint64x2_t PP, rPP, OO, rOO, one;
 
     // Constructeur : initialise tout proprement à la création
-    inline NeonBoardCtx(uint64_t P, uint64_t O) {
+    inline NeonBoardCtx(unsigned long long P, unsigned long long O) {
         PP  = vdupq_n_u64(P);
         OO  = vdupq_n_u64(O);
         one = vdupq_n_u64(1);

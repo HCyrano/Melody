@@ -90,8 +90,8 @@ inline int RXBitBoard::get_stability(const unsigned long long discs_player, cons
 //    
 //    d9 |= 0xFF818181818181FFULL;
     
-    uint64_t rdisc = std::byteswap(filled);
-    uint64_t l8;
+    unsigned long long rdisc = std::byteswap(filled);
+    unsigned long long l8;
     __m128i l01, l79, r79;
     const __m128i kff  = _mm_set1_epi8(-1);
     const __m128i e790 = _mm_set1_epi64x(0xff80808080808080);

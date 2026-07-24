@@ -29,6 +29,7 @@
 #include <string>
 #include <bit>
 #include <array>
+#include <cstdint>
 
 #include "RXTools.hpp"
 #include "RXConstantes.hpp"
@@ -41,7 +42,7 @@
 #include "arm_neon.h"
 #elif ARCH == ARCH_X86_AVX2
 #include <nmmintrin.h>
-#define CRC32C_U64(crc, data)  ((uint32_t)_mm_crc32_u64(crc, data))
+#define CRC32C_U64(crc, data) (static_cast<uint32_t>(_mm_crc32_u64(crc, data)))
 #else
 #error "CRC32C hardware not available - need ARM CRC32 or x86 SSE4.2"
 #endif
@@ -305,8 +306,7 @@ RX_ALWAYS_INLINE unsigned long long RXBitBoard::hashcode(const unsigned long lon
     uint32_t res2 = CRC32C_U64(0,    O);
     res1          = CRC32C_U64(res1, O);
     res2          = CRC32C_U64(res2, P);
-    return ((unsigned long long)res1 << 32) | res2;
-
+    return (static_cast<uint64_t>(res1) << 32) | res2;
 }
 
 
