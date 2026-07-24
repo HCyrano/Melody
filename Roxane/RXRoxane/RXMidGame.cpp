@@ -424,7 +424,7 @@ void RXEngine::MG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
 }
 
 
-int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int selectivity, const int depth, int alpha, const int beta, const bool passed) {
+int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int selectivity, const int depth, const int alpha, const int beta, const bool passed) {
         
     if(depth <= MG_DEEP_TO_SHALLOW)
        return MG_PVS_shallow(threadID, sBoard, pv, depth, alpha, beta, passed);
@@ -525,6 +525,7 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                 if(hTable->get(next_hashcode, next_P, next_O, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth>=etc_depth) {
                     
                     if(-entry.upper >= upper) {
+//                        hTable->update(hash_code, board, type_hashtable, selectivity, depth, alpha, upper, -entry.upper, bestmove);
                         return -entry.upper ;
                     }
                 }
@@ -563,6 +564,7 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                     if(hTable->get(next_hashcode, next_P, next_O, type_hashtable, entry) && entry.selectivity >= selectivity && entry.depth>=etc_depth) {
                         
                         if(-entry.upper >= upper) {
+//                            hTable->update(   hash_code, board, type_hashtable, selectivity, depth, alpha, upper, -entry.upper, pos);
                             return -entry.upper ;
                         }
                         
@@ -636,7 +638,7 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                         
                         int lower_probcut = -MAX_SCORE;
                         int upper_probcut =  MAX_SCORE;
-                        probcut_bounds(board, 3, depth, (4 + depth/4 + depth & 1), 0, lower, upper, lower_probcut, upper_probcut); //selectivity 3 = 91%
+                        probcut_bounds(board, 3, depth, (4 + depth/4 + (depth & 1)), 0, lower, upper, lower_probcut, upper_probcut); //selectivity 3 = 91%
                         
  
                         if(lower_probcut<= sBoard.get_score<WITHOUT_FM>()) { // && eval_position<=(beta+upper_probcut*4)) { //alpha 95% / beta 99%
@@ -922,11 +924,15 @@ void RXEngine::MG_SP_search_deep(RXSplitPoint* sp, const unsigned int threadID) 
 }
 
 
-int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int depth, int alpha, const int beta, const bool passed) {
+int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int depth, const int alpha, const int beta, const bool passed) {
 
     
     RXBitBoard& board = sBoard.board;
     int bestscore = UNDEF_SCORE;
+    
+    int upper = beta;
+    int lower = alpha;
+
     
     if(depth == DEPTH_0) {
                 
@@ -956,11 +962,11 @@ int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, 
                     if (score>bestscore) {
                         bestscore = score;
                         if (bestscore>alpha)
-                            alpha = bestscore;
+                            lower = bestscore;
                     }
                 }
                                 
-            } while (alpha < beta && legal_movesBB);
+            } while (lower < upper && legal_movesBB);
 
         } else {
             
@@ -968,9 +974,7 @@ int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, 
                 return sBoard.final_score();
             } else {
                 board.do_pass();
-                
                 bestscore = -sBoard.get_score(); //-MG_PVS_shallow(threadID, sBoard, pv, depth-1, -beta, -alpha, true);
-                
                 board.do_pass();
             }
             
@@ -995,10 +999,7 @@ int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, 
     const unsigned long long hash_code = board.hashcode();
     
     unsigned int bestmove = NOMOVE;
-    
-    int upper = beta;
-    int lower = alpha;
-        
+            
     RXHashValue entry;
     if(hTable->get(hash_code, board, type_hashtable, entry)) {
         
@@ -1237,6 +1238,7 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
             if(hTable->get(next_hashcode, next_P, next_O, type_hashtable, entry) && entry.selectivity >= selectivity) {
                 
                 if(entry.depth >= etc_depth && -entry.upper > alpha) {
+//                    hTable->update(hash_code, board, type_hashtable, selectivity, depth, alpha, -entry.upper, bestmove);
                     return -entry.upper ;
                 }
                 
@@ -1278,9 +1280,11 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
                       if(hTable->get(next_hashcode, next_P, next_O, type_hashtable, entry)) {
                           
                           if(entry.selectivity >= selectivity) {
-                              if(entry.depth>=etc_depth && -entry.upper > alpha)
+                              if(entry.depth>=etc_depth && -entry.upper > alpha) {
+//                                  hTable->update(hash_code, board, type_hashtable, selectivity, depth, alpha, -entry.upper, pos);
                                   return -entry.upper ;
-                              
+                              }
+
                               if(entry.depth >= etc_depth_probcut && -entry.upper >= upper_probcut) {
                                   return alpha+1;
                               }

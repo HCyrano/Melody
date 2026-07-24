@@ -19,6 +19,16 @@
 #include <string>
 #include <sstream>
 #include <locale>
+#include <algorithm> // Ajouté pour std::max et std::min sous certains compilateurs Windows
+
+// Si on est sous Windows, on inclut Winsock pour le réseau
+#ifdef _WIN32
+    #ifndef _WIN64
+        #error "Ce moteur nécessite une architecture 64 bits !"
+    #endif
+    #include <winsock2.h>
+    #pragma comment(lib, "ws2_32.lib")
+#endif
 
 #include "ODKStream.hpp"
 #include "IOStdProtocol.hpp"
@@ -31,8 +41,9 @@
 #include "RXSetting.hpp"
 
 
-int main (int argc, char * const argv[]) {
-        
+int main (int argc, char * argv[]) {
+
+    
 #if ARCH ==  ARCH_ARM_NEON
     std::cout << "ARM NEON available" << std::endl;
 #else
@@ -86,7 +97,7 @@ int main (int argc, char * const argv[]) {
 		}
 	}
 
-    std::string version = "dev-2026-07-17 08h30";
+    std::string version = "build-2026-07-24 09h30";
     std::string vers_eval = RXEvaluation::get_version();
 
 	std::cout << "Version Melody " << version << std::endl;
@@ -208,6 +219,7 @@ int main (int argc, char * const argv[]) {
 #endif
 #endif
 #endif
+    
     
     return 0;
 }

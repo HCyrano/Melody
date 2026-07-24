@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3715C0F3300E1DCE00643B04 /* sockbuf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3715C0F1300E1DCE00643B04 /* sockbuf.cpp */; };
 		372327102D1FF69D002CFAF4 /* GGSMessage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326DF2D1FF69D002CFAF4 /* GGSMessage.cpp */; };
 		372327112D1FF69D002CFAF4 /* GGSObjects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326E12D1FF69D002CFAF4 /* GGSObjects.cpp */; };
 		372327122D1FF69D002CFAF4 /* ggsstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326E32D1FF69D002CFAF4 /* ggsstream.cpp */; };
 		372327132D1FF69D002CFAF4 /* ODKStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326E52D1FF69D002CFAF4 /* ODKStream.cpp */; };
 		372327142D1FF69D002CFAF4 /* OsMessage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326E72D1FF69D002CFAF4 /* OsMessage.cpp */; };
 		372327152D1FF69D002CFAF4 /* OsObjects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326E92D1FF69D002CFAF4 /* OsObjects.cpp */; };
-		372327162D1FF69D002CFAF4 /* sockbuf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326EB2D1FF69D002CFAF4 /* sockbuf.cpp */; };
 		3723271D2D1FF69D002CFAF4 /* RXBBPatterns.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326F52D1FF69D002CFAF4 /* RXBBPatterns.cpp */; };
 		3723271E2D1FF69D002CFAF4 /* RXBitBoard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326F72D1FF69D002CFAF4 /* RXBitBoard.cpp */; };
 		3723271F2D1FF69D002CFAF4 /* RXEndGame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 372326F92D1FF69D002CFAF4 /* RXEndGame.cpp */; };
@@ -42,6 +42,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3715C0F0300E1DCE00643B04 /* sockbuf.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = sockbuf.hpp; sourceTree = "<group>"; };
+		3715C0F1300E1DCE00643B04 /* sockbuf.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sockbuf.cpp; sourceTree = "<group>"; };
+		3715C0F2300E1DCE00643B04 /* sockcompat.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = sockcompat.hpp; sourceTree = "<group>"; };
 		37187A9C2F8CF2DB00682FAA /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		37187AA02F8CF9D300682FAA /* LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
 		372326DE2D1FF69D002CFAF4 /* GGSMessage.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GGSMessage.hpp; sourceTree = "<group>"; };
@@ -56,8 +59,6 @@
 		372326E72D1FF69D002CFAF4 /* OsMessage.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OsMessage.cpp; sourceTree = "<group>"; };
 		372326E82D1FF69D002CFAF4 /* OsObjects.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = OsObjects.hpp; sourceTree = "<group>"; };
 		372326E92D1FF69D002CFAF4 /* OsObjects.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OsObjects.cpp; sourceTree = "<group>"; };
-		372326EA2D1FF69D002CFAF4 /* sockbuf.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = sockbuf.hpp; sourceTree = "<group>"; };
-		372326EB2D1FF69D002CFAF4 /* sockbuf.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sockbuf.cpp; sourceTree = "<group>"; };
 		372326EF2D1FF69D002CFAF4 /* RXBBCountFlips_NEON.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBCountFlips_NEON.cpp; sourceTree = "<group>"; };
 		372326F42D1FF69D002CFAF4 /* RXBBPatterns.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXBBPatterns.hpp; sourceTree = "<group>"; };
 		372326F52D1FF69D002CFAF4 /* RXBBPatterns.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBPatterns.cpp; sourceTree = "<group>"; };
@@ -83,8 +84,7 @@
 		3723270A2D1FF69D002CFAF4 /* RXSearch.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXSearch.cpp; sourceTree = "<group>"; };
 		3723270C2D1FF69D002CFAF4 /* RXTools.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXTools.hpp; sourceTree = "<group>"; };
 		3723270E2D1FF69D002CFAF4 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		373E02FF30077402001D7599 /* Melody */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Melody; sourceTree = BUILT_PRODUCTS_DIR; };
-		373E030030077979001D7599 /* Melody.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = Melody.profdata; sourceTree = "<group>"; };
+		3734D63B30124B0100FF03AF /* Melody.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = Melody.profdata; sourceTree = "<group>"; };
 		374071FF2FAB48640095268D /* RXBBDoFlips_NEON.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBDoFlips_NEON.cpp; sourceTree = "<group>"; };
 		3771E9022EE9629900D78E2D /* IOStdProtocol.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOStdProtocol.hpp; sourceTree = "<group>"; };
 		3771E9032EE9629900D78E2D /* IOStdProtocol.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOStdProtocol.cpp; sourceTree = "<group>"; };
@@ -96,6 +96,7 @@
 		37BF368C2E268CDC0029C7F6 /* RXSetting.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXSetting.hpp; sourceTree = "<group>"; };
 		37DCA1662FAB8B6600AC3503 /* RXBBCountFlips_AVX2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBCountFlips_AVX2.cpp; sourceTree = "<group>"; };
 		37DCA1682FAB9BA900AC3503 /* RXBBDoFlips_AVX2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBDoFlips_AVX2.cpp; sourceTree = "<group>"; };
+		37DFD6053012528A00BB3690 /* Melody */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Melody; sourceTree = BUILT_PRODUCTS_DIR; };
 		37FF9AF02F952E7E006338A1 /* COMPILATION.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = COMPILATION.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -123,7 +124,7 @@
 		371D4D612D1EBFBA0072E829 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				373E02FF30077402001D7599 /* Melody */,
+				37DFD6053012528A00BB3690 /* Melody */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -139,12 +140,13 @@
 				372326E32D1FF69D002CFAF4 /* ggsstream.cpp */,
 				372326E42D1FF69D002CFAF4 /* ODKStream.hpp */,
 				372326E52D1FF69D002CFAF4 /* ODKStream.cpp */,
+				3715C0F0300E1DCE00643B04 /* sockbuf.hpp */,
+				3715C0F1300E1DCE00643B04 /* sockbuf.cpp */,
+				3715C0F2300E1DCE00643B04 /* sockcompat.hpp */,
 				372326E62D1FF69D002CFAF4 /* OsMessage.hpp */,
 				372326E72D1FF69D002CFAF4 /* OsMessage.cpp */,
 				372326E82D1FF69D002CFAF4 /* OsObjects.hpp */,
 				372326E92D1FF69D002CFAF4 /* OsObjects.cpp */,
-				372326EA2D1FF69D002CFAF4 /* sockbuf.hpp */,
-				372326EB2D1FF69D002CFAF4 /* sockbuf.cpp */,
 			);
 			path = GGS_Client;
 			sourceTree = "<group>";
@@ -201,7 +203,7 @@
 		37C2DE1F2D1F0B4100B93DBD /* OptimizationProfiles */ = {
 			isa = PBXGroup;
 			children = (
-				373E030030077979001D7599 /* Melody.profdata */,
+				3734D63B30124B0100FF03AF /* Melody.profdata */,
 			);
 			path = OptimizationProfiles;
 			sourceTree = "<group>";
@@ -232,7 +234,7 @@
 			);
 			name = Melody;
 			productName = Roxane;
-			productReference = 373E02FF30077402001D7599 /* Melody */;
+			productReference = 37DFD6053012528A00BB3690 /* Melody */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -278,7 +280,6 @@
 				372327132D1FF69D002CFAF4 /* ODKStream.cpp in Sources */,
 				372327142D1FF69D002CFAF4 /* OsMessage.cpp in Sources */,
 				372327152D1FF69D002CFAF4 /* OsObjects.cpp in Sources */,
-				372327162D1FF69D002CFAF4 /* sockbuf.cpp in Sources */,
 				3771E9062EE9629900D78E2D /* IOStdProtocol.cpp in Sources */,
 				3771E9072EE9629900D78E2D /* StdInput.cpp in Sources */,
 				3723271D2D1FF69D002CFAF4 /* RXBBPatterns.cpp in Sources */,
@@ -288,6 +289,7 @@
 				372327212D1FF69D002CFAF4 /* RXEvaluation.cpp in Sources */,
 				372327222D1FF69D002CFAF4 /* RXHashShallow.cpp in Sources */,
 				372327232D1FF69D002CFAF4 /* RXHashTable.cpp in Sources */,
+				3715C0F3300E1DCE00643B04 /* sockbuf.cpp in Sources */,
 				372327242D1FF69D002CFAF4 /* RXMidGame.cpp in Sources */,
 				372327252D1FF69D002CFAF4 /* RXMove.cpp in Sources */,
 				372327262D1FF69D002CFAF4 /* RXRoxane.cpp in Sources */,
@@ -305,7 +307,7 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++23";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++23";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -349,9 +351,9 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_C_LANGUAGE_STANDARD = c23;
 				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = NO;
 				GCC_FAST_MATH = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -400,7 +402,7 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++23";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++23";
 				"CLANG_CXX_STANDARD_LIBRARY_HARDENING[arch=*]" = "$(__LIBRARY_HARDENING_DEFAULT_VALUE)";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -445,9 +447,9 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_C_LANGUAGE_STANDARD = c23;
 				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = NO;
 				GCC_FAST_MATH = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
@@ -489,7 +491,7 @@
 		371D4D682D1EBFBA0072E829 /* Debug configuration for PBXNativeTarget "Melody" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++23";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++23";
 				CLANG_USE_OPTIMIZATION_PROFILE = YES;
 				CLANG_WARN_ASSIGN_ENUM = YES;
 				CLANG_WARN_ATOMIC_IMPLICIT_SEQ_CST = YES;
@@ -504,9 +506,10 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu23;
+				GCC_C_LANGUAGE_STANDARD = c23;
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_THREADSAFE_STATICS = YES;
 				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
@@ -526,7 +529,7 @@
 		371D4D692D1EBFBA0072E829 /* Release configuration for PBXNativeTarget "Melody" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++23";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++23";
 				CLANG_USE_OPTIMIZATION_PROFILE = YES;
 				CLANG_WARN_ASSIGN_ENUM = YES;
 				CLANG_WARN_ATOMIC_IMPLICIT_SEQ_CST = YES;
@@ -541,10 +544,11 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu23;
+				GCC_C_LANGUAGE_STANDARD = c23;
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_OPTIMIZATION_LEVEL = s;
 				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = NDEBUG;
+				GCC_THREADSAFE_STATICS = YES;
 				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = YES;
 				GCC_WARN_ABOUT_MISSING_NEWLINE = YES;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;

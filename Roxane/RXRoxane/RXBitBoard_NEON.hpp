@@ -46,7 +46,7 @@ struct NeonBoardCtx {
 unsigned long long flips_NEON(const NeonBoardCtx *ctx, int pos);
 
 inline unsigned int RXBitBoard::count_stable_edge(const unsigned long long P, const unsigned long long O) {
-    return __builtin_popcountll(RXBitBoard::get_stable_edge(P, O));
+    return std::popcount(RXBitBoard::get_stable_edge(P, O));
 }
 
 inline int RXBitBoard::get_stability(const unsigned long long discs_player, const unsigned long long discs_opponent) {
@@ -73,7 +73,7 @@ inline int RXBitBoard::get_stability(const unsigned long long discs_player, cons
     v = filled;                             l79 = vbicq_u64(l79, vbicq_u64(e792, vshrq_n_u64(l79, 18)));
     v &= (v >> 8) | (v << 56);              r79 = vbicq_u64(r79, vshlq_n_u64(vbicq_u64(e792, r79), 18));
     v &= (v >> 16) | (v << 48);             l79 = vandq_u64(vandq_u64(l79, r79), vorrq_u64(e793, vsliq_n_u64(vshrq_n_u64(l79, 36), r79, 36)));
-    v &= (v >> 32) | (v << 32);             d7 = __builtin_bswap64(vgetq_lane_u64(l79, 1));
+    v &= (v >> 32) | (v << 32);             d7 = std::byteswap(vgetq_lane_u64(l79, 1));
     d9 = vgetq_lane_u64(l79, 0);
     
     stable |= (h & v & d7 & d9 & central_mask);
@@ -90,7 +90,7 @@ inline int RXBitBoard::get_stability(const unsigned long long discs_player, cons
         stable |= (stable_h & stable_v & stable_d7 & stable_d9 & central_mask);
     }
     
-    return __builtin_popcountll(stable);
+    return std::popcount(stable);
     
 }
 
@@ -107,7 +107,7 @@ inline unsigned long long RXBitBoard::get_legal_moves(const unsigned long long P
     
     const uint64x2_t OO_inner = vdupq_n_u64(O & 0x7E7E7E7E7E7E7E7EULL);
     
-    auto kogge_stone_step = [](uint64x2_t& flip, int64x2_t shift, uint64x2_t mask) {
+    auto kogge_stone_step = [] RX_LAMBDA_INLINE (uint64x2_t& flip, int64x2_t shift, uint64x2_t mask) {
         flip = vorrq_u64(flip, vandq_u64(vshlq_u64(flip, shift), mask));
     };
     
@@ -156,8 +156,7 @@ inline unsigned long long RXBitBoard::get_legal_moves(const unsigned long long P
 // Kogge-Stone helpers — fonctions libres, shift positif
 // ============================================================
 template<int S>
-__attribute__((always_inline))
-static inline uint64x2_t ks_pos(uint64x2_t P, uint64x2_t mask)
+static RX_ALWAYS_INLINE uint64x2_t ks_pos(uint64x2_t P, uint64x2_t mask)
 {
     const uint64x2_t a  = vandq_u64(mask, vshlq_n_u64(mask, S));
     const uint64x2_t a2 = vandq_u64(a,    vshlq_n_u64(a,    S * 2));
@@ -173,8 +172,7 @@ static inline uint64x2_t ks_pos(uint64x2_t P, uint64x2_t mask)
 // Kogge-Stone helpers — fonctions libres, shift négatif
 // ============================================================
 template<int S>
-__attribute__((always_inline))
-static inline uint64x2_t ks_neg(uint64x2_t P, uint64x2_t mask)
+static RX_ALWAYS_INLINE uint64x2_t ks_neg(uint64x2_t P, uint64x2_t mask)
 {
     const uint64x2_t a  = vandq_u64(mask, vshrq_n_u64(mask, S));
     const uint64x2_t a2 = vandq_u64(a,    vshrq_n_u64(a,    S * 2));

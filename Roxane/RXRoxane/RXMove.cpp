@@ -60,7 +60,7 @@ unsigned long long RXMove::random_pick_bit_in_legalmoves(const unsigned long lon
     std::vector<int> weights;
     
     // On réserve un peu d'espace pour éviter trop de réallocations
-    moves.reserve(std::bitset<64>(legal_moves).count());
+    moves.reserve(std::popcount(legal_moves));
     weights.reserve(moves.capacity());
 
     // Extraction des bits et attribution des poids

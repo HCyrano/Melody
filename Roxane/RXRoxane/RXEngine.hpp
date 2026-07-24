@@ -31,6 +31,9 @@
 #include <condition_variable>
 #include <thread>
 #include <system_error>       // std::system_error (pour les try/catch autour de std::thread)
+#include <cstdint>
+#include <cstddef>
+#include <array>
 
 
 #include "RXBBPatterns.hpp"
@@ -167,8 +170,7 @@ public:
     
     RXSplitPoint* splitPoint;
     
-    uint activeSplitPoints;
-    //std::atomic<uint> activeSplitPoints;
+    unsigned int activeSplitPoints;
     
     //non copiableAssignable, mais il n'y a pas de redimensionnenent (semble fonctionner)
     //soluce : remplacer le vector par un tableau static a taille fixe :-(
@@ -184,7 +186,7 @@ public:
     std::atomic<thread_state> state{UNINITIALISED};
     
     //le parametre maxThread est utile pour splitPointStack
-    RXThread(int maxThreads, int maxActiveSplitPoint = 8) : splitPoint(nullptr), activeSplitPoints(0),
+    RXThread(int maxThreads, unsigned int maxActiveSplitPoint = 8) : splitPoint(nullptr), activeSplitPoints(0),
     splitPointStack(maxActiveSplitPoint, RXSplitPoint(maxThreads)) {
                 
     }
@@ -360,10 +362,10 @@ class RXEngine: public Runnable {
     void MG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const int depth,  const int alpha, const int beta, RXMove* list);
     void MG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID);
     
-    int MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int selectivity, const int depth, int alpha, const int beta, const bool passed);
+    int MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int selectivity, const int depth, const int alpha, const int beta, const bool passed);
     void MG_SP_search_deep(RXSplitPoint* sp, const unsigned int threadID);
     
-    int MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int depth, int alpha, const int beta, const bool passed);
+    int MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int depth, const int alpha, const int beta, const bool passed);
     
     int MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard, const int pvDev, const int selectivity, const int depth, const int alpha, const bool passed);
     void MG_SP_search_XProbcut(RXSplitPoint* sp, const unsigned int threadID);
@@ -390,17 +392,16 @@ private:
     
     void EG_driver(RXBBPatterns& board, int selectivity, int end_selectivity, RXMove* list);
     
-    void EG_PVS_root(RXBBPatterns& board, const int selectivity, int alpha, const int beta, RXMove* list);
+    void EG_PVS_root(RXBBPatterns& board, const int selectivity, const int alpha, const int beta, RXMove* list);
     void EG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID);
     
-    int  EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int selectivity, int alpha, const int beta, const bool passed);
+    int  EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int selectivity, const int alpha, const int beta, const bool passed);
     void EG_SP_search_DEEP(RXSplitPoint* sp, const unsigned int threadID);
     
-    int EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, int alpha, const int beta, const bool passed);
+    int EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int alpha, const int beta, const bool passed);
     
-    int EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, int alpha, const int beta, const bool passed);
-    int EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, int alpha, const int beta, const bool passed);
-    int EG_alphabeta_hash_parity(const unsigned int threadID, RXBitBoard& board, const bool pv, int alpha, const int beta, const bool passed);
+    int EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, const int alpha, const int beta, const bool passed);
+    int EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, const int alpha, const int beta, const bool passed);
     int EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board, int alpha, int beta, const bool passed);
     
     int EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, const int pvDev, const int selectivity, const int alpha, const bool passed);
@@ -676,7 +677,7 @@ inline float RXEngine::sigma(const int n_empty, const int depth, const int depth
 
 
     // Fonction polynomiale par zone
-    auto sigma = [&](int i) {
+    auto sigma = [&] RX_LAMBDA_INLINE (int i) {
         float r = probcut_a[i] * n_empty + probcut_b[i] * depth_probcut + probcut_c[i] * depth;
         return probcut_d[i] * r * r * r +
                probcut_e[i] * r * r +
@@ -744,7 +745,7 @@ inline float RXEngine::sigma(const int n_empty, const int depth, const int depth
     float w_end   = 1.0 - s1;
 
     // Fonction polynomiale par zone
-    auto sigma = [&](int i) {
+    auto sigma = [&](int i) RX_LAMBDA_INLINE {
         float r = probcut_a[i] * n_empty + probcut_b[i] * depth_probcut + probcut_c[i] * depth;
         return probcut_d[i] * r * r * r +
                probcut_e[i] * r * r +

@@ -85,11 +85,21 @@ int StdInput::ReadInput() {
     char *end;
     long long bytes;
     
-    // Utilisation de l'opérateur de classe sur le membre
-    do
-        bytes = read(fileno(input_stream_), buffer, BUFFER_SIZE);
-    while (bytes < 0 && errno == EINTR);
+    // Détermination du descripteur de fichier de manière portable
+#if defined(_MSC_VER) || defined(_WIN32)
+    int fd = _fileno(input_stream_);
+#else
+    int fd = fileno(input_stream_);
+#endif
     
+    // Appel de read/ _read de manière portable
+    do {
+#if defined(_MSC_VER) || defined(_WIN32)
+        bytes = _read(fd, buffer, BUFFER_SIZE);
+#else
+        bytes = read(fd, buffer, BUFFER_SIZE);
+#endif
+    } while (bytes < 0 && errno == EINTR);
     
     if (bytes == 0) {
         
@@ -205,7 +215,7 @@ std::string StdInput::Read() {
     std::memmove(cmd_buffer_, eol + 1, std::strlen(eol + 1) + 1);
     
     return line;
-};
+}
 
     
 /*

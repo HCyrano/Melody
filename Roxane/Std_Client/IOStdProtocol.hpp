@@ -18,12 +18,13 @@
 #ifndef STANDART_PROTOCOL_H
 #define STANDART_PROTOCOL_H
 
-#include "RXRoxane.hpp"
-#include "StdInput.hpp" // Inclure notre nouvelle classe C++
 #include <string>
 #include <atomic>
 #include <vector>
 #include <mutex>
+
+#include "RXRoxane.hpp"
+#include "StdInput.hpp"
 
 class RXRoxane;
 

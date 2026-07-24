@@ -26,15 +26,18 @@ Melody's primary role is to compete against other engines online. It supports:
 ---
 
 ## 🛠️ Development and Installation
-The engine is specifically optimized for the Apple ecosystem to maximize nodes computed per second.
+The engine was originally optimized for the Apple ecosystem to maximize nodes computed per second, and now also builds natively on Windows and Linux.
 
-* Environment: **macOS**
-* Architecture: Fully optimized for **Apple Silicon (M-series)** chips. Intensive use of **NEON (ARM)** instructions to accelerate bitboard operations and FM evaluation computations.
-* Language: C++ (standard `gnu++23`)
-* Tooling: Xcode project (`.xcodeproj`) included.
+* Environment: **macOS**, **Windows**, **Linux**
+* Architecture: Fully optimized for **Apple Silicon (M-series)** chips. Intensive use of **NEON (ARM)** instructions to accelerate bitboard operations and FM evaluation computations. x86-64 builds (Windows/Linux) leverage **AVX2** for the same operations.
+* Language: C++ (standard `gnu++23` on macOS/Linux, `/std:c++20` on MSVC)
+* Tooling:
+  * macOS: Xcode project (`.xcodeproj`) included.
+  * Linux: GNU `Makefile`.
+  * Windows: native MSVC build via `Makefile.win` (NMake).
 
 > [!TIP]
-> Compilation note: To fully benefit from ARM/NEON optimizations, always compile in Release mode via Xcode.
+> Compilation note: To fully benefit from ARM/NEON or AVX2 optimizations, always compile in Release mode (Xcode Release scheme, or `make`/`nmake` as documented in [COMPILATION.md](COMPILATION.md)).
 
 ---
 
@@ -61,6 +64,10 @@ x86-64 Architecture: This version now benefits from hardware optimizations via A
 ### 🐧 Linux
 
 No binary is provided for Linux to avoid dependency issues across distributions. Please download the source code and follow the instructions in [Compilation.md](COMPILATION.md) to build a binary perfectly optimized for your distribution and processor.
+
+### 🪟 Windows
+
+No pre-compiled binary is provided for Windows. Please download the source code and build it natively with MSVC — see [Compilation.md](COMPILATION.md) for the full procedure (`nmake /f Makefile.win`).
 
 ---
 

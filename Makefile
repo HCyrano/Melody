@@ -6,48 +6,51 @@ OS   := $(shell uname -s)
 ARCH := $(shell uname -m)
 
 # ============================================================
-# Compilateur selon l'OS
+# Flags d'Architecture (ARM vs x86_64)
 # ============================================================
 
-ifeq ($(OS), Darwin)
-    CXX      = clang++
-    SDK      = $(shell xcrun --sdk macosx --show-sdk-path)
-    OS_FLAGS = -arch $(ARCH) -isysroot $(SDK)
-    OS_LIBS  =
-    VEC_FLAGS = -fvectorize -fslp-vectorize
-    # Option 4 : Nettoyage du code mort (spécifique macOS/Linker)
-    LDFLAGS_STRIP = -Wl,-dead_strip
-else
-    CXX      = g++
-    OS_FLAGS =
-    OS_LIBS  = -lpthread -lm
-    VEC_FLAGS =
-    LDFLAGS_STRIP = -s
-endif
-
 # ============================================================
-# Flags architecture : ARM vs x86_64
+# Flags d'Architecture (ARM vs x86_64)
 # ============================================================
 
 ifeq ($(ARCH), arm64)
-    MARCH     = -march=native -mcpu=native
+    MARCH      = -march=armv8-a+crc
     SIMD_FLAGS =
 else ifeq ($(ARCH), aarch64)
-    MARCH     = -march=native -mcpu=native
+    MARCH      = -march=armv8-a+crc
     SIMD_FLAGS =
 else
     # Intel / AMD x86_64
-    MARCH     = -march=x86-64-v3
+    MARCH      = -march=x86-64-v3
     SIMD_FLAGS = -mavx2 -mbmi2
+endif
+
+# ============================================================
+# Compilateur et Flags spécifiques par OS
+# ============================================================
+
+ifeq ($(OS), Darwin)
+    CXX        = clang++
+    SDK        = $(shell xcrun --sdk macosx --show-sdk-path)
+    OS_FLAGS   = -arch $(ARCH) -isysroot $(SDK)
+    OS_LIBS    =
+    VEC_FLAGS  = -fvectorize -fslp-vectorize
+    WARN_FLAGS = -Wno-unused-private-field
+    LDFLAGS_STRIP = -Wl,-dead_strip
+else
+    CXX       ?= g++
+    OS_FLAGS   =
+    OS_LIBS    = -lpthread -lm
+    VEC_FLAGS  =
+    WARN_FLAGS =
+    LDFLAGS_STRIP = -s
 endif
 
 # ============================================================
 # Flags de compilation communs
 # ============================================================
 
-# On garde -O3 pour la performance de Roxane.
-# Ajout de -ffunction-sections et -fdata-sections pour l'option 4.
-CXXFLAGS = -std=c++20             \
+CXXFLAGS = -std=c++23             \
            $(MARCH)               \
            $(OS_FLAGS)            \
            -O3                    \
@@ -64,9 +67,8 @@ CXXFLAGS = -std=c++20             \
            -Wno-char-subscripts   \
            -Wno-reorder           \
            -Wno-misleading-indentation \
-           -Wno-unused-private-field
+           $(WARN_FLAGS)
 
-# LDFLAGS inclut le retrait des symboles et le dead_strip
 LDFLAGS = $(OS_FLAGS) $(OS_LIBS) $(LDFLAGS_STRIP)
 
 TARGET = build/Melody

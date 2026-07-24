@@ -23,13 +23,24 @@
 #define ARCH_ARM_NEON    1
 
 #ifndef ARCH
-    #ifdef __AVX2__
-        #define ARCH ARCH_X86_AVX2
-    #else
+    // 1. Détection des architectures x86 / x64
+    #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+        #ifdef __AVX2__
+            #define ARCH ARCH_X86_AVX2
+        #else
+            // Sécurité absolue pour Windows / Linux : on refuse de compiler sans AVX2
+            #error "Erreur: AVX2 est le minimum requis pour cette architecture. Activez /arch:AVX2 sous MSVC ou -mavx2 sous GCC/Clang."
+        #endif
+
+    // 2. Détection des architectures ARM / ARM64
+    #elif defined(__aarch64__) || defined(_M_ARM64) || defined(__arm__) || defined(_M_ARM)
         #define ARCH ARCH_ARM_NEON
+
+    // 3. Cas inconnu
+    #else
+        #error "Architecture non supportée (AVX2 ou ARM Neon requis)."
     #endif
 #endif
-
 
 //login ON / OFF
 #define LOGGING_ON

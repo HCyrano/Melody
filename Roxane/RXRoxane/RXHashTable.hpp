@@ -23,17 +23,13 @@
 #include <vector>
 #include <atomic>
 #include <cassert>
+#include <cstring> //mencpy
 
 
 #include "RXConstantes.hpp"
 #include "RXBitBoard.hpp"
 #include "RXMove.hpp"
-
-#ifdef __ARM_ACLE
-#include "arm_acle.h"
-#else
-#include <immintrin.h> // Indispensable pour _mm_pause()
-#endif
+#include "RXTools.hpp"
 
 class RXEngine;
 
@@ -310,13 +306,8 @@ class RXHashTable {
 
 inline void RXHashTable::entry_prefetch(const unsigned long long hash_code, const t_hash type_hashtable) const {
     const RXHashEntry* ptr = &(table[_offsetTable[type_hashtable] | (static_cast<unsigned int>(hash_code>>32) & _maskTable[type_hashtable])]);
-#ifdef __ARM_ACLE
-    __pld(ptr);
-#else
-    __builtin_prefetch(ptr);
-#endif
+    RX_PREFETCH(ptr);
 }
-
 
 
 inline void RXHashTable::new_search(const unsigned int color, const int n_empty) {
@@ -331,8 +322,7 @@ inline void RXHashTable::new_search(const unsigned int color, const int n_empty)
 
 
 // The 'source' method (with the raw parameters)
-__attribute__((always_inline))
-inline bool RXHashTable::get(const unsigned long long hash_code, const unsigned long long P, const unsigned long long O, const t_hash type_hashtable, RXHashValue& hValue) const {
+RX_ALWAYS_INLINE bool RXHashTable::get(const unsigned long long hash_code, const unsigned long long P, const unsigned long long O, const t_hash type_hashtable, RXHashValue& hValue) const {
 
     const RXHashEntry& entry = table[_offsetTable[type_hashtable] | (static_cast<unsigned int>(hash_code>>32) & _maskTable[type_hashtable])];
     
@@ -359,8 +349,7 @@ inline bool RXHashTable::get(const unsigned long long hash_code, const unsigned 
 }
 
 // 2. method "wrapper"
-__attribute__((always_inline))
-inline bool RXHashTable::get(const unsigned long long hash_code, const RXBitBoard& board, const t_hash type_hashtable, RXHashValue& hValue) const {
+RX_ALWAYS_INLINE bool RXHashTable::get(const unsigned long long hash_code, const RXBitBoard& board, const t_hash type_hashtable, RXHashValue& hValue) const {
 
     const unsigned long long P = board.discs[board.player];
     const unsigned long long O = board.discs[board.player^1];
@@ -371,8 +360,7 @@ inline bool RXHashTable::get(const unsigned long long hash_code, const RXBitBoar
 
 
 // 2. method "wrapper"
-__attribute__((always_inline))
-inline bool RXHashTable::get(const RXBitBoard& board, const t_hash type_hashtable, RXHashValue& hValue) const {
+RX_ALWAYS_INLINE bool RXHashTable::get(const RXBitBoard& board, const t_hash type_hashtable, RXHashValue& hValue) const {
     // On calcule le hash_code et on appelle la version mutualisée
     const unsigned long long hash_code = board.hashcode();
     

@@ -19,6 +19,7 @@
 #define RXEVALUATION_HPP
 
 #include <iostream>
+#include <string_view>
 
 #include "RXConstantes.hpp"
 #include "RXPattern.hpp"
@@ -66,7 +67,7 @@ class alignas(64) RXEvaluation {
             CORNER
         };
     
-    static constexpr std::string names[] = {
+    static constexpr std::string_view names[] = {
         "MOB_P", "MOB_O", "DIAG5", "DIAG6", "DIAG7", "DIAG8",
         "EDGE1", "EDGE2", "EDGE3", "EDGE4", "HV2", "HV3", "HV4", "CORNER"
     };

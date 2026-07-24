@@ -19,10 +19,7 @@
 #define RXHASHSHALLOW_HPP
 
 #include "RXHashTable.hpp"
-
-#ifdef __ARM_ACLE
-#include "arm_acle.h"
-#endif
+#include "RXTools.hpp"
 
 
 
@@ -65,13 +62,8 @@ inline void RXHashShallow::new_search(const int n_empty) {
 
 inline void RXHashShallow::entry_prefetch(const unsigned long long hash_code) const {
     const RXHashEntry* ptr = &(table[static_cast<unsigned int>(hash_code>>32) & _maskTable]);
-#ifdef __ARM_ACLE
-    __pld(ptr);
-#else
-    __builtin_prefetch(ptr);
-#endif
+    RX_PREFETCH(ptr);
 }
-
 
 
 // 1. La fonction "source" (avec les paramètres bruts)
@@ -105,8 +97,7 @@ inline bool RXHashShallow::get(const unsigned long long hash_code, const RXBitBo
 }
 
 // 2. La fonction "wrapper" (qui délègue le travail)
-__attribute__((always_inline))
-inline bool RXHashShallow::get(const RXBitBoard& board, RXHashValue& hValue) const {
+RX_ALWAYS_INLINE bool RXHashShallow::get(const RXBitBoard& board, RXHashValue& hValue) const {
     // On calcule la hash_code et on appelle la version mutualisée
     const unsigned long long hash_code = board.hashcode();
     return get(hash_code, board, hValue);

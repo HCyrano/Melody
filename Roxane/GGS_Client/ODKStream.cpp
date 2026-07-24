@@ -17,7 +17,6 @@
  */
 
 #include <iostream>
-#include <unistd.h>
 
 #include "ODKStream.hpp"
 #include "GGSMessage.hpp"

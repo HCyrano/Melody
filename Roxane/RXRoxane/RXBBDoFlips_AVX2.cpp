@@ -27,8 +27,13 @@
 
 #if ARCH == ARCH_X86_AVX2
 
-#include <x86intrin.h>
-
+#if defined(_MSC_VER)
+    // Windows avec MSVC ou Clang-cl
+    #include <intrin.h>
+#else
+    // Linux, macOS, ou Windows avec MinGW (GCC/Clang)
+    #include <x86intrin.h>
+#endif
 #include "RXBitBoard.hpp"
 
 typedef union {

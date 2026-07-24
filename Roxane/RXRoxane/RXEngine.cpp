@@ -18,7 +18,6 @@
 #include <iomanip>
 #include <fstream>
 #include <sstream>
-#include <sys/time.h>
 
 #include "RXEngine.hpp"
 #include "RXRoxane.hpp"
@@ -30,13 +29,6 @@ const float RXEngine::PERCENTILE[] = {1.00f, 1.15f, 1.40f, 1.80f, 2.45f, 3.20f};
 const int RXEngine::EG_HIGH_SELECT = 0;
 const int RXEngine::MG_SELECT = 1; //72%
 const int RXEngine::NO_SELECT = std::size(RXEngine::PERCENTILE);
-
-//const int RXEngine::CONFIDENCE[]   = {   72,    84,    91,    95,    98,   100};
-//const float RXEngine::PERCENTILE[] = {1.15f, 1.40f, 1.80f, 2.45f, 3.20f};
-//
-//const int RXEngine::EG_HIGH_SELECT = 0;
-//const int RXEngine::MG_SELECT = 0; //72%
-//const int RXEngine::NO_SELECT = std::size(RXEngine::PERCENTILE);
 
 
 const int RXEngine::DEPTH_BOOSTER = DEPTH_4;
@@ -629,7 +621,7 @@ int RXEngine::PVS_last_ply(const unsigned int threadID, RXBBPatterns& sBoard, co
 
                                 // Skipping JWC order is faster, but JWC tie-breaking for equal scores is lost.
                                 do {
-                                    const int pos = __builtin_ctzll(legal_movesBB);  // index du bit le plus bas
+                                    const int pos = std::countr_zero(legal_movesBB);  // index du bit le plus bas
                                     legal_movesBB &= legal_movesBB - 1;              // retire ce bit
 
                                     board.generate_flips(pos, lastMove);
@@ -850,7 +842,7 @@ int RXEngine::alphabeta_last_two_ply(const unsigned int threadID, RXBBPatterns& 
     RXMove& lastMove = threads[threadID]._move[board.n_empty - 1][1];
 
     // Factorisation du "last ply"
-    auto last_ply = [&sBoard, &lastMove, &board](const int beta_inner, const bool passed) __attribute__((always_inline)) -> int {
+    auto last_ply = [&sBoard, &lastMove, &board] RX_LAMBDA_INLINE (const int beta_inner, const bool passed) -> int {
         int bestscore_1 = UNDEF_SCORE;
         unsigned long long legal_movesBB_1 = board.get_legal_moves();
 

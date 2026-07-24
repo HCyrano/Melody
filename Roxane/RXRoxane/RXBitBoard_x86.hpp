@@ -17,7 +17,13 @@
 
 #include "RXSetting.hpp"
 
-#include <x86intrin.h>
+#if defined(_MSC_VER)
+    // Windows avec MSVC ou Clang-cl
+    #include <intrin.h>
+#else
+    // Linux, macOS, ou Windows avec MinGW (GCC/Clang)
+    #include <x86intrin.h>
+#endif
 
 // forward declaration - définie dans RXBBDoFlips_AVX2.cpp
 unsigned long long mm_flip(const __m256i PP, const __m256i OO, int pos);
@@ -33,7 +39,7 @@ unsigned long long mm_flip(const __m256i PP, const __m256i OO, int pos);
 inline unsigned int RXBitBoard::count_legal_moves(const unsigned long long P, const unsigned long long O) {
     
     const unsigned long long legals = get_legal_moves(P, O);
-    return __builtin_popcountll(legals);
+    return std::popcount(legals);
     
 }
 
@@ -84,7 +90,7 @@ inline int RXBitBoard::get_stability(const unsigned long long discs_player, cons
 //    
 //    d9 |= 0xFF818181818181FFULL;
     
-    uint64_t rdisc = __builtin_bswap64(filled);
+    uint64_t rdisc = std::byteswap(filled);
     uint64_t l8;
     __m128i l01, l79, r79;
     const __m128i kff  = _mm_set1_epi8(-1);
@@ -101,7 +107,7 @@ inline int RXBitBoard::get_stability(const unsigned long long discs_player, cons
     l8 &= (l8 >> 8) | (l8 << 56);               r79 = _mm_andnot_si128(_mm_slli_epi64(_mm_andnot_si128(r79, e792), 18), r79);
     l8 &= (l8 >> 16) | (l8 << 48);              l79 = _mm_and_si128(_mm_and_si128(l79, r79), _mm_or_si128(e793, _mm_or_si128(_mm_srli_epi64(l79, 36), _mm_slli_epi64(r79, 36))));
     l8 &= (l8 >> 32) | (l8 << 32);              d9 = _mm_cvtsi128_si64(l79);
-    v = l8;                                     d7 = __builtin_bswap64(_mm_cvtsi128_si64(_mm_unpackhi_epi64(l79, l79)));
+    v = l8;                                     d7 = std::byteswap(_mm_cvtsi128_si64(_mm_unpackhi_epi64(l79, l79)));
         
     stable |= (h & v & d7 & d9 & central_mask);
     
@@ -117,7 +123,7 @@ inline int RXBitBoard::get_stability(const unsigned long long discs_player, cons
         stable |= (stable_h & stable_v & stable_d7 & stable_d9 & central_mask);
     }
     
-    return __builtin_popcountll(stable);
+    return std::popcount(stable);
 
     
 }

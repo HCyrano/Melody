@@ -17,6 +17,7 @@
 
 #include <string>
 #include <iomanip>
+#include <bit>
 
 #include "RXBBPatterns.hpp"
 
@@ -245,7 +246,7 @@ void RXBBPatterns::update_patterns_BLACK_A1(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040201008040200ULL);
+        const int n = std::popcount(flipped & 0X0040201008040200ULL);
         switch(n) {
             case 6: p.flip_BLACK_G7(); [[fallthrough]];
             case 5: p.flip_BLACK_F6(); [[fallthrough]];
@@ -259,7 +260,7 @@ void RXBBPatterns::update_patterns_BLACK_A1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0080808080808000ULL);
+        const int n = std::popcount(flipped & 0X0080808080808000ULL);
         switch(n) {
             case 6: p.flip_BLACK_A7(); [[fallthrough]];
             case 5: p.flip_BLACK_A6(); [[fallthrough]];
@@ -273,7 +274,7 @@ void RXBBPatterns::update_patterns_BLACK_A1(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X7E00000000000000ULL);
+        const int n = std::popcount(flipped & 0X7E00000000000000ULL);
         switch(n) {
             case 6: p.flip_BLACK_G1(); [[fallthrough]];
             case 5: p.flip_BLACK_F1(); [[fallthrough]];
@@ -297,7 +298,7 @@ void RXBBPatterns::update_patterns_BLACK_B1(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020100804020000ULL);
+        const int n = std::popcount(flipped & 0X0020100804020000ULL);
         switch(n) {
             case 5: p.flip_BLACK_G6(); [[fallthrough]];
             case 4: p.flip_BLACK_F5(); [[fallthrough]];
@@ -310,7 +311,7 @@ void RXBBPatterns::update_patterns_BLACK_B1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040404040404000ULL);
+        const int n = std::popcount(flipped & 0X0040404040404000ULL);
         switch(n) {
             case 6: p.flip_BLACK_B7(); [[fallthrough]];
             case 5: p.flip_BLACK_B6(); [[fallthrough]];
@@ -324,7 +325,7 @@ void RXBBPatterns::update_patterns_BLACK_B1(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X3E00000000000000ULL);
+        const int n = std::popcount(flipped & 0X3E00000000000000ULL);
         switch(n) {
             case 5: p.flip_BLACK_G1(); [[fallthrough]];
             case 4: p.flip_BLACK_F1(); [[fallthrough]];
@@ -347,7 +348,7 @@ void RXBBPatterns::update_patterns_BLACK_C1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020202020202000ULL);
+        const int n = std::popcount(flipped & 0X0020202020202000ULL);
         switch(n) {
             case 6: p.flip_BLACK_C7(); [[fallthrough]];
             case 5: p.flip_BLACK_C6(); [[fallthrough]];
@@ -361,7 +362,7 @@ void RXBBPatterns::update_patterns_BLACK_C1(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010080402000000ULL);
+        const int n = std::popcount(flipped & 0X0010080402000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_G5(); [[fallthrough]];
             case 3: p.flip_BLACK_F4(); [[fallthrough]];
@@ -377,7 +378,7 @@ void RXBBPatterns::update_patterns_BLACK_C1(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X1E00000000000000ULL);
+        const int n = std::popcount(flipped & 0X1E00000000000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_G1(); [[fallthrough]];
             case 3: p.flip_BLACK_F1(); [[fallthrough]];
@@ -403,7 +404,7 @@ void RXBBPatterns::update_patterns_BLACK_D1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010101010101000ULL);
+        const int n = std::popcount(flipped & 0X0010101010101000ULL);
         switch(n) {
             case 6: p.flip_BLACK_D7(); [[fallthrough]];
             case 5: p.flip_BLACK_D6(); [[fallthrough]];
@@ -417,7 +418,7 @@ void RXBBPatterns::update_patterns_BLACK_D1(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008040200000000ULL);
+        const int n = std::popcount(flipped & 0X0008040200000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_G4(); [[fallthrough]];
             case 2: p.flip_BLACK_F3(); [[fallthrough]];
@@ -428,7 +429,7 @@ void RXBBPatterns::update_patterns_BLACK_D1(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020400000000000ULL);
+        const int n = std::popcount(flipped & 0X0020400000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_B3(); [[fallthrough]];
             case 1: p.flip_BLACK_C2();
@@ -438,7 +439,7 @@ void RXBBPatterns::update_patterns_BLACK_D1(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0E00000000000000ULL);
+        const int n = std::popcount(flipped & 0X0E00000000000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_G1(); [[fallthrough]];
             case 2: p.flip_BLACK_F1(); [[fallthrough]];
@@ -449,7 +450,7 @@ void RXBBPatterns::update_patterns_BLACK_D1(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X6000000000000000ULL);
+        const int n = std::popcount(flipped & 0X6000000000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_B1(); [[fallthrough]];
             case 1: p.flip_BLACK_C1();
@@ -469,7 +470,7 @@ void RXBBPatterns::update_patterns_BLACK_E1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008080808080800ULL);
+        const int n = std::popcount(flipped & 0X0008080808080800ULL);
         switch(n) {
             case 6: p.flip_BLACK_E7(); [[fallthrough]];
             case 5: p.flip_BLACK_E6(); [[fallthrough]];
@@ -483,7 +484,7 @@ void RXBBPatterns::update_patterns_BLACK_E1(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004020000000000ULL);
+        const int n = std::popcount(flipped & 0X0004020000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_G3(); [[fallthrough]];
             case 1: p.flip_BLACK_F2();
@@ -493,7 +494,7 @@ void RXBBPatterns::update_patterns_BLACK_E1(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010204000000000ULL);
+        const int n = std::popcount(flipped & 0X0010204000000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_B4(); [[fallthrough]];
             case 2: p.flip_BLACK_C3(); [[fallthrough]];
@@ -504,7 +505,7 @@ void RXBBPatterns::update_patterns_BLACK_E1(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0600000000000000ULL);
+        const int n = std::popcount(flipped & 0X0600000000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_G1(); [[fallthrough]];
             case 1: p.flip_BLACK_F1();
@@ -514,7 +515,7 @@ void RXBBPatterns::update_patterns_BLACK_E1(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X7000000000000000ULL);
+        const int n = std::popcount(flipped & 0X7000000000000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_B1(); [[fallthrough]];
             case 2: p.flip_BLACK_C1(); [[fallthrough]];
@@ -535,7 +536,7 @@ void RXBBPatterns::update_patterns_BLACK_F1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004040404040400ULL);
+        const int n = std::popcount(flipped & 0X0004040404040400ULL);
         switch(n) {
             case 6: p.flip_BLACK_F7(); [[fallthrough]];
             case 5: p.flip_BLACK_F6(); [[fallthrough]];
@@ -553,7 +554,7 @@ void RXBBPatterns::update_patterns_BLACK_F1(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008102040000000ULL);
+        const int n = std::popcount(flipped & 0X0008102040000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_B5(); [[fallthrough]];
             case 3: p.flip_BLACK_C4(); [[fallthrough]];
@@ -569,7 +570,7 @@ void RXBBPatterns::update_patterns_BLACK_F1(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X7800000000000000ULL);
+        const int n = std::popcount(flipped & 0X7800000000000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_B1(); [[fallthrough]];
             case 3: p.flip_BLACK_C1(); [[fallthrough]];
@@ -591,7 +592,7 @@ void RXBBPatterns::update_patterns_BLACK_G1(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004081020400000ULL);
+        const int n = std::popcount(flipped & 0X0004081020400000ULL);
         switch(n) {
             case 5: p.flip_BLACK_B6(); [[fallthrough]];
             case 4: p.flip_BLACK_C5(); [[fallthrough]];
@@ -604,7 +605,7 @@ void RXBBPatterns::update_patterns_BLACK_G1(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X7C00000000000000ULL);
+        const int n = std::popcount(flipped & 0X7C00000000000000ULL);
         switch(n) {
             case 5: p.flip_BLACK_B1(); [[fallthrough]];
             case 4: p.flip_BLACK_C1(); [[fallthrough]];
@@ -617,7 +618,7 @@ void RXBBPatterns::update_patterns_BLACK_G1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002020202020200ULL);
+        const int n = std::popcount(flipped & 0X0002020202020200ULL);
         switch(n) {
             case 6: p.flip_BLACK_G7(); [[fallthrough]];
             case 5: p.flip_BLACK_G6(); [[fallthrough]];
@@ -641,7 +642,7 @@ void RXBBPatterns::update_patterns_BLACK_H1(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002040810204000ULL);
+        const int n = std::popcount(flipped & 0X0002040810204000ULL);
         switch(n) {
             case 6: p.flip_BLACK_B7(); [[fallthrough]];
             case 5: p.flip_BLACK_C6(); [[fallthrough]];
@@ -655,7 +656,7 @@ void RXBBPatterns::update_patterns_BLACK_H1(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X7E00000000000000ULL);
+        const int n = std::popcount(flipped & 0X7E00000000000000ULL);
         switch(n) {
             case 6: p.flip_BLACK_B1(); [[fallthrough]];
             case 5: p.flip_BLACK_C1(); [[fallthrough]];
@@ -669,7 +670,7 @@ void RXBBPatterns::update_patterns_BLACK_H1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0001010101010100ULL);
+        const int n = std::popcount(flipped & 0X0001010101010100ULL);
         switch(n) {
             case 6: p.flip_BLACK_H7(); [[fallthrough]];
             case 5: p.flip_BLACK_H6(); [[fallthrough]];
@@ -693,7 +694,7 @@ void RXBBPatterns::update_patterns_BLACK_A2(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000402010080400ULL);
+        const int n = std::popcount(flipped & 0X0000402010080400ULL);
         switch(n) {
             case 5: p.flip_BLACK_F7(); [[fallthrough]];
             case 4: p.flip_BLACK_E6(); [[fallthrough]];
@@ -706,7 +707,7 @@ void RXBBPatterns::update_patterns_BLACK_A2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000808080808000ULL);
+        const int n = std::popcount(flipped & 0X0000808080808000ULL);
         switch(n) {
             case 5: p.flip_BLACK_A7(); [[fallthrough]];
             case 4: p.flip_BLACK_A6(); [[fallthrough]];
@@ -719,7 +720,7 @@ void RXBBPatterns::update_patterns_BLACK_A2(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X007E000000000000ULL);
+        const int n = std::popcount(flipped & 0X007E000000000000ULL);
         switch(n) {
             case 6: p.flip_BLACK_G2(); [[fallthrough]];
             case 5: p.flip_BLACK_F2(); [[fallthrough]];
@@ -743,7 +744,7 @@ void RXBBPatterns::update_patterns_BLACK_B2(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000201008040200ULL);
+        const int n = std::popcount(flipped & 0X0000201008040200ULL);
         switch(n) {
             case 5: p.flip_BLACK_G7(); [[fallthrough]];
             case 4: p.flip_BLACK_F6(); [[fallthrough]];
@@ -756,7 +757,7 @@ void RXBBPatterns::update_patterns_BLACK_B2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000404040404000ULL);
+        const int n = std::popcount(flipped & 0X0000404040404000ULL);
         switch(n) {
             case 5: p.flip_BLACK_B7(); [[fallthrough]];
             case 4: p.flip_BLACK_B6(); [[fallthrough]];
@@ -769,7 +770,7 @@ void RXBBPatterns::update_patterns_BLACK_B2(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X003E000000000000ULL);
+        const int n = std::popcount(flipped & 0X003E000000000000ULL);
         switch(n) {
             case 5: p.flip_BLACK_G2(); [[fallthrough]];
             case 4: p.flip_BLACK_F2(); [[fallthrough]];
@@ -792,7 +793,7 @@ void RXBBPatterns::update_patterns_BLACK_C2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000202020202000ULL);
+        const int n = std::popcount(flipped & 0X0000202020202000ULL);
         switch(n) {
             case 5: p.flip_BLACK_C7(); [[fallthrough]];
             case 4: p.flip_BLACK_C6(); [[fallthrough]];
@@ -805,7 +806,7 @@ void RXBBPatterns::update_patterns_BLACK_C2(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000100804020000ULL);
+        const int n = std::popcount(flipped & 0X0000100804020000ULL);
         switch(n) {
             case 4: p.flip_BLACK_G6(); [[fallthrough]];
             case 3: p.flip_BLACK_F5(); [[fallthrough]];
@@ -821,7 +822,7 @@ void RXBBPatterns::update_patterns_BLACK_C2(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X001E000000000000ULL);
+        const int n = std::popcount(flipped & 0X001E000000000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_G2(); [[fallthrough]];
             case 3: p.flip_BLACK_F2(); [[fallthrough]];
@@ -847,7 +848,7 @@ void RXBBPatterns::update_patterns_BLACK_D2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000101010101000ULL);
+        const int n = std::popcount(flipped & 0X0000101010101000ULL);
         switch(n) {
             case 5: p.flip_BLACK_D7(); [[fallthrough]];
             case 4: p.flip_BLACK_D6(); [[fallthrough]];
@@ -860,7 +861,7 @@ void RXBBPatterns::update_patterns_BLACK_D2(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000080402000000ULL);
+        const int n = std::popcount(flipped & 0X0000080402000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_G5(); [[fallthrough]];
             case 2: p.flip_BLACK_F4(); [[fallthrough]];
@@ -871,7 +872,7 @@ void RXBBPatterns::update_patterns_BLACK_D2(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000204000000000ULL);
+        const int n = std::popcount(flipped & 0X0000204000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_B4(); [[fallthrough]];
             case 1: p.flip_BLACK_C3();
@@ -881,7 +882,7 @@ void RXBBPatterns::update_patterns_BLACK_D2(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000E000000000000ULL);
+        const int n = std::popcount(flipped & 0X000E000000000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_G2(); [[fallthrough]];
             case 2: p.flip_BLACK_F2(); [[fallthrough]];
@@ -892,7 +893,7 @@ void RXBBPatterns::update_patterns_BLACK_D2(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0060000000000000ULL);
+        const int n = std::popcount(flipped & 0X0060000000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_B2(); [[fallthrough]];
             case 1: p.flip_BLACK_C2();
@@ -912,7 +913,7 @@ void RXBBPatterns::update_patterns_BLACK_E2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000080808080800ULL);
+        const int n = std::popcount(flipped & 0X0000080808080800ULL);
         switch(n) {
             case 5: p.flip_BLACK_E7(); [[fallthrough]];
             case 4: p.flip_BLACK_E6(); [[fallthrough]];
@@ -925,7 +926,7 @@ void RXBBPatterns::update_patterns_BLACK_E2(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000040200000000ULL);
+        const int n = std::popcount(flipped & 0X0000040200000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_G4(); [[fallthrough]];
             case 1: p.flip_BLACK_F3();
@@ -935,7 +936,7 @@ void RXBBPatterns::update_patterns_BLACK_E2(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000102040000000ULL);
+        const int n = std::popcount(flipped & 0X0000102040000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_B5(); [[fallthrough]];
             case 2: p.flip_BLACK_C4(); [[fallthrough]];
@@ -946,7 +947,7 @@ void RXBBPatterns::update_patterns_BLACK_E2(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0006000000000000ULL);
+        const int n = std::popcount(flipped & 0X0006000000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_G2(); [[fallthrough]];
             case 1: p.flip_BLACK_F2();
@@ -956,7 +957,7 @@ void RXBBPatterns::update_patterns_BLACK_E2(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0070000000000000ULL);
+        const int n = std::popcount(flipped & 0X0070000000000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_B2(); [[fallthrough]];
             case 2: p.flip_BLACK_C2(); [[fallthrough]];
@@ -977,7 +978,7 @@ void RXBBPatterns::update_patterns_BLACK_F2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000040404040400ULL);
+        const int n = std::popcount(flipped & 0X0000040404040400ULL);
         switch(n) {
             case 5: p.flip_BLACK_F7(); [[fallthrough]];
             case 4: p.flip_BLACK_F6(); [[fallthrough]];
@@ -994,7 +995,7 @@ void RXBBPatterns::update_patterns_BLACK_F2(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000081020400000ULL);
+        const int n = std::popcount(flipped & 0X0000081020400000ULL);
         switch(n) {
             case 4: p.flip_BLACK_B6(); [[fallthrough]];
             case 3: p.flip_BLACK_C5(); [[fallthrough]];
@@ -1010,7 +1011,7 @@ void RXBBPatterns::update_patterns_BLACK_F2(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0078000000000000ULL);
+        const int n = std::popcount(flipped & 0X0078000000000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_B2(); [[fallthrough]];
             case 3: p.flip_BLACK_C2(); [[fallthrough]];
@@ -1032,7 +1033,7 @@ void RXBBPatterns::update_patterns_BLACK_G2(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000040810204000ULL);
+        const int n = std::popcount(flipped & 0X0000040810204000ULL);
         switch(n) {
             case 5: p.flip_BLACK_B7(); [[fallthrough]];
             case 4: p.flip_BLACK_C6(); [[fallthrough]];
@@ -1045,7 +1046,7 @@ void RXBBPatterns::update_patterns_BLACK_G2(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X007C000000000000ULL);
+        const int n = std::popcount(flipped & 0X007C000000000000ULL);
         switch(n) {
             case 5: p.flip_BLACK_B2(); [[fallthrough]];
             case 4: p.flip_BLACK_C2(); [[fallthrough]];
@@ -1058,7 +1059,7 @@ void RXBBPatterns::update_patterns_BLACK_G2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000020202020200ULL);
+        const int n = std::popcount(flipped & 0X0000020202020200ULL);
         switch(n) {
             case 5: p.flip_BLACK_G7(); [[fallthrough]];
             case 4: p.flip_BLACK_G6(); [[fallthrough]];
@@ -1081,7 +1082,7 @@ void RXBBPatterns::update_patterns_BLACK_H2(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000020408102000ULL);
+        const int n = std::popcount(flipped & 0X0000020408102000ULL);
         switch(n) {
             case 5: p.flip_BLACK_C7(); [[fallthrough]];
             case 4: p.flip_BLACK_D6(); [[fallthrough]];
@@ -1094,7 +1095,7 @@ void RXBBPatterns::update_patterns_BLACK_H2(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X007E000000000000ULL);
+        const int n = std::popcount(flipped & 0X007E000000000000ULL);
         switch(n) {
             case 6: p.flip_BLACK_B2(); [[fallthrough]];
             case 5: p.flip_BLACK_C2(); [[fallthrough]];
@@ -1108,7 +1109,7 @@ void RXBBPatterns::update_patterns_BLACK_H2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000010101010100ULL);
+        const int n = std::popcount(flipped & 0X0000010101010100ULL);
         switch(n) {
             case 5: p.flip_BLACK_H7(); [[fallthrough]];
             case 4: p.flip_BLACK_H6(); [[fallthrough]];
@@ -1131,7 +1132,7 @@ void RXBBPatterns::update_patterns_BLACK_A3(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00007E0000000000ULL);
+        const int n = std::popcount(flipped & 0X00007E0000000000ULL);
         switch(n) {
             case 6: p.flip_BLACK_G3(); [[fallthrough]];
             case 5: p.flip_BLACK_F3(); [[fallthrough]];
@@ -1149,7 +1150,7 @@ void RXBBPatterns::update_patterns_BLACK_A3(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000004020100800ULL);
+        const int n = std::popcount(flipped & 0X0000004020100800ULL);
         switch(n) {
             case 4: p.flip_BLACK_E7(); [[fallthrough]];
             case 3: p.flip_BLACK_D6(); [[fallthrough]];
@@ -1165,7 +1166,7 @@ void RXBBPatterns::update_patterns_BLACK_A3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000008080808000ULL);
+        const int n = std::popcount(flipped & 0X0000008080808000ULL);
         switch(n) {
             case 4: p.flip_BLACK_A7(); [[fallthrough]];
             case 3: p.flip_BLACK_A6(); [[fallthrough]];
@@ -1187,7 +1188,7 @@ void RXBBPatterns::update_patterns_BLACK_B3(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00003E0000000000ULL);
+        const int n = std::popcount(flipped & 0X00003E0000000000ULL);
         switch(n) {
             case 5: p.flip_BLACK_G3(); [[fallthrough]];
             case 4: p.flip_BLACK_F3(); [[fallthrough]];
@@ -1204,7 +1205,7 @@ void RXBBPatterns::update_patterns_BLACK_B3(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000002010080400ULL);
+        const int n = std::popcount(flipped & 0X0000002010080400ULL);
         switch(n) {
             case 4: p.flip_BLACK_F7(); [[fallthrough]];
             case 3: p.flip_BLACK_E6(); [[fallthrough]];
@@ -1220,7 +1221,7 @@ void RXBBPatterns::update_patterns_BLACK_B3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000004040404000ULL);
+        const int n = std::popcount(flipped & 0X0000004040404000ULL);
         switch(n) {
             case 4: p.flip_BLACK_B7(); [[fallthrough]];
             case 3: p.flip_BLACK_B6(); [[fallthrough]];
@@ -1242,7 +1243,7 @@ void RXBBPatterns::update_patterns_BLACK_C3(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000001008040200ULL);
+        const int n = std::popcount(flipped & 0X0000001008040200ULL);
         switch(n) {
             case 4: p.flip_BLACK_G7(); [[fallthrough]];
             case 3: p.flip_BLACK_F6(); [[fallthrough]];
@@ -1254,7 +1255,7 @@ void RXBBPatterns::update_patterns_BLACK_C3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000002020202000ULL);
+        const int n = std::popcount(flipped & 0X0000002020202000ULL);
         switch(n) {
             case 4: p.flip_BLACK_C7(); [[fallthrough]];
             case 3: p.flip_BLACK_C6(); [[fallthrough]];
@@ -1266,7 +1267,7 @@ void RXBBPatterns::update_patterns_BLACK_C3(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00001E0000000000ULL);
+        const int n = std::popcount(flipped & 0X00001E0000000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_G3(); [[fallthrough]];
             case 3: p.flip_BLACK_F3(); [[fallthrough]];
@@ -1308,7 +1309,7 @@ void RXBBPatterns::update_patterns_BLACK_D3(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000804020000ULL);
+        const int n = std::popcount(flipped & 0X0000000804020000ULL);
         switch(n) {
             case 3: p.flip_BLACK_G6(); [[fallthrough]];
             case 2: p.flip_BLACK_F5(); [[fallthrough]];
@@ -1319,7 +1320,7 @@ void RXBBPatterns::update_patterns_BLACK_D3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000001010101000ULL);
+        const int n = std::popcount(flipped & 0X0000001010101000ULL);
         switch(n) {
             case 4: p.flip_BLACK_D7(); [[fallthrough]];
             case 3: p.flip_BLACK_D6(); [[fallthrough]];
@@ -1331,7 +1332,7 @@ void RXBBPatterns::update_patterns_BLACK_D3(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00000E0000000000ULL);
+        const int n = std::popcount(flipped & 0X00000E0000000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_G3(); [[fallthrough]];
             case 2: p.flip_BLACK_F3(); [[fallthrough]];
@@ -1354,7 +1355,7 @@ void RXBBPatterns::update_patterns_BLACK_D3(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000002040000000ULL);
+        const int n = std::popcount(flipped & 0X0000002040000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_B5(); [[fallthrough]];
             case 1: p.flip_BLACK_C4();
@@ -1364,7 +1365,7 @@ void RXBBPatterns::update_patterns_BLACK_D3(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000600000000000ULL);
+        const int n = std::popcount(flipped & 0X0000600000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_B3(); [[fallthrough]];
             case 1: p.flip_BLACK_C3();
@@ -1384,7 +1385,7 @@ void RXBBPatterns::update_patterns_BLACK_E3(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000402000000ULL);
+        const int n = std::popcount(flipped & 0X0000000402000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_G5(); [[fallthrough]];
             case 1: p.flip_BLACK_F4();
@@ -1394,7 +1395,7 @@ void RXBBPatterns::update_patterns_BLACK_E3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000808080800ULL);
+        const int n = std::popcount(flipped & 0X0000000808080800ULL);
         switch(n) {
             case 4: p.flip_BLACK_E7(); [[fallthrough]];
             case 3: p.flip_BLACK_E6(); [[fallthrough]];
@@ -1406,7 +1407,7 @@ void RXBBPatterns::update_patterns_BLACK_E3(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000060000000000ULL);
+        const int n = std::popcount(flipped & 0X0000060000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_G3(); [[fallthrough]];
             case 1: p.flip_BLACK_F3();
@@ -1428,7 +1429,7 @@ void RXBBPatterns::update_patterns_BLACK_E3(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000001020400000ULL);
+        const int n = std::popcount(flipped & 0X0000001020400000ULL);
         switch(n) {
             case 3: p.flip_BLACK_B6(); [[fallthrough]];
             case 2: p.flip_BLACK_C5(); [[fallthrough]];
@@ -1439,7 +1440,7 @@ void RXBBPatterns::update_patterns_BLACK_E3(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000700000000000ULL);
+        const int n = std::popcount(flipped & 0X0000700000000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_B3(); [[fallthrough]];
             case 2: p.flip_BLACK_C3(); [[fallthrough]];
@@ -1464,7 +1465,7 @@ void RXBBPatterns::update_patterns_BLACK_F3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000404040400ULL);
+        const int n = std::popcount(flipped & 0X0000000404040400ULL);
         switch(n) {
             case 4: p.flip_BLACK_F7(); [[fallthrough]];
             case 3: p.flip_BLACK_F6(); [[fallthrough]];
@@ -1492,7 +1493,7 @@ void RXBBPatterns::update_patterns_BLACK_F3(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000810204000ULL);
+        const int n = std::popcount(flipped & 0X0000000810204000ULL);
         switch(n) {
             case 4: p.flip_BLACK_B7(); [[fallthrough]];
             case 3: p.flip_BLACK_C6(); [[fallthrough]];
@@ -1504,7 +1505,7 @@ void RXBBPatterns::update_patterns_BLACK_F3(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000780000000000ULL);
+        const int n = std::popcount(flipped & 0X0000780000000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_B3(); [[fallthrough]];
             case 3: p.flip_BLACK_C3(); [[fallthrough]];
@@ -1526,7 +1527,7 @@ void RXBBPatterns::update_patterns_BLACK_G3(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X00007C0000000000ULL);
+        const int n = std::popcount(flipped & 0X00007C0000000000ULL);
         switch(n) {
             case 5: p.flip_BLACK_B3(); [[fallthrough]];
             case 4: p.flip_BLACK_C3(); [[fallthrough]];
@@ -1539,7 +1540,7 @@ void RXBBPatterns::update_patterns_BLACK_G3(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000408102000ULL);
+        const int n = std::popcount(flipped & 0X0000000408102000ULL);
         switch(n) {
             case 4: p.flip_BLACK_C7(); [[fallthrough]];
             case 3: p.flip_BLACK_D6(); [[fallthrough]];
@@ -1555,7 +1556,7 @@ void RXBBPatterns::update_patterns_BLACK_G3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000202020200ULL);
+        const int n = std::popcount(flipped & 0X0000000202020200ULL);
         switch(n) {
             case 4: p.flip_BLACK_G7(); [[fallthrough]];
             case 3: p.flip_BLACK_G6(); [[fallthrough]];
@@ -1581,7 +1582,7 @@ void RXBBPatterns::update_patterns_BLACK_H3(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X00007E0000000000ULL);
+        const int n = std::popcount(flipped & 0X00007E0000000000ULL);
         switch(n) {
             case 6: p.flip_BLACK_B3(); [[fallthrough]];
             case 5: p.flip_BLACK_C3(); [[fallthrough]];
@@ -1595,7 +1596,7 @@ void RXBBPatterns::update_patterns_BLACK_H3(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000204081000ULL);
+        const int n = std::popcount(flipped & 0X0000000204081000ULL);
         switch(n) {
             case 4: p.flip_BLACK_D7(); [[fallthrough]];
             case 3: p.flip_BLACK_E6(); [[fallthrough]];
@@ -1611,7 +1612,7 @@ void RXBBPatterns::update_patterns_BLACK_H3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000101010100ULL);
+        const int n = std::popcount(flipped & 0X0000000101010100ULL);
         switch(n) {
             case 4: p.flip_BLACK_H7(); [[fallthrough]];
             case 3: p.flip_BLACK_H6(); [[fallthrough]];
@@ -1637,7 +1638,7 @@ void RXBBPatterns::update_patterns_BLACK_A4(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000007E00000000ULL);
+        const int n = std::popcount(flipped & 0X0000007E00000000ULL);
         switch(n) {
             case 6: p.flip_BLACK_G4(); [[fallthrough]];
             case 5: p.flip_BLACK_F4(); [[fallthrough]];
@@ -1651,7 +1652,7 @@ void RXBBPatterns::update_patterns_BLACK_A4(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020400000000000ULL);
+        const int n = std::popcount(flipped & 0X0020400000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_C2(); [[fallthrough]];
             case 1: p.flip_BLACK_B3();
@@ -1661,7 +1662,7 @@ void RXBBPatterns::update_patterns_BLACK_A4(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000040201000ULL);
+        const int n = std::popcount(flipped & 0X0000000040201000ULL);
         switch(n) {
             case 3: p.flip_BLACK_D7(); [[fallthrough]];
             case 2: p.flip_BLACK_C6(); [[fallthrough]];
@@ -1672,7 +1673,7 @@ void RXBBPatterns::update_patterns_BLACK_A4(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0080800000000000ULL);
+        const int n = std::popcount(flipped & 0X0080800000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_A2(); [[fallthrough]];
             case 1: p.flip_BLACK_A3();
@@ -1682,7 +1683,7 @@ void RXBBPatterns::update_patterns_BLACK_A4(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000080808000ULL);
+        const int n = std::popcount(flipped & 0X0000000080808000ULL);
         switch(n) {
             case 3: p.flip_BLACK_A7(); [[fallthrough]];
             case 2: p.flip_BLACK_A6(); [[fallthrough]];
@@ -1703,7 +1704,7 @@ void RXBBPatterns::update_patterns_BLACK_B4(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000003E00000000ULL);
+        const int n = std::popcount(flipped & 0X0000003E00000000ULL);
         switch(n) {
             case 5: p.flip_BLACK_G4(); [[fallthrough]];
             case 4: p.flip_BLACK_F4(); [[fallthrough]];
@@ -1716,7 +1717,7 @@ void RXBBPatterns::update_patterns_BLACK_B4(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010200000000000ULL);
+        const int n = std::popcount(flipped & 0X0010200000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_D2(); [[fallthrough]];
             case 1: p.flip_BLACK_C3();
@@ -1726,7 +1727,7 @@ void RXBBPatterns::update_patterns_BLACK_B4(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000020100800ULL);
+        const int n = std::popcount(flipped & 0X0000000020100800ULL);
         switch(n) {
             case 3: p.flip_BLACK_E7(); [[fallthrough]];
             case 2: p.flip_BLACK_D6(); [[fallthrough]];
@@ -1737,7 +1738,7 @@ void RXBBPatterns::update_patterns_BLACK_B4(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040400000000000ULL);
+        const int n = std::popcount(flipped & 0X0040400000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_B2(); [[fallthrough]];
             case 1: p.flip_BLACK_B3();
@@ -1747,7 +1748,7 @@ void RXBBPatterns::update_patterns_BLACK_B4(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000040404000ULL);
+        const int n = std::popcount(flipped & 0X0000000040404000ULL);
         switch(n) {
             case 3: p.flip_BLACK_B7(); [[fallthrough]];
             case 2: p.flip_BLACK_B6(); [[fallthrough]];
@@ -1768,7 +1769,7 @@ void RXBBPatterns::update_patterns_BLACK_C4(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000010080400ULL);
+        const int n = std::popcount(flipped & 0X0000000010080400ULL);
         switch(n) {
             case 3: p.flip_BLACK_F7(); [[fallthrough]];
             case 2: p.flip_BLACK_E6(); [[fallthrough]];
@@ -1779,7 +1780,7 @@ void RXBBPatterns::update_patterns_BLACK_C4(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000020202000ULL);
+        const int n = std::popcount(flipped & 0X0000000020202000ULL);
         switch(n) {
             case 3: p.flip_BLACK_C7(); [[fallthrough]];
             case 2: p.flip_BLACK_C6(); [[fallthrough]];
@@ -1790,7 +1791,7 @@ void RXBBPatterns::update_patterns_BLACK_C4(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000001E00000000ULL);
+        const int n = std::popcount(flipped & 0X0000001E00000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_G4(); [[fallthrough]];
             case 3: p.flip_BLACK_F4(); [[fallthrough]];
@@ -1802,7 +1803,7 @@ void RXBBPatterns::update_patterns_BLACK_C4(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008100000000000ULL);
+        const int n = std::popcount(flipped & 0X0008100000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_E2(); [[fallthrough]];
             case 1: p.flip_BLACK_D3();
@@ -1812,7 +1813,7 @@ void RXBBPatterns::update_patterns_BLACK_C4(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020200000000000ULL);
+        const int n = std::popcount(flipped & 0X0020200000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_C2(); [[fallthrough]];
             case 1: p.flip_BLACK_C3();
@@ -1852,7 +1853,7 @@ void RXBBPatterns::update_patterns_BLACK_F4(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000004040400ULL);
+        const int n = std::popcount(flipped & 0X0000000004040400ULL);
         switch(n) {
             case 3: p.flip_BLACK_F7(); [[fallthrough]];
             case 2: p.flip_BLACK_F6(); [[fallthrough]];
@@ -1871,7 +1872,7 @@ void RXBBPatterns::update_patterns_BLACK_F4(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004040000000000ULL);
+        const int n = std::popcount(flipped & 0X0004040000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_F2(); [[fallthrough]];
             case 1: p.flip_BLACK_F3();
@@ -1881,7 +1882,7 @@ void RXBBPatterns::update_patterns_BLACK_F4(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010080000000000ULL);
+        const int n = std::popcount(flipped & 0X0010080000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_D2(); [[fallthrough]];
             case 1: p.flip_BLACK_E3();
@@ -1891,7 +1892,7 @@ void RXBBPatterns::update_patterns_BLACK_F4(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000008102000ULL);
+        const int n = std::popcount(flipped & 0X0000000008102000ULL);
         switch(n) {
             case 3: p.flip_BLACK_C7(); [[fallthrough]];
             case 2: p.flip_BLACK_D6(); [[fallthrough]];
@@ -1902,7 +1903,7 @@ void RXBBPatterns::update_patterns_BLACK_F4(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000007800000000ULL);
+        const int n = std::popcount(flipped & 0X0000007800000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_B4(); [[fallthrough]];
             case 3: p.flip_BLACK_C4(); [[fallthrough]];
@@ -1924,7 +1925,7 @@ void RXBBPatterns::update_patterns_BLACK_G4(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000007C00000000ULL);
+        const int n = std::popcount(flipped & 0X0000007C00000000ULL);
         switch(n) {
             case 5: p.flip_BLACK_B4(); [[fallthrough]];
             case 4: p.flip_BLACK_C4(); [[fallthrough]];
@@ -1937,7 +1938,7 @@ void RXBBPatterns::update_patterns_BLACK_G4(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000004081000ULL);
+        const int n = std::popcount(flipped & 0X0000000004081000ULL);
         switch(n) {
             case 3: p.flip_BLACK_D7(); [[fallthrough]];
             case 2: p.flip_BLACK_E6(); [[fallthrough]];
@@ -1948,7 +1949,7 @@ void RXBBPatterns::update_patterns_BLACK_G4(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008040000000000ULL);
+        const int n = std::popcount(flipped & 0X0008040000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_E2(); [[fallthrough]];
             case 1: p.flip_BLACK_F3();
@@ -1958,7 +1959,7 @@ void RXBBPatterns::update_patterns_BLACK_G4(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000002020200ULL);
+        const int n = std::popcount(flipped & 0X0000000002020200ULL);
         switch(n) {
             case 3: p.flip_BLACK_G7(); [[fallthrough]];
             case 2: p.flip_BLACK_G6(); [[fallthrough]];
@@ -1969,7 +1970,7 @@ void RXBBPatterns::update_patterns_BLACK_G4(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002020000000000ULL);
+        const int n = std::popcount(flipped & 0X0002020000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_G2(); [[fallthrough]];
             case 1: p.flip_BLACK_G3();
@@ -1989,7 +1990,7 @@ void RXBBPatterns::update_patterns_BLACK_H4(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000007E00000000ULL);
+        const int n = std::popcount(flipped & 0X0000007E00000000ULL);
         switch(n) {
             case 6: p.flip_BLACK_B4(); [[fallthrough]];
             case 5: p.flip_BLACK_C4(); [[fallthrough]];
@@ -2003,7 +2004,7 @@ void RXBBPatterns::update_patterns_BLACK_H4(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000002040800ULL);
+        const int n = std::popcount(flipped & 0X0000000002040800ULL);
         switch(n) {
             case 3: p.flip_BLACK_E7(); [[fallthrough]];
             case 2: p.flip_BLACK_F6(); [[fallthrough]];
@@ -2014,7 +2015,7 @@ void RXBBPatterns::update_patterns_BLACK_H4(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004020000000000ULL);
+        const int n = std::popcount(flipped & 0X0004020000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_F2(); [[fallthrough]];
             case 1: p.flip_BLACK_G3();
@@ -2024,7 +2025,7 @@ void RXBBPatterns::update_patterns_BLACK_H4(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000001010100ULL);
+        const int n = std::popcount(flipped & 0X0000000001010100ULL);
         switch(n) {
             case 3: p.flip_BLACK_H7(); [[fallthrough]];
             case 2: p.flip_BLACK_H6(); [[fallthrough]];
@@ -2035,7 +2036,7 @@ void RXBBPatterns::update_patterns_BLACK_H4(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0001010000000000ULL);
+        const int n = std::popcount(flipped & 0X0001010000000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_H2(); [[fallthrough]];
             case 1: p.flip_BLACK_H3();
@@ -2055,7 +2056,7 @@ void RXBBPatterns::update_patterns_BLACK_A5(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000007E000000ULL);
+        const int n = std::popcount(flipped & 0X000000007E000000ULL);
         switch(n) {
             case 6: p.flip_BLACK_G5(); [[fallthrough]];
             case 5: p.flip_BLACK_F5(); [[fallthrough]];
@@ -2069,7 +2070,7 @@ void RXBBPatterns::update_patterns_BLACK_A5(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010204000000000ULL);
+        const int n = std::popcount(flipped & 0X0010204000000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_D2(); [[fallthrough]];
             case 2: p.flip_BLACK_C3(); [[fallthrough]];
@@ -2080,7 +2081,7 @@ void RXBBPatterns::update_patterns_BLACK_A5(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000402000ULL);
+        const int n = std::popcount(flipped & 0X0000000000402000ULL);
         switch(n) {
             case 2: p.flip_BLACK_C7(); [[fallthrough]];
             case 1: p.flip_BLACK_B6();
@@ -2090,7 +2091,7 @@ void RXBBPatterns::update_patterns_BLACK_A5(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0080808000000000ULL);
+        const int n = std::popcount(flipped & 0X0080808000000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_A2(); [[fallthrough]];
             case 2: p.flip_BLACK_A3(); [[fallthrough]];
@@ -2101,7 +2102,7 @@ void RXBBPatterns::update_patterns_BLACK_A5(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000808000ULL);
+        const int n = std::popcount(flipped & 0X0000000000808000ULL);
         switch(n) {
             case 2: p.flip_BLACK_A7(); [[fallthrough]];
             case 1: p.flip_BLACK_A6();
@@ -2121,7 +2122,7 @@ void RXBBPatterns::update_patterns_BLACK_B5(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000003E000000ULL);
+        const int n = std::popcount(flipped & 0X000000003E000000ULL);
         switch(n) {
             case 5: p.flip_BLACK_G5(); [[fallthrough]];
             case 4: p.flip_BLACK_F5(); [[fallthrough]];
@@ -2134,7 +2135,7 @@ void RXBBPatterns::update_patterns_BLACK_B5(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008102000000000ULL);
+        const int n = std::popcount(flipped & 0X0008102000000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_E2(); [[fallthrough]];
             case 2: p.flip_BLACK_D3(); [[fallthrough]];
@@ -2145,7 +2146,7 @@ void RXBBPatterns::update_patterns_BLACK_B5(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000201000ULL);
+        const int n = std::popcount(flipped & 0X0000000000201000ULL);
         switch(n) {
             case 2: p.flip_BLACK_D7(); [[fallthrough]];
             case 1: p.flip_BLACK_C6();
@@ -2155,7 +2156,7 @@ void RXBBPatterns::update_patterns_BLACK_B5(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040404000000000ULL);
+        const int n = std::popcount(flipped & 0X0040404000000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_B2(); [[fallthrough]];
             case 2: p.flip_BLACK_B3(); [[fallthrough]];
@@ -2166,7 +2167,7 @@ void RXBBPatterns::update_patterns_BLACK_B5(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000404000ULL);
+        const int n = std::popcount(flipped & 0X0000000000404000ULL);
         switch(n) {
             case 2: p.flip_BLACK_B7(); [[fallthrough]];
             case 1: p.flip_BLACK_B6();
@@ -2186,7 +2187,7 @@ void RXBBPatterns::update_patterns_BLACK_C5(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000100800ULL);
+        const int n = std::popcount(flipped & 0X0000000000100800ULL);
         switch(n) {
             case 2: p.flip_BLACK_E7(); [[fallthrough]];
             case 1: p.flip_BLACK_D6();
@@ -2196,7 +2197,7 @@ void RXBBPatterns::update_patterns_BLACK_C5(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000202000ULL);
+        const int n = std::popcount(flipped & 0X0000000000202000ULL);
         switch(n) {
             case 2: p.flip_BLACK_C7(); [[fallthrough]];
             case 1: p.flip_BLACK_C6();
@@ -2206,7 +2207,7 @@ void RXBBPatterns::update_patterns_BLACK_C5(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000001E000000ULL);
+        const int n = std::popcount(flipped & 0X000000001E000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_G5(); [[fallthrough]];
             case 3: p.flip_BLACK_F5(); [[fallthrough]];
@@ -2218,7 +2219,7 @@ void RXBBPatterns::update_patterns_BLACK_C5(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004081000000000ULL);
+        const int n = std::popcount(flipped & 0X0004081000000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_F2(); [[fallthrough]];
             case 2: p.flip_BLACK_E3(); [[fallthrough]];
@@ -2229,7 +2230,7 @@ void RXBBPatterns::update_patterns_BLACK_C5(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020202000000000ULL);
+        const int n = std::popcount(flipped & 0X0020202000000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_C2(); [[fallthrough]];
             case 2: p.flip_BLACK_C3(); [[fallthrough]];
@@ -2269,7 +2270,7 @@ void RXBBPatterns::update_patterns_BLACK_F5(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000040400ULL);
+        const int n = std::popcount(flipped & 0X0000000000040400ULL);
         switch(n) {
             case 2: p.flip_BLACK_F7(); [[fallthrough]];
             case 1: p.flip_BLACK_F6();
@@ -2287,7 +2288,7 @@ void RXBBPatterns::update_patterns_BLACK_F5(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004040400000000ULL);
+        const int n = std::popcount(flipped & 0X0004040400000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_F2(); [[fallthrough]];
             case 2: p.flip_BLACK_F3(); [[fallthrough]];
@@ -2298,7 +2299,7 @@ void RXBBPatterns::update_patterns_BLACK_F5(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020100800000000ULL);
+        const int n = std::popcount(flipped & 0X0020100800000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_C2(); [[fallthrough]];
             case 2: p.flip_BLACK_D3(); [[fallthrough]];
@@ -2309,7 +2310,7 @@ void RXBBPatterns::update_patterns_BLACK_F5(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000081000ULL);
+        const int n = std::popcount(flipped & 0X0000000000081000ULL);
         switch(n) {
             case 2: p.flip_BLACK_D7(); [[fallthrough]];
             case 1: p.flip_BLACK_E6();
@@ -2319,7 +2320,7 @@ void RXBBPatterns::update_patterns_BLACK_F5(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000078000000ULL);
+        const int n = std::popcount(flipped & 0X0000000078000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_B5(); [[fallthrough]];
             case 3: p.flip_BLACK_C5(); [[fallthrough]];
@@ -2341,7 +2342,7 @@ void RXBBPatterns::update_patterns_BLACK_G5(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000007C000000ULL);
+        const int n = std::popcount(flipped & 0X000000007C000000ULL);
         switch(n) {
             case 5: p.flip_BLACK_B5(); [[fallthrough]];
             case 4: p.flip_BLACK_C5(); [[fallthrough]];
@@ -2354,7 +2355,7 @@ void RXBBPatterns::update_patterns_BLACK_G5(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000040800ULL);
+        const int n = std::popcount(flipped & 0X0000000000040800ULL);
         switch(n) {
             case 2: p.flip_BLACK_E7(); [[fallthrough]];
             case 1: p.flip_BLACK_F6();
@@ -2364,7 +2365,7 @@ void RXBBPatterns::update_patterns_BLACK_G5(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010080400000000ULL);
+        const int n = std::popcount(flipped & 0X0010080400000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_D2(); [[fallthrough]];
             case 2: p.flip_BLACK_E3(); [[fallthrough]];
@@ -2375,7 +2376,7 @@ void RXBBPatterns::update_patterns_BLACK_G5(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000020200ULL);
+        const int n = std::popcount(flipped & 0X0000000000020200ULL);
         switch(n) {
             case 2: p.flip_BLACK_G7(); [[fallthrough]];
             case 1: p.flip_BLACK_G6();
@@ -2385,7 +2386,7 @@ void RXBBPatterns::update_patterns_BLACK_G5(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002020200000000ULL);
+        const int n = std::popcount(flipped & 0X0002020200000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_G2(); [[fallthrough]];
             case 2: p.flip_BLACK_G3(); [[fallthrough]];
@@ -2406,7 +2407,7 @@ void RXBBPatterns::update_patterns_BLACK_H5(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000007E000000ULL);
+        const int n = std::popcount(flipped & 0X000000007E000000ULL);
         switch(n) {
             case 6: p.flip_BLACK_B5(); [[fallthrough]];
             case 5: p.flip_BLACK_C5(); [[fallthrough]];
@@ -2420,7 +2421,7 @@ void RXBBPatterns::update_patterns_BLACK_H5(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000020400ULL);
+        const int n = std::popcount(flipped & 0X0000000000020400ULL);
         switch(n) {
             case 2: p.flip_BLACK_F7(); [[fallthrough]];
             case 1: p.flip_BLACK_G6();
@@ -2430,7 +2431,7 @@ void RXBBPatterns::update_patterns_BLACK_H5(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008040200000000ULL);
+        const int n = std::popcount(flipped & 0X0008040200000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_E2(); [[fallthrough]];
             case 2: p.flip_BLACK_F3(); [[fallthrough]];
@@ -2441,7 +2442,7 @@ void RXBBPatterns::update_patterns_BLACK_H5(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000010100ULL);
+        const int n = std::popcount(flipped & 0X0000000000010100ULL);
         switch(n) {
             case 2: p.flip_BLACK_H7(); [[fallthrough]];
             case 1: p.flip_BLACK_H6();
@@ -2451,7 +2452,7 @@ void RXBBPatterns::update_patterns_BLACK_H5(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0001010100000000ULL);
+        const int n = std::popcount(flipped & 0X0001010100000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_H2(); [[fallthrough]];
             case 2: p.flip_BLACK_H3(); [[fallthrough]];
@@ -2472,7 +2473,7 @@ void RXBBPatterns::update_patterns_BLACK_A6(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00000000007E0000ULL);
+        const int n = std::popcount(flipped & 0X00000000007E0000ULL);
         switch(n) {
             case 6: p.flip_BLACK_G6(); [[fallthrough]];
             case 5: p.flip_BLACK_F6(); [[fallthrough]];
@@ -2486,7 +2487,7 @@ void RXBBPatterns::update_patterns_BLACK_A6(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008102040000000ULL);
+        const int n = std::popcount(flipped & 0X0008102040000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_E2(); [[fallthrough]];
             case 3: p.flip_BLACK_D3(); [[fallthrough]];
@@ -2502,7 +2503,7 @@ void RXBBPatterns::update_patterns_BLACK_A6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0080808080000000ULL);
+        const int n = std::popcount(flipped & 0X0080808080000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_A2(); [[fallthrough]];
             case 3: p.flip_BLACK_A3(); [[fallthrough]];
@@ -2528,7 +2529,7 @@ void RXBBPatterns::update_patterns_BLACK_B6(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00000000003E0000ULL);
+        const int n = std::popcount(flipped & 0X00000000003E0000ULL);
         switch(n) {
             case 5: p.flip_BLACK_G6(); [[fallthrough]];
             case 4: p.flip_BLACK_F6(); [[fallthrough]];
@@ -2541,7 +2542,7 @@ void RXBBPatterns::update_patterns_BLACK_B6(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004081020000000ULL);
+        const int n = std::popcount(flipped & 0X0004081020000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_F2(); [[fallthrough]];
             case 3: p.flip_BLACK_E3(); [[fallthrough]];
@@ -2557,7 +2558,7 @@ void RXBBPatterns::update_patterns_BLACK_B6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040404040000000ULL);
+        const int n = std::popcount(flipped & 0X0040404040000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_B2(); [[fallthrough]];
             case 3: p.flip_BLACK_B3(); [[fallthrough]];
@@ -2591,7 +2592,7 @@ void RXBBPatterns::update_patterns_BLACK_C6(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00000000001E0000ULL);
+        const int n = std::popcount(flipped & 0X00000000001E0000ULL);
         switch(n) {
             case 4: p.flip_BLACK_G6(); [[fallthrough]];
             case 3: p.flip_BLACK_F6(); [[fallthrough]];
@@ -2603,7 +2604,7 @@ void RXBBPatterns::update_patterns_BLACK_C6(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002040810000000ULL);
+        const int n = std::popcount(flipped & 0X0002040810000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_G2(); [[fallthrough]];
             case 3: p.flip_BLACK_F3(); [[fallthrough]];
@@ -2615,7 +2616,7 @@ void RXBBPatterns::update_patterns_BLACK_C6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020202020000000ULL);
+        const int n = std::popcount(flipped & 0X0020202020000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_C2(); [[fallthrough]];
             case 3: p.flip_BLACK_C3(); [[fallthrough]];
@@ -2657,7 +2658,7 @@ void RXBBPatterns::update_patterns_BLACK_D6(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00000000000E0000ULL);
+        const int n = std::popcount(flipped & 0X00000000000E0000ULL);
         switch(n) {
             case 3: p.flip_BLACK_G6(); [[fallthrough]];
             case 2: p.flip_BLACK_F6(); [[fallthrough]];
@@ -2668,7 +2669,7 @@ void RXBBPatterns::update_patterns_BLACK_D6(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000020408000000ULL);
+        const int n = std::popcount(flipped & 0X0000020408000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_G3(); [[fallthrough]];
             case 2: p.flip_BLACK_F4(); [[fallthrough]];
@@ -2679,7 +2680,7 @@ void RXBBPatterns::update_patterns_BLACK_D6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010101010000000ULL);
+        const int n = std::popcount(flipped & 0X0010101010000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_D2(); [[fallthrough]];
             case 3: p.flip_BLACK_D3(); [[fallthrough]];
@@ -2691,7 +2692,7 @@ void RXBBPatterns::update_patterns_BLACK_D6(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000004020000000ULL);
+        const int n = std::popcount(flipped & 0X0000004020000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_B4(); [[fallthrough]];
             case 1: p.flip_BLACK_C5();
@@ -2705,7 +2706,7 @@ void RXBBPatterns::update_patterns_BLACK_D6(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000600000ULL);
+        const int n = std::popcount(flipped & 0X0000000000600000ULL);
         switch(n) {
             case 2: p.flip_BLACK_B6(); [[fallthrough]];
             case 1: p.flip_BLACK_C6();
@@ -2733,7 +2734,7 @@ void RXBBPatterns::update_patterns_BLACK_E6(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000060000ULL);
+        const int n = std::popcount(flipped & 0X0000000000060000ULL);
         switch(n) {
             case 2: p.flip_BLACK_G6(); [[fallthrough]];
             case 1: p.flip_BLACK_F6();
@@ -2743,7 +2744,7 @@ void RXBBPatterns::update_patterns_BLACK_E6(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000204000000ULL);
+        const int n = std::popcount(flipped & 0X0000000204000000ULL);
         switch(n) {
             case 2: p.flip_BLACK_G4(); [[fallthrough]];
             case 1: p.flip_BLACK_F5();
@@ -2753,7 +2754,7 @@ void RXBBPatterns::update_patterns_BLACK_E6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008080808000000ULL);
+        const int n = std::popcount(flipped & 0X0008080808000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_E2(); [[fallthrough]];
             case 3: p.flip_BLACK_E3(); [[fallthrough]];
@@ -2765,7 +2766,7 @@ void RXBBPatterns::update_patterns_BLACK_E6(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000402010000000ULL);
+        const int n = std::popcount(flipped & 0X0000402010000000ULL);
         switch(n) {
             case 3: p.flip_BLACK_B3(); [[fallthrough]];
             case 2: p.flip_BLACK_C4(); [[fallthrough]];
@@ -2780,7 +2781,7 @@ void RXBBPatterns::update_patterns_BLACK_E6(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000700000ULL);
+        const int n = std::popcount(flipped & 0X0000000000700000ULL);
         switch(n) {
             case 3: p.flip_BLACK_B6(); [[fallthrough]];
             case 2: p.flip_BLACK_C6(); [[fallthrough]];
@@ -2817,7 +2818,7 @@ void RXBBPatterns::update_patterns_BLACK_F6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004040404000000ULL);
+        const int n = std::popcount(flipped & 0X0004040404000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_F2(); [[fallthrough]];
             case 3: p.flip_BLACK_F3(); [[fallthrough]];
@@ -2829,7 +2830,7 @@ void RXBBPatterns::update_patterns_BLACK_F6(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040201008000000ULL);
+        const int n = std::popcount(flipped & 0X0040201008000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_B2(); [[fallthrough]];
             case 3: p.flip_BLACK_C3(); [[fallthrough]];
@@ -2845,7 +2846,7 @@ void RXBBPatterns::update_patterns_BLACK_F6(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000780000ULL);
+        const int n = std::popcount(flipped & 0X0000000000780000ULL);
         switch(n) {
             case 4: p.flip_BLACK_B6(); [[fallthrough]];
             case 3: p.flip_BLACK_C6(); [[fallthrough]];
@@ -2867,7 +2868,7 @@ void RXBBPatterns::update_patterns_BLACK_G6(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X00000000007C0000ULL);
+        const int n = std::popcount(flipped & 0X00000000007C0000ULL);
         switch(n) {
             case 5: p.flip_BLACK_B6(); [[fallthrough]];
             case 4: p.flip_BLACK_C6(); [[fallthrough]];
@@ -2884,7 +2885,7 @@ void RXBBPatterns::update_patterns_BLACK_G6(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020100804000000ULL);
+        const int n = std::popcount(flipped & 0X0020100804000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_C2(); [[fallthrough]];
             case 3: p.flip_BLACK_D3(); [[fallthrough]];
@@ -2900,7 +2901,7 @@ void RXBBPatterns::update_patterns_BLACK_G6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002020202000000ULL);
+        const int n = std::popcount(flipped & 0X0002020202000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_G2(); [[fallthrough]];
             case 3: p.flip_BLACK_G3(); [[fallthrough]];
@@ -2922,7 +2923,7 @@ void RXBBPatterns::update_patterns_BLACK_H6(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X00000000007E0000ULL);
+        const int n = std::popcount(flipped & 0X00000000007E0000ULL);
         switch(n) {
             case 6: p.flip_BLACK_B6(); [[fallthrough]];
             case 5: p.flip_BLACK_C6(); [[fallthrough]];
@@ -2940,7 +2941,7 @@ void RXBBPatterns::update_patterns_BLACK_H6(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010080402000000ULL);
+        const int n = std::popcount(flipped & 0X0010080402000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_D2(); [[fallthrough]];
             case 3: p.flip_BLACK_E3(); [[fallthrough]];
@@ -2956,7 +2957,7 @@ void RXBBPatterns::update_patterns_BLACK_H6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0001010101000000ULL);
+        const int n = std::popcount(flipped & 0X0001010101000000ULL);
         switch(n) {
             case 4: p.flip_BLACK_H2(); [[fallthrough]];
             case 3: p.flip_BLACK_H3(); [[fallthrough]];
@@ -2978,7 +2979,7 @@ void RXBBPatterns::update_patterns_BLACK_A7(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004081020400000ULL);
+        const int n = std::popcount(flipped & 0X0004081020400000ULL);
         switch(n) {
             case 5: p.flip_BLACK_F2(); [[fallthrough]];
             case 4: p.flip_BLACK_E3(); [[fallthrough]];
@@ -2991,7 +2992,7 @@ void RXBBPatterns::update_patterns_BLACK_A7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0080808080800000ULL);
+        const int n = std::popcount(flipped & 0X0080808080800000ULL);
         switch(n) {
             case 5: p.flip_BLACK_A2(); [[fallthrough]];
             case 4: p.flip_BLACK_A3(); [[fallthrough]];
@@ -3004,7 +3005,7 @@ void RXBBPatterns::update_patterns_BLACK_A7(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000007E00ULL);
+        const int n = std::popcount(flipped & 0X0000000000007E00ULL);
         switch(n) {
             case 6: p.flip_BLACK_G7(); [[fallthrough]];
             case 5: p.flip_BLACK_F7(); [[fallthrough]];
@@ -3028,7 +3029,7 @@ void RXBBPatterns::update_patterns_BLACK_B7(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002040810200000ULL);
+        const int n = std::popcount(flipped & 0X0002040810200000ULL);
         switch(n) {
             case 5: p.flip_BLACK_G2(); [[fallthrough]];
             case 4: p.flip_BLACK_F3(); [[fallthrough]];
@@ -3041,7 +3042,7 @@ void RXBBPatterns::update_patterns_BLACK_B7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040404040400000ULL);
+        const int n = std::popcount(flipped & 0X0040404040400000ULL);
         switch(n) {
             case 5: p.flip_BLACK_B2(); [[fallthrough]];
             case 4: p.flip_BLACK_B3(); [[fallthrough]];
@@ -3054,7 +3055,7 @@ void RXBBPatterns::update_patterns_BLACK_B7(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000003E00ULL);
+        const int n = std::popcount(flipped & 0X0000000000003E00ULL);
         switch(n) {
             case 5: p.flip_BLACK_G7(); [[fallthrough]];
             case 4: p.flip_BLACK_F7(); [[fallthrough]];
@@ -3077,7 +3078,7 @@ void RXBBPatterns::update_patterns_BLACK_C7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020202020200000ULL);
+        const int n = std::popcount(flipped & 0X0020202020200000ULL);
         switch(n) {
             case 5: p.flip_BLACK_C2(); [[fallthrough]];
             case 4: p.flip_BLACK_C3(); [[fallthrough]];
@@ -3090,7 +3091,7 @@ void RXBBPatterns::update_patterns_BLACK_C7(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000020408100000ULL);
+        const int n = std::popcount(flipped & 0X0000020408100000ULL);
         switch(n) {
             case 4: p.flip_BLACK_G3(); [[fallthrough]];
             case 3: p.flip_BLACK_F4(); [[fallthrough]];
@@ -3106,7 +3107,7 @@ void RXBBPatterns::update_patterns_BLACK_C7(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000001E00ULL);
+        const int n = std::popcount(flipped & 0X0000000000001E00ULL);
         switch(n) {
             case 4: p.flip_BLACK_G7(); [[fallthrough]];
             case 3: p.flip_BLACK_F7(); [[fallthrough]];
@@ -3132,7 +3133,7 @@ void RXBBPatterns::update_patterns_BLACK_D7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010101010100000ULL);
+        const int n = std::popcount(flipped & 0X0010101010100000ULL);
         switch(n) {
             case 5: p.flip_BLACK_D2(); [[fallthrough]];
             case 4: p.flip_BLACK_D3(); [[fallthrough]];
@@ -3145,7 +3146,7 @@ void RXBBPatterns::update_patterns_BLACK_D7(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000204080000ULL);
+        const int n = std::popcount(flipped & 0X0000000204080000ULL);
         switch(n) {
             case 3: p.flip_BLACK_G4(); [[fallthrough]];
             case 2: p.flip_BLACK_F5(); [[fallthrough]];
@@ -3156,7 +3157,7 @@ void RXBBPatterns::update_patterns_BLACK_D7(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000040200000ULL);
+        const int n = std::popcount(flipped & 0X0000000040200000ULL);
         switch(n) {
             case 2: p.flip_BLACK_B5(); [[fallthrough]];
             case 1: p.flip_BLACK_C6();
@@ -3166,7 +3167,7 @@ void RXBBPatterns::update_patterns_BLACK_D7(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000000E00ULL);
+        const int n = std::popcount(flipped & 0X0000000000000E00ULL);
         switch(n) {
             case 3: p.flip_BLACK_G7(); [[fallthrough]];
             case 2: p.flip_BLACK_F7(); [[fallthrough]];
@@ -3177,7 +3178,7 @@ void RXBBPatterns::update_patterns_BLACK_D7(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000006000ULL);
+        const int n = std::popcount(flipped & 0X0000000000006000ULL);
         switch(n) {
             case 2: p.flip_BLACK_B7(); [[fallthrough]];
             case 1: p.flip_BLACK_C7();
@@ -3197,7 +3198,7 @@ void RXBBPatterns::update_patterns_BLACK_E7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008080808080000ULL);
+        const int n = std::popcount(flipped & 0X0008080808080000ULL);
         switch(n) {
             case 5: p.flip_BLACK_E2(); [[fallthrough]];
             case 4: p.flip_BLACK_E3(); [[fallthrough]];
@@ -3210,7 +3211,7 @@ void RXBBPatterns::update_patterns_BLACK_E7(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000002040000ULL);
+        const int n = std::popcount(flipped & 0X0000000002040000ULL);
         switch(n) {
             case 2: p.flip_BLACK_G5(); [[fallthrough]];
             case 1: p.flip_BLACK_F6();
@@ -3220,7 +3221,7 @@ void RXBBPatterns::update_patterns_BLACK_E7(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000004020100000ULL);
+        const int n = std::popcount(flipped & 0X0000004020100000ULL);
         switch(n) {
             case 3: p.flip_BLACK_B4(); [[fallthrough]];
             case 2: p.flip_BLACK_C5(); [[fallthrough]];
@@ -3231,7 +3232,7 @@ void RXBBPatterns::update_patterns_BLACK_E7(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000000600ULL);
+        const int n = std::popcount(flipped & 0X0000000000000600ULL);
         switch(n) {
             case 2: p.flip_BLACK_G7(); [[fallthrough]];
             case 1: p.flip_BLACK_F7();
@@ -3241,7 +3242,7 @@ void RXBBPatterns::update_patterns_BLACK_E7(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000007000ULL);
+        const int n = std::popcount(flipped & 0X0000000000007000ULL);
         switch(n) {
             case 3: p.flip_BLACK_B7(); [[fallthrough]];
             case 2: p.flip_BLACK_C7(); [[fallthrough]];
@@ -3262,7 +3263,7 @@ void RXBBPatterns::update_patterns_BLACK_F7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004040404040000ULL);
+        const int n = std::popcount(flipped & 0X0004040404040000ULL);
         switch(n) {
             case 5: p.flip_BLACK_F2(); [[fallthrough]];
             case 4: p.flip_BLACK_F3(); [[fallthrough]];
@@ -3279,7 +3280,7 @@ void RXBBPatterns::update_patterns_BLACK_F7(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000402010080000ULL);
+        const int n = std::popcount(flipped & 0X0000402010080000ULL);
         switch(n) {
             case 4: p.flip_BLACK_B3(); [[fallthrough]];
             case 3: p.flip_BLACK_C4(); [[fallthrough]];
@@ -3295,7 +3296,7 @@ void RXBBPatterns::update_patterns_BLACK_F7(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000007800ULL);
+        const int n = std::popcount(flipped & 0X0000000000007800ULL);
         switch(n) {
             case 4: p.flip_BLACK_B7(); [[fallthrough]];
             case 3: p.flip_BLACK_C7(); [[fallthrough]];
@@ -3317,7 +3318,7 @@ void RXBBPatterns::update_patterns_BLACK_G7(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040201008040000ULL);
+        const int n = std::popcount(flipped & 0X0040201008040000ULL);
         switch(n) {
             case 5: p.flip_BLACK_B2(); [[fallthrough]];
             case 4: p.flip_BLACK_C3(); [[fallthrough]];
@@ -3330,7 +3331,7 @@ void RXBBPatterns::update_patterns_BLACK_G7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002020202020000ULL);
+        const int n = std::popcount(flipped & 0X0002020202020000ULL);
         switch(n) {
             case 5: p.flip_BLACK_G2(); [[fallthrough]];
             case 4: p.flip_BLACK_G3(); [[fallthrough]];
@@ -3343,7 +3344,7 @@ void RXBBPatterns::update_patterns_BLACK_G7(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000007C00ULL);
+        const int n = std::popcount(flipped & 0X0000000000007C00ULL);
         switch(n) {
             case 5: p.flip_BLACK_B7(); [[fallthrough]];
             case 4: p.flip_BLACK_C7(); [[fallthrough]];
@@ -3366,7 +3367,7 @@ void RXBBPatterns::update_patterns_BLACK_H7(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020100804020000ULL);
+        const int n = std::popcount(flipped & 0X0020100804020000ULL);
         switch(n) {
             case 5: p.flip_BLACK_C2(); [[fallthrough]];
             case 4: p.flip_BLACK_D3(); [[fallthrough]];
@@ -3379,7 +3380,7 @@ void RXBBPatterns::update_patterns_BLACK_H7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0001010101010000ULL);
+        const int n = std::popcount(flipped & 0X0001010101010000ULL);
         switch(n) {
             case 5: p.flip_BLACK_H2(); [[fallthrough]];
             case 4: p.flip_BLACK_H3(); [[fallthrough]];
@@ -3392,7 +3393,7 @@ void RXBBPatterns::update_patterns_BLACK_H7(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000007E00ULL);
+        const int n = std::popcount(flipped & 0X0000000000007E00ULL);
         switch(n) {
             case 6: p.flip_BLACK_B7(); [[fallthrough]];
             case 5: p.flip_BLACK_C7(); [[fallthrough]];
@@ -3416,7 +3417,7 @@ void RXBBPatterns::update_patterns_BLACK_A8(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002040810204000ULL);
+        const int n = std::popcount(flipped & 0X0002040810204000ULL);
         switch(n) {
             case 6: p.flip_BLACK_G2(); [[fallthrough]];
             case 5: p.flip_BLACK_F3(); [[fallthrough]];
@@ -3430,7 +3431,7 @@ void RXBBPatterns::update_patterns_BLACK_A8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0080808080808000ULL);
+        const int n = std::popcount(flipped & 0X0080808080808000ULL);
         switch(n) {
             case 6: p.flip_BLACK_A2(); [[fallthrough]];
             case 5: p.flip_BLACK_A3(); [[fallthrough]];
@@ -3444,7 +3445,7 @@ void RXBBPatterns::update_patterns_BLACK_A8(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000000000007EULL);
+        const int n = std::popcount(flipped & 0X000000000000007EULL);
         switch(n) {
             case 6: p.flip_BLACK_G8(); [[fallthrough]];
             case 5: p.flip_BLACK_F8(); [[fallthrough]];
@@ -3468,7 +3469,7 @@ void RXBBPatterns::update_patterns_BLACK_B8(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000020408102000ULL);
+        const int n = std::popcount(flipped & 0X0000020408102000ULL);
         switch(n) {
             case 5: p.flip_BLACK_G3(); [[fallthrough]];
             case 4: p.flip_BLACK_F4(); [[fallthrough]];
@@ -3481,7 +3482,7 @@ void RXBBPatterns::update_patterns_BLACK_B8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040404040404000ULL);
+        const int n = std::popcount(flipped & 0X0040404040404000ULL);
         switch(n) {
             case 6: p.flip_BLACK_B2(); [[fallthrough]];
             case 5: p.flip_BLACK_B3(); [[fallthrough]];
@@ -3495,7 +3496,7 @@ void RXBBPatterns::update_patterns_BLACK_B8(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000000000003EULL);
+        const int n = std::popcount(flipped & 0X000000000000003EULL);
         switch(n) {
             case 5: p.flip_BLACK_G8(); [[fallthrough]];
             case 4: p.flip_BLACK_F8(); [[fallthrough]];
@@ -3518,7 +3519,7 @@ void RXBBPatterns::update_patterns_BLACK_C8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020202020202000ULL);
+        const int n = std::popcount(flipped & 0X0020202020202000ULL);
         switch(n) {
             case 6: p.flip_BLACK_C2(); [[fallthrough]];
             case 5: p.flip_BLACK_C3(); [[fallthrough]];
@@ -3532,7 +3533,7 @@ void RXBBPatterns::update_patterns_BLACK_C8(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000204081000ULL);
+        const int n = std::popcount(flipped & 0X0000000204081000ULL);
         switch(n) {
             case 4: p.flip_BLACK_G4(); [[fallthrough]];
             case 3: p.flip_BLACK_F5(); [[fallthrough]];
@@ -3548,7 +3549,7 @@ void RXBBPatterns::update_patterns_BLACK_C8(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000000000001EULL);
+        const int n = std::popcount(flipped & 0X000000000000001EULL);
         switch(n) {
             case 4: p.flip_BLACK_G8(); [[fallthrough]];
             case 3: p.flip_BLACK_F8(); [[fallthrough]];
@@ -3574,7 +3575,7 @@ void RXBBPatterns::update_patterns_BLACK_D8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010101010101000ULL);
+        const int n = std::popcount(flipped & 0X0010101010101000ULL);
         switch(n) {
             case 6: p.flip_BLACK_D2(); [[fallthrough]];
             case 5: p.flip_BLACK_D3(); [[fallthrough]];
@@ -3588,7 +3589,7 @@ void RXBBPatterns::update_patterns_BLACK_D8(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000002040800ULL);
+        const int n = std::popcount(flipped & 0X0000000002040800ULL);
         switch(n) {
             case 3: p.flip_BLACK_G5(); [[fallthrough]];
             case 2: p.flip_BLACK_F6(); [[fallthrough]];
@@ -3599,7 +3600,7 @@ void RXBBPatterns::update_patterns_BLACK_D8(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000402000ULL);
+        const int n = std::popcount(flipped & 0X0000000000402000ULL);
         switch(n) {
             case 2: p.flip_BLACK_B6(); [[fallthrough]];
             case 1: p.flip_BLACK_C7();
@@ -3609,7 +3610,7 @@ void RXBBPatterns::update_patterns_BLACK_D8(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000000000000EULL);
+        const int n = std::popcount(flipped & 0X000000000000000EULL);
         switch(n) {
             case 3: p.flip_BLACK_G8(); [[fallthrough]];
             case 2: p.flip_BLACK_F8(); [[fallthrough]];
@@ -3620,7 +3621,7 @@ void RXBBPatterns::update_patterns_BLACK_D8(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000000060ULL);
+        const int n = std::popcount(flipped & 0X0000000000000060ULL);
         switch(n) {
             case 2: p.flip_BLACK_B8(); [[fallthrough]];
             case 1: p.flip_BLACK_C8();
@@ -3640,7 +3641,7 @@ void RXBBPatterns::update_patterns_BLACK_E8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008080808080800ULL);
+        const int n = std::popcount(flipped & 0X0008080808080800ULL);
         switch(n) {
             case 6: p.flip_BLACK_E2(); [[fallthrough]];
             case 5: p.flip_BLACK_E3(); [[fallthrough]];
@@ -3654,7 +3655,7 @@ void RXBBPatterns::update_patterns_BLACK_E8(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000020400ULL);
+        const int n = std::popcount(flipped & 0X0000000000020400ULL);
         switch(n) {
             case 2: p.flip_BLACK_G6(); [[fallthrough]];
             case 1: p.flip_BLACK_F7();
@@ -3664,7 +3665,7 @@ void RXBBPatterns::update_patterns_BLACK_E8(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000040201000ULL);
+        const int n = std::popcount(flipped & 0X0000000040201000ULL);
         switch(n) {
             case 3: p.flip_BLACK_B5(); [[fallthrough]];
             case 2: p.flip_BLACK_C6(); [[fallthrough]];
@@ -3675,7 +3676,7 @@ void RXBBPatterns::update_patterns_BLACK_E8(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000000006ULL);
+        const int n = std::popcount(flipped & 0X0000000000000006ULL);
         switch(n) {
             case 2: p.flip_BLACK_G8(); [[fallthrough]];
             case 1: p.flip_BLACK_F8();
@@ -3685,7 +3686,7 @@ void RXBBPatterns::update_patterns_BLACK_E8(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000000070ULL);
+        const int n = std::popcount(flipped & 0X0000000000000070ULL);
         switch(n) {
             case 3: p.flip_BLACK_B8(); [[fallthrough]];
             case 2: p.flip_BLACK_C8(); [[fallthrough]];
@@ -3706,7 +3707,7 @@ void RXBBPatterns::update_patterns_BLACK_F8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004040404040400ULL);
+        const int n = std::popcount(flipped & 0X0004040404040400ULL);
         switch(n) {
             case 6: p.flip_BLACK_F2(); [[fallthrough]];
             case 5: p.flip_BLACK_F3(); [[fallthrough]];
@@ -3724,7 +3725,7 @@ void RXBBPatterns::update_patterns_BLACK_F8(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000004020100800ULL);
+        const int n = std::popcount(flipped & 0X0000004020100800ULL);
         switch(n) {
             case 4: p.flip_BLACK_B4(); [[fallthrough]];
             case 3: p.flip_BLACK_C5(); [[fallthrough]];
@@ -3740,7 +3741,7 @@ void RXBBPatterns::update_patterns_BLACK_F8(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000000078ULL);
+        const int n = std::popcount(flipped & 0X0000000000000078ULL);
         switch(n) {
             case 4: p.flip_BLACK_B8(); [[fallthrough]];
             case 3: p.flip_BLACK_C8(); [[fallthrough]];
@@ -3762,7 +3763,7 @@ void RXBBPatterns::update_patterns_BLACK_G8(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000402010080400ULL);
+        const int n = std::popcount(flipped & 0X0000402010080400ULL);
         switch(n) {
             case 5: p.flip_BLACK_B3(); [[fallthrough]];
             case 4: p.flip_BLACK_C4(); [[fallthrough]];
@@ -3775,7 +3776,7 @@ void RXBBPatterns::update_patterns_BLACK_G8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002020202020200ULL);
+        const int n = std::popcount(flipped & 0X0002020202020200ULL);
         switch(n) {
             case 6: p.flip_BLACK_G2(); [[fallthrough]];
             case 5: p.flip_BLACK_G3(); [[fallthrough]];
@@ -3789,7 +3790,7 @@ void RXBBPatterns::update_patterns_BLACK_G8(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000000000007CULL);
+        const int n = std::popcount(flipped & 0X000000000000007CULL);
         switch(n) {
             case 5: p.flip_BLACK_B8(); [[fallthrough]];
             case 4: p.flip_BLACK_C8(); [[fallthrough]];
@@ -3812,7 +3813,7 @@ void RXBBPatterns::update_patterns_BLACK_H8(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040201008040200ULL);
+        const int n = std::popcount(flipped & 0X0040201008040200ULL);
         switch(n) {
             case 6: p.flip_BLACK_B2(); [[fallthrough]];
             case 5: p.flip_BLACK_C3(); [[fallthrough]];
@@ -3826,7 +3827,7 @@ void RXBBPatterns::update_patterns_BLACK_H8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0001010101010100ULL);
+        const int n = std::popcount(flipped & 0X0001010101010100ULL);
         switch(n) {
             case 6: p.flip_BLACK_H2(); [[fallthrough]];
             case 5: p.flip_BLACK_H3(); [[fallthrough]];
@@ -3840,7 +3841,7 @@ void RXBBPatterns::update_patterns_BLACK_H8(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000000000007EULL);
+        const int n = std::popcount(flipped & 0X000000000000007EULL);
         switch(n) {
             case 6: p.flip_BLACK_B8(); [[fallthrough]];
             case 5: p.flip_BLACK_C8(); [[fallthrough]];
@@ -3866,7 +3867,7 @@ void RXBBPatterns::update_patterns_WHITE_A1(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040201008040200ULL);
+        const int n = std::popcount(flipped & 0X0040201008040200ULL);
         switch(n) {
             case 6: p.flip_WHITE_G7(); [[fallthrough]];
             case 5: p.flip_WHITE_F6(); [[fallthrough]];
@@ -3880,7 +3881,7 @@ void RXBBPatterns::update_patterns_WHITE_A1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0080808080808000ULL);
+        const int n = std::popcount(flipped & 0X0080808080808000ULL);
         switch(n) {
             case 6: p.flip_WHITE_A7(); [[fallthrough]];
             case 5: p.flip_WHITE_A6(); [[fallthrough]];
@@ -3894,7 +3895,7 @@ void RXBBPatterns::update_patterns_WHITE_A1(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X7E00000000000000ULL);
+        const int n = std::popcount(flipped & 0X7E00000000000000ULL);
         switch(n) {
             case 6: p.flip_WHITE_G1(); [[fallthrough]];
             case 5: p.flip_WHITE_F1(); [[fallthrough]];
@@ -3918,7 +3919,7 @@ void RXBBPatterns::update_patterns_WHITE_B1(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020100804020000ULL);
+        const int n = std::popcount(flipped & 0X0020100804020000ULL);
         switch(n) {
             case 5: p.flip_WHITE_G6(); [[fallthrough]];
             case 4: p.flip_WHITE_F5(); [[fallthrough]];
@@ -3931,7 +3932,7 @@ void RXBBPatterns::update_patterns_WHITE_B1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040404040404000ULL);
+        const int n = std::popcount(flipped & 0X0040404040404000ULL);
         switch(n) {
             case 6: p.flip_WHITE_B7(); [[fallthrough]];
             case 5: p.flip_WHITE_B6(); [[fallthrough]];
@@ -3945,7 +3946,7 @@ void RXBBPatterns::update_patterns_WHITE_B1(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X3E00000000000000ULL);
+        const int n = std::popcount(flipped & 0X3E00000000000000ULL);
         switch(n) {
             case 5: p.flip_WHITE_G1(); [[fallthrough]];
             case 4: p.flip_WHITE_F1(); [[fallthrough]];
@@ -3968,7 +3969,7 @@ void RXBBPatterns::update_patterns_WHITE_C1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020202020202000ULL);
+        const int n = std::popcount(flipped & 0X0020202020202000ULL);
         switch(n) {
             case 6: p.flip_WHITE_C7(); [[fallthrough]];
             case 5: p.flip_WHITE_C6(); [[fallthrough]];
@@ -3982,7 +3983,7 @@ void RXBBPatterns::update_patterns_WHITE_C1(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010080402000000ULL);
+        const int n = std::popcount(flipped & 0X0010080402000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_G5(); [[fallthrough]];
             case 3: p.flip_WHITE_F4(); [[fallthrough]];
@@ -3998,7 +3999,7 @@ void RXBBPatterns::update_patterns_WHITE_C1(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X1E00000000000000ULL);
+        const int n = std::popcount(flipped & 0X1E00000000000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_G1(); [[fallthrough]];
             case 3: p.flip_WHITE_F1(); [[fallthrough]];
@@ -4024,7 +4025,7 @@ void RXBBPatterns::update_patterns_WHITE_D1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010101010101000ULL);
+        const int n = std::popcount(flipped & 0X0010101010101000ULL);
         switch(n) {
             case 6: p.flip_WHITE_D7(); [[fallthrough]];
             case 5: p.flip_WHITE_D6(); [[fallthrough]];
@@ -4038,7 +4039,7 @@ void RXBBPatterns::update_patterns_WHITE_D1(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008040200000000ULL);
+        const int n = std::popcount(flipped & 0X0008040200000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_G4(); [[fallthrough]];
             case 2: p.flip_WHITE_F3(); [[fallthrough]];
@@ -4049,7 +4050,7 @@ void RXBBPatterns::update_patterns_WHITE_D1(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020400000000000ULL);
+        const int n = std::popcount(flipped & 0X0020400000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_B3(); [[fallthrough]];
             case 1: p.flip_WHITE_C2();
@@ -4059,7 +4060,7 @@ void RXBBPatterns::update_patterns_WHITE_D1(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0E00000000000000ULL);
+        const int n = std::popcount(flipped & 0X0E00000000000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_G1(); [[fallthrough]];
             case 2: p.flip_WHITE_F1(); [[fallthrough]];
@@ -4070,7 +4071,7 @@ void RXBBPatterns::update_patterns_WHITE_D1(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X6000000000000000ULL);
+        const int n = std::popcount(flipped & 0X6000000000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_B1(); [[fallthrough]];
             case 1: p.flip_WHITE_C1();
@@ -4090,7 +4091,7 @@ void RXBBPatterns::update_patterns_WHITE_E1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008080808080800ULL);
+        const int n = std::popcount(flipped & 0X0008080808080800ULL);
         switch(n) {
             case 6: p.flip_WHITE_E7(); [[fallthrough]];
             case 5: p.flip_WHITE_E6(); [[fallthrough]];
@@ -4104,7 +4105,7 @@ void RXBBPatterns::update_patterns_WHITE_E1(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004020000000000ULL);
+        const int n = std::popcount(flipped & 0X0004020000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_G3(); [[fallthrough]];
             case 1: p.flip_WHITE_F2();
@@ -4114,7 +4115,7 @@ void RXBBPatterns::update_patterns_WHITE_E1(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010204000000000ULL);
+        const int n = std::popcount(flipped & 0X0010204000000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_B4(); [[fallthrough]];
             case 2: p.flip_WHITE_C3(); [[fallthrough]];
@@ -4125,7 +4126,7 @@ void RXBBPatterns::update_patterns_WHITE_E1(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0600000000000000ULL);
+        const int n = std::popcount(flipped & 0X0600000000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_G1(); [[fallthrough]];
             case 1: p.flip_WHITE_F1();
@@ -4135,7 +4136,7 @@ void RXBBPatterns::update_patterns_WHITE_E1(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X7000000000000000ULL);
+        const int n = std::popcount(flipped & 0X7000000000000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_B1(); [[fallthrough]];
             case 2: p.flip_WHITE_C1(); [[fallthrough]];
@@ -4156,7 +4157,7 @@ void RXBBPatterns::update_patterns_WHITE_F1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004040404040400ULL);
+        const int n = std::popcount(flipped & 0X0004040404040400ULL);
         switch(n) {
             case 6: p.flip_WHITE_F7(); [[fallthrough]];
             case 5: p.flip_WHITE_F6(); [[fallthrough]];
@@ -4174,7 +4175,7 @@ void RXBBPatterns::update_patterns_WHITE_F1(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008102040000000ULL);
+        const int n = std::popcount(flipped & 0X0008102040000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_B5(); [[fallthrough]];
             case 3: p.flip_WHITE_C4(); [[fallthrough]];
@@ -4190,7 +4191,7 @@ void RXBBPatterns::update_patterns_WHITE_F1(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X7800000000000000ULL);
+        const int n = std::popcount(flipped & 0X7800000000000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_B1(); [[fallthrough]];
             case 3: p.flip_WHITE_C1(); [[fallthrough]];
@@ -4212,7 +4213,7 @@ void RXBBPatterns::update_patterns_WHITE_G1(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004081020400000ULL);
+        const int n = std::popcount(flipped & 0X0004081020400000ULL);
         switch(n) {
             case 5: p.flip_WHITE_B6(); [[fallthrough]];
             case 4: p.flip_WHITE_C5(); [[fallthrough]];
@@ -4225,7 +4226,7 @@ void RXBBPatterns::update_patterns_WHITE_G1(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X7C00000000000000ULL);
+        const int n = std::popcount(flipped & 0X7C00000000000000ULL);
         switch(n) {
             case 5: p.flip_WHITE_B1(); [[fallthrough]];
             case 4: p.flip_WHITE_C1(); [[fallthrough]];
@@ -4238,7 +4239,7 @@ void RXBBPatterns::update_patterns_WHITE_G1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002020202020200ULL);
+        const int n = std::popcount(flipped & 0X0002020202020200ULL);
         switch(n) {
             case 6: p.flip_WHITE_G7(); [[fallthrough]];
             case 5: p.flip_WHITE_G6(); [[fallthrough]];
@@ -4262,7 +4263,7 @@ void RXBBPatterns::update_patterns_WHITE_H1(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002040810204000ULL);
+        const int n = std::popcount(flipped & 0X0002040810204000ULL);
         switch(n) {
             case 6: p.flip_WHITE_B7(); [[fallthrough]];
             case 5: p.flip_WHITE_C6(); [[fallthrough]];
@@ -4276,7 +4277,7 @@ void RXBBPatterns::update_patterns_WHITE_H1(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X7E00000000000000ULL);
+        const int n = std::popcount(flipped & 0X7E00000000000000ULL);
         switch(n) {
             case 6: p.flip_WHITE_B1(); [[fallthrough]];
             case 5: p.flip_WHITE_C1(); [[fallthrough]];
@@ -4290,7 +4291,7 @@ void RXBBPatterns::update_patterns_WHITE_H1(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0001010101010100ULL);
+        const int n = std::popcount(flipped & 0X0001010101010100ULL);
         switch(n) {
             case 6: p.flip_WHITE_H7(); [[fallthrough]];
             case 5: p.flip_WHITE_H6(); [[fallthrough]];
@@ -4314,7 +4315,7 @@ void RXBBPatterns::update_patterns_WHITE_A2(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000402010080400ULL);
+        const int n = std::popcount(flipped & 0X0000402010080400ULL);
         switch(n) {
             case 5: p.flip_WHITE_F7(); [[fallthrough]];
             case 4: p.flip_WHITE_E6(); [[fallthrough]];
@@ -4327,7 +4328,7 @@ void RXBBPatterns::update_patterns_WHITE_A2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000808080808000ULL);
+        const int n = std::popcount(flipped & 0X0000808080808000ULL);
         switch(n) {
             case 5: p.flip_WHITE_A7(); [[fallthrough]];
             case 4: p.flip_WHITE_A6(); [[fallthrough]];
@@ -4340,7 +4341,7 @@ void RXBBPatterns::update_patterns_WHITE_A2(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X007E000000000000ULL);
+        const int n = std::popcount(flipped & 0X007E000000000000ULL);
         switch(n) {
             case 6: p.flip_WHITE_G2(); [[fallthrough]];
             case 5: p.flip_WHITE_F2(); [[fallthrough]];
@@ -4364,7 +4365,7 @@ void RXBBPatterns::update_patterns_WHITE_B2(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000201008040200ULL);
+        const int n = std::popcount(flipped & 0X0000201008040200ULL);
         switch(n) {
             case 5: p.flip_WHITE_G7(); [[fallthrough]];
             case 4: p.flip_WHITE_F6(); [[fallthrough]];
@@ -4377,7 +4378,7 @@ void RXBBPatterns::update_patterns_WHITE_B2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000404040404000ULL);
+        const int n = std::popcount(flipped & 0X0000404040404000ULL);
         switch(n) {
             case 5: p.flip_WHITE_B7(); [[fallthrough]];
             case 4: p.flip_WHITE_B6(); [[fallthrough]];
@@ -4390,7 +4391,7 @@ void RXBBPatterns::update_patterns_WHITE_B2(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X003E000000000000ULL);
+        const int n = std::popcount(flipped & 0X003E000000000000ULL);
         switch(n) {
             case 5: p.flip_WHITE_G2(); [[fallthrough]];
             case 4: p.flip_WHITE_F2(); [[fallthrough]];
@@ -4413,7 +4414,7 @@ void RXBBPatterns::update_patterns_WHITE_C2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000202020202000ULL);
+        const int n = std::popcount(flipped & 0X0000202020202000ULL);
         switch(n) {
             case 5: p.flip_WHITE_C7(); [[fallthrough]];
             case 4: p.flip_WHITE_C6(); [[fallthrough]];
@@ -4426,7 +4427,7 @@ void RXBBPatterns::update_patterns_WHITE_C2(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000100804020000ULL);
+        const int n = std::popcount(flipped & 0X0000100804020000ULL);
         switch(n) {
             case 4: p.flip_WHITE_G6(); [[fallthrough]];
             case 3: p.flip_WHITE_F5(); [[fallthrough]];
@@ -4442,7 +4443,7 @@ void RXBBPatterns::update_patterns_WHITE_C2(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X001E000000000000ULL);
+        const int n = std::popcount(flipped & 0X001E000000000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_G2(); [[fallthrough]];
             case 3: p.flip_WHITE_F2(); [[fallthrough]];
@@ -4468,7 +4469,7 @@ void RXBBPatterns::update_patterns_WHITE_D2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000101010101000ULL);
+        const int n = std::popcount(flipped & 0X0000101010101000ULL);
         switch(n) {
             case 5: p.flip_WHITE_D7(); [[fallthrough]];
             case 4: p.flip_WHITE_D6(); [[fallthrough]];
@@ -4481,7 +4482,7 @@ void RXBBPatterns::update_patterns_WHITE_D2(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000080402000000ULL);
+        const int n = std::popcount(flipped & 0X0000080402000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_G5(); [[fallthrough]];
             case 2: p.flip_WHITE_F4(); [[fallthrough]];
@@ -4492,7 +4493,7 @@ void RXBBPatterns::update_patterns_WHITE_D2(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000204000000000ULL);
+        const int n = std::popcount(flipped & 0X0000204000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_B4(); [[fallthrough]];
             case 1: p.flip_WHITE_C3();
@@ -4502,7 +4503,7 @@ void RXBBPatterns::update_patterns_WHITE_D2(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000E000000000000ULL);
+        const int n = std::popcount(flipped & 0X000E000000000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_G2(); [[fallthrough]];
             case 2: p.flip_WHITE_F2(); [[fallthrough]];
@@ -4513,7 +4514,7 @@ void RXBBPatterns::update_patterns_WHITE_D2(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0060000000000000ULL);
+        const int n = std::popcount(flipped & 0X0060000000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_B2(); [[fallthrough]];
             case 1: p.flip_WHITE_C2();
@@ -4533,7 +4534,7 @@ void RXBBPatterns::update_patterns_WHITE_E2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000080808080800ULL);
+        const int n = std::popcount(flipped & 0X0000080808080800ULL);
         switch(n) {
             case 5: p.flip_WHITE_E7(); [[fallthrough]];
             case 4: p.flip_WHITE_E6(); [[fallthrough]];
@@ -4546,7 +4547,7 @@ void RXBBPatterns::update_patterns_WHITE_E2(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000040200000000ULL);
+        const int n = std::popcount(flipped & 0X0000040200000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_G4(); [[fallthrough]];
             case 1: p.flip_WHITE_F3();
@@ -4556,7 +4557,7 @@ void RXBBPatterns::update_patterns_WHITE_E2(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000102040000000ULL);
+        const int n = std::popcount(flipped & 0X0000102040000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_B5(); [[fallthrough]];
             case 2: p.flip_WHITE_C4(); [[fallthrough]];
@@ -4567,7 +4568,7 @@ void RXBBPatterns::update_patterns_WHITE_E2(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0006000000000000ULL);
+        const int n = std::popcount(flipped & 0X0006000000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_G2(); [[fallthrough]];
             case 1: p.flip_WHITE_F2();
@@ -4577,7 +4578,7 @@ void RXBBPatterns::update_patterns_WHITE_E2(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0070000000000000ULL);
+        const int n = std::popcount(flipped & 0X0070000000000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_B2(); [[fallthrough]];
             case 2: p.flip_WHITE_C2(); [[fallthrough]];
@@ -4598,7 +4599,7 @@ void RXBBPatterns::update_patterns_WHITE_F2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000040404040400ULL);
+        const int n = std::popcount(flipped & 0X0000040404040400ULL);
         switch(n) {
             case 5: p.flip_WHITE_F7(); [[fallthrough]];
             case 4: p.flip_WHITE_F6(); [[fallthrough]];
@@ -4615,7 +4616,7 @@ void RXBBPatterns::update_patterns_WHITE_F2(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000081020400000ULL);
+        const int n = std::popcount(flipped & 0X0000081020400000ULL);
         switch(n) {
             case 4: p.flip_WHITE_B6(); [[fallthrough]];
             case 3: p.flip_WHITE_C5(); [[fallthrough]];
@@ -4631,7 +4632,7 @@ void RXBBPatterns::update_patterns_WHITE_F2(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0078000000000000ULL);
+        const int n = std::popcount(flipped & 0X0078000000000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_B2(); [[fallthrough]];
             case 3: p.flip_WHITE_C2(); [[fallthrough]];
@@ -4653,7 +4654,7 @@ void RXBBPatterns::update_patterns_WHITE_G2(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000040810204000ULL);
+        const int n = std::popcount(flipped & 0X0000040810204000ULL);
         switch(n) {
             case 5: p.flip_WHITE_B7(); [[fallthrough]];
             case 4: p.flip_WHITE_C6(); [[fallthrough]];
@@ -4666,7 +4667,7 @@ void RXBBPatterns::update_patterns_WHITE_G2(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X007C000000000000ULL);
+        const int n = std::popcount(flipped & 0X007C000000000000ULL);
         switch(n) {
             case 5: p.flip_WHITE_B2(); [[fallthrough]];
             case 4: p.flip_WHITE_C2(); [[fallthrough]];
@@ -4679,7 +4680,7 @@ void RXBBPatterns::update_patterns_WHITE_G2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000020202020200ULL);
+        const int n = std::popcount(flipped & 0X0000020202020200ULL);
         switch(n) {
             case 5: p.flip_WHITE_G7(); [[fallthrough]];
             case 4: p.flip_WHITE_G6(); [[fallthrough]];
@@ -4702,7 +4703,7 @@ void RXBBPatterns::update_patterns_WHITE_H2(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000020408102000ULL);
+        const int n = std::popcount(flipped & 0X0000020408102000ULL);
         switch(n) {
             case 5: p.flip_WHITE_C7(); [[fallthrough]];
             case 4: p.flip_WHITE_D6(); [[fallthrough]];
@@ -4715,7 +4716,7 @@ void RXBBPatterns::update_patterns_WHITE_H2(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X007E000000000000ULL);
+        const int n = std::popcount(flipped & 0X007E000000000000ULL);
         switch(n) {
             case 6: p.flip_WHITE_B2(); [[fallthrough]];
             case 5: p.flip_WHITE_C2(); [[fallthrough]];
@@ -4729,7 +4730,7 @@ void RXBBPatterns::update_patterns_WHITE_H2(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000010101010100ULL);
+        const int n = std::popcount(flipped & 0X0000010101010100ULL);
         switch(n) {
             case 5: p.flip_WHITE_H7(); [[fallthrough]];
             case 4: p.flip_WHITE_H6(); [[fallthrough]];
@@ -4752,7 +4753,7 @@ void RXBBPatterns::update_patterns_WHITE_A3(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00007E0000000000ULL);
+        const int n = std::popcount(flipped & 0X00007E0000000000ULL);
         switch(n) {
             case 6: p.flip_WHITE_G3(); [[fallthrough]];
             case 5: p.flip_WHITE_F3(); [[fallthrough]];
@@ -4770,7 +4771,7 @@ void RXBBPatterns::update_patterns_WHITE_A3(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000004020100800ULL);
+        const int n = std::popcount(flipped & 0X0000004020100800ULL);
         switch(n) {
             case 4: p.flip_WHITE_E7(); [[fallthrough]];
             case 3: p.flip_WHITE_D6(); [[fallthrough]];
@@ -4786,7 +4787,7 @@ void RXBBPatterns::update_patterns_WHITE_A3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000008080808000ULL);
+        const int n = std::popcount(flipped & 0X0000008080808000ULL);
         switch(n) {
             case 4: p.flip_WHITE_A7(); [[fallthrough]];
             case 3: p.flip_WHITE_A6(); [[fallthrough]];
@@ -4808,7 +4809,7 @@ void RXBBPatterns::update_patterns_WHITE_B3(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00003E0000000000ULL);
+        const int n = std::popcount(flipped & 0X00003E0000000000ULL);
         switch(n) {
             case 5: p.flip_WHITE_G3(); [[fallthrough]];
             case 4: p.flip_WHITE_F3(); [[fallthrough]];
@@ -4825,7 +4826,7 @@ void RXBBPatterns::update_patterns_WHITE_B3(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000002010080400ULL);
+        const int n = std::popcount(flipped & 0X0000002010080400ULL);
         switch(n) {
             case 4: p.flip_WHITE_F7(); [[fallthrough]];
             case 3: p.flip_WHITE_E6(); [[fallthrough]];
@@ -4841,7 +4842,7 @@ void RXBBPatterns::update_patterns_WHITE_B3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000004040404000ULL);
+        const int n = std::popcount(flipped & 0X0000004040404000ULL);
         switch(n) {
             case 4: p.flip_WHITE_B7(); [[fallthrough]];
             case 3: p.flip_WHITE_B6(); [[fallthrough]];
@@ -4863,7 +4864,7 @@ void RXBBPatterns::update_patterns_WHITE_C3(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000001008040200ULL);
+        const int n = std::popcount(flipped & 0X0000001008040200ULL);
         switch(n) {
             case 4: p.flip_WHITE_G7(); [[fallthrough]];
             case 3: p.flip_WHITE_F6(); [[fallthrough]];
@@ -4875,7 +4876,7 @@ void RXBBPatterns::update_patterns_WHITE_C3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000002020202000ULL);
+        const int n = std::popcount(flipped & 0X0000002020202000ULL);
         switch(n) {
             case 4: p.flip_WHITE_C7(); [[fallthrough]];
             case 3: p.flip_WHITE_C6(); [[fallthrough]];
@@ -4887,7 +4888,7 @@ void RXBBPatterns::update_patterns_WHITE_C3(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00001E0000000000ULL);
+        const int n = std::popcount(flipped & 0X00001E0000000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_G3(); [[fallthrough]];
             case 3: p.flip_WHITE_F3(); [[fallthrough]];
@@ -4929,7 +4930,7 @@ void RXBBPatterns::update_patterns_WHITE_D3(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000804020000ULL);
+        const int n = std::popcount(flipped & 0X0000000804020000ULL);
         switch(n) {
             case 3: p.flip_WHITE_G6(); [[fallthrough]];
             case 2: p.flip_WHITE_F5(); [[fallthrough]];
@@ -4940,7 +4941,7 @@ void RXBBPatterns::update_patterns_WHITE_D3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000001010101000ULL);
+        const int n = std::popcount(flipped & 0X0000001010101000ULL);
         switch(n) {
             case 4: p.flip_WHITE_D7(); [[fallthrough]];
             case 3: p.flip_WHITE_D6(); [[fallthrough]];
@@ -4952,7 +4953,7 @@ void RXBBPatterns::update_patterns_WHITE_D3(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00000E0000000000ULL);
+        const int n = std::popcount(flipped & 0X00000E0000000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_G3(); [[fallthrough]];
             case 2: p.flip_WHITE_F3(); [[fallthrough]];
@@ -4975,7 +4976,7 @@ void RXBBPatterns::update_patterns_WHITE_D3(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000002040000000ULL);
+        const int n = std::popcount(flipped & 0X0000002040000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_B5(); [[fallthrough]];
             case 1: p.flip_WHITE_C4();
@@ -4985,7 +4986,7 @@ void RXBBPatterns::update_patterns_WHITE_D3(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000600000000000ULL);
+        const int n = std::popcount(flipped & 0X0000600000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_B3(); [[fallthrough]];
             case 1: p.flip_WHITE_C3();
@@ -5005,7 +5006,7 @@ void RXBBPatterns::update_patterns_WHITE_E3(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000402000000ULL);
+        const int n = std::popcount(flipped & 0X0000000402000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_G5(); [[fallthrough]];
             case 1: p.flip_WHITE_F4();
@@ -5015,7 +5016,7 @@ void RXBBPatterns::update_patterns_WHITE_E3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000808080800ULL);
+        const int n = std::popcount(flipped & 0X0000000808080800ULL);
         switch(n) {
             case 4: p.flip_WHITE_E7(); [[fallthrough]];
             case 3: p.flip_WHITE_E6(); [[fallthrough]];
@@ -5027,7 +5028,7 @@ void RXBBPatterns::update_patterns_WHITE_E3(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000060000000000ULL);
+        const int n = std::popcount(flipped & 0X0000060000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_G3(); [[fallthrough]];
             case 1: p.flip_WHITE_F3();
@@ -5049,7 +5050,7 @@ void RXBBPatterns::update_patterns_WHITE_E3(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000001020400000ULL);
+        const int n = std::popcount(flipped & 0X0000001020400000ULL);
         switch(n) {
             case 3: p.flip_WHITE_B6(); [[fallthrough]];
             case 2: p.flip_WHITE_C5(); [[fallthrough]];
@@ -5060,7 +5061,7 @@ void RXBBPatterns::update_patterns_WHITE_E3(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000700000000000ULL);
+        const int n = std::popcount(flipped & 0X0000700000000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_B3(); [[fallthrough]];
             case 2: p.flip_WHITE_C3(); [[fallthrough]];
@@ -5085,7 +5086,7 @@ void RXBBPatterns::update_patterns_WHITE_F3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000404040400ULL);
+        const int n = std::popcount(flipped & 0X0000000404040400ULL);
         switch(n) {
             case 4: p.flip_WHITE_F7(); [[fallthrough]];
             case 3: p.flip_WHITE_F6(); [[fallthrough]];
@@ -5113,7 +5114,7 @@ void RXBBPatterns::update_patterns_WHITE_F3(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000810204000ULL);
+        const int n = std::popcount(flipped & 0X0000000810204000ULL);
         switch(n) {
             case 4: p.flip_WHITE_B7(); [[fallthrough]];
             case 3: p.flip_WHITE_C6(); [[fallthrough]];
@@ -5125,7 +5126,7 @@ void RXBBPatterns::update_patterns_WHITE_F3(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000780000000000ULL);
+        const int n = std::popcount(flipped & 0X0000780000000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_B3(); [[fallthrough]];
             case 3: p.flip_WHITE_C3(); [[fallthrough]];
@@ -5147,7 +5148,7 @@ void RXBBPatterns::update_patterns_WHITE_G3(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X00007C0000000000ULL);
+        const int n = std::popcount(flipped & 0X00007C0000000000ULL);
         switch(n) {
             case 5: p.flip_WHITE_B3(); [[fallthrough]];
             case 4: p.flip_WHITE_C3(); [[fallthrough]];
@@ -5160,7 +5161,7 @@ void RXBBPatterns::update_patterns_WHITE_G3(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000408102000ULL);
+        const int n = std::popcount(flipped & 0X0000000408102000ULL);
         switch(n) {
             case 4: p.flip_WHITE_C7(); [[fallthrough]];
             case 3: p.flip_WHITE_D6(); [[fallthrough]];
@@ -5176,7 +5177,7 @@ void RXBBPatterns::update_patterns_WHITE_G3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000202020200ULL);
+        const int n = std::popcount(flipped & 0X0000000202020200ULL);
         switch(n) {
             case 4: p.flip_WHITE_G7(); [[fallthrough]];
             case 3: p.flip_WHITE_G6(); [[fallthrough]];
@@ -5202,7 +5203,7 @@ void RXBBPatterns::update_patterns_WHITE_H3(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X00007E0000000000ULL);
+        const int n = std::popcount(flipped & 0X00007E0000000000ULL);
         switch(n) {
             case 6: p.flip_WHITE_B3(); [[fallthrough]];
             case 5: p.flip_WHITE_C3(); [[fallthrough]];
@@ -5216,7 +5217,7 @@ void RXBBPatterns::update_patterns_WHITE_H3(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000204081000ULL);
+        const int n = std::popcount(flipped & 0X0000000204081000ULL);
         switch(n) {
             case 4: p.flip_WHITE_D7(); [[fallthrough]];
             case 3: p.flip_WHITE_E6(); [[fallthrough]];
@@ -5232,7 +5233,7 @@ void RXBBPatterns::update_patterns_WHITE_H3(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000101010100ULL);
+        const int n = std::popcount(flipped & 0X0000000101010100ULL);
         switch(n) {
             case 4: p.flip_WHITE_H7(); [[fallthrough]];
             case 3: p.flip_WHITE_H6(); [[fallthrough]];
@@ -5258,7 +5259,7 @@ void RXBBPatterns::update_patterns_WHITE_A4(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000007E00000000ULL);
+        const int n = std::popcount(flipped & 0X0000007E00000000ULL);
         switch(n) {
             case 6: p.flip_WHITE_G4(); [[fallthrough]];
             case 5: p.flip_WHITE_F4(); [[fallthrough]];
@@ -5272,7 +5273,7 @@ void RXBBPatterns::update_patterns_WHITE_A4(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020400000000000ULL);
+        const int n = std::popcount(flipped & 0X0020400000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_C2(); [[fallthrough]];
             case 1: p.flip_WHITE_B3();
@@ -5282,7 +5283,7 @@ void RXBBPatterns::update_patterns_WHITE_A4(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000040201000ULL);
+        const int n = std::popcount(flipped & 0X0000000040201000ULL);
         switch(n) {
             case 3: p.flip_WHITE_D7(); [[fallthrough]];
             case 2: p.flip_WHITE_C6(); [[fallthrough]];
@@ -5293,7 +5294,7 @@ void RXBBPatterns::update_patterns_WHITE_A4(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0080800000000000ULL);
+        const int n = std::popcount(flipped & 0X0080800000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_A2(); [[fallthrough]];
             case 1: p.flip_WHITE_A3();
@@ -5303,7 +5304,7 @@ void RXBBPatterns::update_patterns_WHITE_A4(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000080808000ULL);
+        const int n = std::popcount(flipped & 0X0000000080808000ULL);
         switch(n) {
             case 3: p.flip_WHITE_A7(); [[fallthrough]];
             case 2: p.flip_WHITE_A6(); [[fallthrough]];
@@ -5324,7 +5325,7 @@ void RXBBPatterns::update_patterns_WHITE_B4(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000003E00000000ULL);
+        const int n = std::popcount(flipped & 0X0000003E00000000ULL);
         switch(n) {
             case 5: p.flip_WHITE_G4(); [[fallthrough]];
             case 4: p.flip_WHITE_F4(); [[fallthrough]];
@@ -5337,7 +5338,7 @@ void RXBBPatterns::update_patterns_WHITE_B4(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010200000000000ULL);
+        const int n = std::popcount(flipped & 0X0010200000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_D2(); [[fallthrough]];
             case 1: p.flip_WHITE_C3();
@@ -5347,7 +5348,7 @@ void RXBBPatterns::update_patterns_WHITE_B4(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000020100800ULL);
+        const int n = std::popcount(flipped & 0X0000000020100800ULL);
         switch(n) {
             case 3: p.flip_WHITE_E7(); [[fallthrough]];
             case 2: p.flip_WHITE_D6(); [[fallthrough]];
@@ -5358,7 +5359,7 @@ void RXBBPatterns::update_patterns_WHITE_B4(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040400000000000ULL);
+        const int n = std::popcount(flipped & 0X0040400000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_B2(); [[fallthrough]];
             case 1: p.flip_WHITE_B3();
@@ -5368,7 +5369,7 @@ void RXBBPatterns::update_patterns_WHITE_B4(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000040404000ULL);
+        const int n = std::popcount(flipped & 0X0000000040404000ULL);
         switch(n) {
             case 3: p.flip_WHITE_B7(); [[fallthrough]];
             case 2: p.flip_WHITE_B6(); [[fallthrough]];
@@ -5389,7 +5390,7 @@ void RXBBPatterns::update_patterns_WHITE_C4(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000010080400ULL);
+        const int n = std::popcount(flipped & 0X0000000010080400ULL);
         switch(n) {
             case 3: p.flip_WHITE_F7(); [[fallthrough]];
             case 2: p.flip_WHITE_E6(); [[fallthrough]];
@@ -5400,7 +5401,7 @@ void RXBBPatterns::update_patterns_WHITE_C4(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000020202000ULL);
+        const int n = std::popcount(flipped & 0X0000000020202000ULL);
         switch(n) {
             case 3: p.flip_WHITE_C7(); [[fallthrough]];
             case 2: p.flip_WHITE_C6(); [[fallthrough]];
@@ -5411,7 +5412,7 @@ void RXBBPatterns::update_patterns_WHITE_C4(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000001E00000000ULL);
+        const int n = std::popcount(flipped & 0X0000001E00000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_G4(); [[fallthrough]];
             case 3: p.flip_WHITE_F4(); [[fallthrough]];
@@ -5423,7 +5424,7 @@ void RXBBPatterns::update_patterns_WHITE_C4(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008100000000000ULL);
+        const int n = std::popcount(flipped & 0X0008100000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_E2(); [[fallthrough]];
             case 1: p.flip_WHITE_D3();
@@ -5433,7 +5434,7 @@ void RXBBPatterns::update_patterns_WHITE_C4(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020200000000000ULL);
+        const int n = std::popcount(flipped & 0X0020200000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_C2(); [[fallthrough]];
             case 1: p.flip_WHITE_C3();
@@ -5472,7 +5473,7 @@ void RXBBPatterns::update_patterns_WHITE_F4(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000004040400ULL);
+        const int n = std::popcount(flipped & 0X0000000004040400ULL);
         switch(n) {
             case 3: p.flip_WHITE_F7(); [[fallthrough]];
             case 2: p.flip_WHITE_F6(); [[fallthrough]];
@@ -5491,7 +5492,7 @@ void RXBBPatterns::update_patterns_WHITE_F4(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004040000000000ULL);
+        const int n = std::popcount(flipped & 0X0004040000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_F2(); [[fallthrough]];
             case 1: p.flip_WHITE_F3();
@@ -5501,7 +5502,7 @@ void RXBBPatterns::update_patterns_WHITE_F4(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010080000000000ULL);
+        const int n = std::popcount(flipped & 0X0010080000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_D2(); [[fallthrough]];
             case 1: p.flip_WHITE_E3();
@@ -5511,7 +5512,7 @@ void RXBBPatterns::update_patterns_WHITE_F4(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000008102000ULL);
+        const int n = std::popcount(flipped & 0X0000000008102000ULL);
         switch(n) {
             case 3: p.flip_WHITE_C7(); [[fallthrough]];
             case 2: p.flip_WHITE_D6(); [[fallthrough]];
@@ -5522,7 +5523,7 @@ void RXBBPatterns::update_patterns_WHITE_F4(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000007800000000ULL);
+        const int n = std::popcount(flipped & 0X0000007800000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_B4(); [[fallthrough]];
             case 3: p.flip_WHITE_C4(); [[fallthrough]];
@@ -5544,7 +5545,7 @@ void RXBBPatterns::update_patterns_WHITE_G4(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000007C00000000ULL);
+        const int n = std::popcount(flipped & 0X0000007C00000000ULL);
         switch(n) {
             case 5: p.flip_WHITE_B4(); [[fallthrough]];
             case 4: p.flip_WHITE_C4(); [[fallthrough]];
@@ -5557,7 +5558,7 @@ void RXBBPatterns::update_patterns_WHITE_G4(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000004081000ULL);
+        const int n = std::popcount(flipped & 0X0000000004081000ULL);
         switch(n) {
             case 3: p.flip_WHITE_D7(); [[fallthrough]];
             case 2: p.flip_WHITE_E6(); [[fallthrough]];
@@ -5568,7 +5569,7 @@ void RXBBPatterns::update_patterns_WHITE_G4(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008040000000000ULL);
+        const int n = std::popcount(flipped & 0X0008040000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_E2(); [[fallthrough]];
             case 1: p.flip_WHITE_F3();
@@ -5578,7 +5579,7 @@ void RXBBPatterns::update_patterns_WHITE_G4(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000002020200ULL);
+        const int n = std::popcount(flipped & 0X0000000002020200ULL);
         switch(n) {
             case 3: p.flip_WHITE_G7(); [[fallthrough]];
             case 2: p.flip_WHITE_G6(); [[fallthrough]];
@@ -5589,7 +5590,7 @@ void RXBBPatterns::update_patterns_WHITE_G4(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002020000000000ULL);
+        const int n = std::popcount(flipped & 0X0002020000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_G2(); [[fallthrough]];
             case 1: p.flip_WHITE_G3();
@@ -5609,7 +5610,7 @@ void RXBBPatterns::update_patterns_WHITE_H4(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000007E00000000ULL);
+        const int n = std::popcount(flipped & 0X0000007E00000000ULL);
         switch(n) {
             case 6: p.flip_WHITE_B4(); [[fallthrough]];
             case 5: p.flip_WHITE_C4(); [[fallthrough]];
@@ -5623,7 +5624,7 @@ void RXBBPatterns::update_patterns_WHITE_H4(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000002040800ULL);
+        const int n = std::popcount(flipped & 0X0000000002040800ULL);
         switch(n) {
             case 3: p.flip_WHITE_E7(); [[fallthrough]];
             case 2: p.flip_WHITE_F6(); [[fallthrough]];
@@ -5634,7 +5635,7 @@ void RXBBPatterns::update_patterns_WHITE_H4(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004020000000000ULL);
+        const int n = std::popcount(flipped & 0X0004020000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_F2(); [[fallthrough]];
             case 1: p.flip_WHITE_G3();
@@ -5644,7 +5645,7 @@ void RXBBPatterns::update_patterns_WHITE_H4(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000001010100ULL);
+        const int n = std::popcount(flipped & 0X0000000001010100ULL);
         switch(n) {
             case 3: p.flip_WHITE_H7(); [[fallthrough]];
             case 2: p.flip_WHITE_H6(); [[fallthrough]];
@@ -5655,7 +5656,7 @@ void RXBBPatterns::update_patterns_WHITE_H4(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0001010000000000ULL);
+        const int n = std::popcount(flipped & 0X0001010000000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_H2(); [[fallthrough]];
             case 1: p.flip_WHITE_H3();
@@ -5675,7 +5676,7 @@ void RXBBPatterns::update_patterns_WHITE_A5(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000007E000000ULL);
+        const int n = std::popcount(flipped & 0X000000007E000000ULL);
         switch(n) {
             case 6: p.flip_WHITE_G5(); [[fallthrough]];
             case 5: p.flip_WHITE_F5(); [[fallthrough]];
@@ -5689,7 +5690,7 @@ void RXBBPatterns::update_patterns_WHITE_A5(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010204000000000ULL);
+        const int n = std::popcount(flipped & 0X0010204000000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_D2(); [[fallthrough]];
             case 2: p.flip_WHITE_C3(); [[fallthrough]];
@@ -5700,7 +5701,7 @@ void RXBBPatterns::update_patterns_WHITE_A5(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000402000ULL);
+        const int n = std::popcount(flipped & 0X0000000000402000ULL);
         switch(n) {
             case 2: p.flip_WHITE_C7(); [[fallthrough]];
             case 1: p.flip_WHITE_B6();
@@ -5710,7 +5711,7 @@ void RXBBPatterns::update_patterns_WHITE_A5(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0080808000000000ULL);
+        const int n = std::popcount(flipped & 0X0080808000000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_A2(); [[fallthrough]];
             case 2: p.flip_WHITE_A3(); [[fallthrough]];
@@ -5721,7 +5722,7 @@ void RXBBPatterns::update_patterns_WHITE_A5(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000808000ULL);
+        const int n = std::popcount(flipped & 0X0000000000808000ULL);
         switch(n) {
             case 2: p.flip_WHITE_A7(); [[fallthrough]];
             case 1: p.flip_WHITE_A6();
@@ -5741,7 +5742,7 @@ void RXBBPatterns::update_patterns_WHITE_B5(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000003E000000ULL);
+        const int n = std::popcount(flipped & 0X000000003E000000ULL);
         switch(n) {
             case 5: p.flip_WHITE_G5(); [[fallthrough]];
             case 4: p.flip_WHITE_F5(); [[fallthrough]];
@@ -5754,7 +5755,7 @@ void RXBBPatterns::update_patterns_WHITE_B5(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008102000000000ULL);
+        const int n = std::popcount(flipped & 0X0008102000000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_E2(); [[fallthrough]];
             case 2: p.flip_WHITE_D3(); [[fallthrough]];
@@ -5765,7 +5766,7 @@ void RXBBPatterns::update_patterns_WHITE_B5(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000201000ULL);
+        const int n = std::popcount(flipped & 0X0000000000201000ULL);
         switch(n) {
             case 2: p.flip_WHITE_D7(); [[fallthrough]];
             case 1: p.flip_WHITE_C6();
@@ -5775,7 +5776,7 @@ void RXBBPatterns::update_patterns_WHITE_B5(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040404000000000ULL);
+        const int n = std::popcount(flipped & 0X0040404000000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_B2(); [[fallthrough]];
             case 2: p.flip_WHITE_B3(); [[fallthrough]];
@@ -5786,7 +5787,7 @@ void RXBBPatterns::update_patterns_WHITE_B5(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000404000ULL);
+        const int n = std::popcount(flipped & 0X0000000000404000ULL);
         switch(n) {
             case 2: p.flip_WHITE_B7(); [[fallthrough]];
             case 1: p.flip_WHITE_B6();
@@ -5806,7 +5807,7 @@ void RXBBPatterns::update_patterns_WHITE_C5(RXMove& move) const {
     
     /* direction _SE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000100800ULL);
+        const int n = std::popcount(flipped & 0X0000000000100800ULL);
         switch(n) {
             case 2: p.flip_WHITE_E7(); [[fallthrough]];
             case 1: p.flip_WHITE_D6();
@@ -5816,7 +5817,7 @@ void RXBBPatterns::update_patterns_WHITE_C5(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000202000ULL);
+        const int n = std::popcount(flipped & 0X0000000000202000ULL);
         switch(n) {
             case 2: p.flip_WHITE_C7(); [[fallthrough]];
             case 1: p.flip_WHITE_C6();
@@ -5826,7 +5827,7 @@ void RXBBPatterns::update_patterns_WHITE_C5(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000001E000000ULL);
+        const int n = std::popcount(flipped & 0X000000001E000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_G5(); [[fallthrough]];
             case 3: p.flip_WHITE_F5(); [[fallthrough]];
@@ -5838,7 +5839,7 @@ void RXBBPatterns::update_patterns_WHITE_C5(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004081000000000ULL);
+        const int n = std::popcount(flipped & 0X0004081000000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_F2(); [[fallthrough]];
             case 2: p.flip_WHITE_E3(); [[fallthrough]];
@@ -5849,7 +5850,7 @@ void RXBBPatterns::update_patterns_WHITE_C5(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020202000000000ULL);
+        const int n = std::popcount(flipped & 0X0020202000000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_C2(); [[fallthrough]];
             case 2: p.flip_WHITE_C3(); [[fallthrough]];
@@ -5889,7 +5890,7 @@ void RXBBPatterns::update_patterns_WHITE_F5(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000040400ULL);
+        const int n = std::popcount(flipped & 0X0000000000040400ULL);
         switch(n) {
             case 2: p.flip_WHITE_F7(); [[fallthrough]];
             case 1: p.flip_WHITE_F6();
@@ -5907,7 +5908,7 @@ void RXBBPatterns::update_patterns_WHITE_F5(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004040400000000ULL);
+        const int n = std::popcount(flipped & 0X0004040400000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_F2(); [[fallthrough]];
             case 2: p.flip_WHITE_F3(); [[fallthrough]];
@@ -5918,7 +5919,7 @@ void RXBBPatterns::update_patterns_WHITE_F5(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020100800000000ULL);
+        const int n = std::popcount(flipped & 0X0020100800000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_C2(); [[fallthrough]];
             case 2: p.flip_WHITE_D3(); [[fallthrough]];
@@ -5929,7 +5930,7 @@ void RXBBPatterns::update_patterns_WHITE_F5(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000081000ULL);
+        const int n = std::popcount(flipped & 0X0000000000081000ULL);
         switch(n) {
             case 2: p.flip_WHITE_D7(); [[fallthrough]];
             case 1: p.flip_WHITE_E6();
@@ -5939,7 +5940,7 @@ void RXBBPatterns::update_patterns_WHITE_F5(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000078000000ULL);
+        const int n = std::popcount(flipped & 0X0000000078000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_B5(); [[fallthrough]];
             case 3: p.flip_WHITE_C5(); [[fallthrough]];
@@ -5961,7 +5962,7 @@ void RXBBPatterns::update_patterns_WHITE_G5(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000007C000000ULL);
+        const int n = std::popcount(flipped & 0X000000007C000000ULL);
         switch(n) {
             case 5: p.flip_WHITE_B5(); [[fallthrough]];
             case 4: p.flip_WHITE_C5(); [[fallthrough]];
@@ -5974,7 +5975,7 @@ void RXBBPatterns::update_patterns_WHITE_G5(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000040800ULL);
+        const int n = std::popcount(flipped & 0X0000000000040800ULL);
         switch(n) {
             case 2: p.flip_WHITE_E7(); [[fallthrough]];
             case 1: p.flip_WHITE_F6();
@@ -5984,7 +5985,7 @@ void RXBBPatterns::update_patterns_WHITE_G5(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010080400000000ULL);
+        const int n = std::popcount(flipped & 0X0010080400000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_D2(); [[fallthrough]];
             case 2: p.flip_WHITE_E3(); [[fallthrough]];
@@ -5995,7 +5996,7 @@ void RXBBPatterns::update_patterns_WHITE_G5(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000020200ULL);
+        const int n = std::popcount(flipped & 0X0000000000020200ULL);
         switch(n) {
             case 2: p.flip_WHITE_G7(); [[fallthrough]];
             case 1: p.flip_WHITE_G6();
@@ -6005,7 +6006,7 @@ void RXBBPatterns::update_patterns_WHITE_G5(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002020200000000ULL);
+        const int n = std::popcount(flipped & 0X0002020200000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_G2(); [[fallthrough]];
             case 2: p.flip_WHITE_G3(); [[fallthrough]];
@@ -6026,7 +6027,7 @@ void RXBBPatterns::update_patterns_WHITE_H5(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000007E000000ULL);
+        const int n = std::popcount(flipped & 0X000000007E000000ULL);
         switch(n) {
             case 6: p.flip_WHITE_B5(); [[fallthrough]];
             case 5: p.flip_WHITE_C5(); [[fallthrough]];
@@ -6040,7 +6041,7 @@ void RXBBPatterns::update_patterns_WHITE_H5(RXMove& move) const {
     
     /* direction _SW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000020400ULL);
+        const int n = std::popcount(flipped & 0X0000000000020400ULL);
         switch(n) {
             case 2: p.flip_WHITE_F7(); [[fallthrough]];
             case 1: p.flip_WHITE_G6();
@@ -6050,7 +6051,7 @@ void RXBBPatterns::update_patterns_WHITE_H5(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008040200000000ULL);
+        const int n = std::popcount(flipped & 0X0008040200000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_E2(); [[fallthrough]];
             case 2: p.flip_WHITE_F3(); [[fallthrough]];
@@ -6061,7 +6062,7 @@ void RXBBPatterns::update_patterns_WHITE_H5(RXMove& move) const {
     
     /* direction S_ */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000010100ULL);
+        const int n = std::popcount(flipped & 0X0000000000010100ULL);
         switch(n) {
             case 2: p.flip_WHITE_H7(); [[fallthrough]];
             case 1: p.flip_WHITE_H6();
@@ -6071,7 +6072,7 @@ void RXBBPatterns::update_patterns_WHITE_H5(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0001010100000000ULL);
+        const int n = std::popcount(flipped & 0X0001010100000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_H2(); [[fallthrough]];
             case 2: p.flip_WHITE_H3(); [[fallthrough]];
@@ -6092,7 +6093,7 @@ void RXBBPatterns::update_patterns_WHITE_A6(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00000000007E0000ULL);
+        const int n = std::popcount(flipped & 0X00000000007E0000ULL);
         switch(n) {
             case 6: p.flip_WHITE_G6(); [[fallthrough]];
             case 5: p.flip_WHITE_F6(); [[fallthrough]];
@@ -6106,7 +6107,7 @@ void RXBBPatterns::update_patterns_WHITE_A6(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008102040000000ULL);
+        const int n = std::popcount(flipped & 0X0008102040000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_E2(); [[fallthrough]];
             case 3: p.flip_WHITE_D3(); [[fallthrough]];
@@ -6122,7 +6123,7 @@ void RXBBPatterns::update_patterns_WHITE_A6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0080808080000000ULL);
+        const int n = std::popcount(flipped & 0X0080808080000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_A2(); [[fallthrough]];
             case 3: p.flip_WHITE_A3(); [[fallthrough]];
@@ -6148,7 +6149,7 @@ void RXBBPatterns::update_patterns_WHITE_B6(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00000000003E0000ULL);
+        const int n = std::popcount(flipped & 0X00000000003E0000ULL);
         switch(n) {
             case 5: p.flip_WHITE_G6(); [[fallthrough]];
             case 4: p.flip_WHITE_F6(); [[fallthrough]];
@@ -6161,7 +6162,7 @@ void RXBBPatterns::update_patterns_WHITE_B6(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004081020000000ULL);
+        const int n = std::popcount(flipped & 0X0004081020000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_F2(); [[fallthrough]];
             case 3: p.flip_WHITE_E3(); [[fallthrough]];
@@ -6177,7 +6178,7 @@ void RXBBPatterns::update_patterns_WHITE_B6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040404040000000ULL);
+        const int n = std::popcount(flipped & 0X0040404040000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_B2(); [[fallthrough]];
             case 3: p.flip_WHITE_B3(); [[fallthrough]];
@@ -6211,7 +6212,7 @@ void RXBBPatterns::update_patterns_WHITE_C6(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00000000001E0000ULL);
+        const int n = std::popcount(flipped & 0X00000000001E0000ULL);
         switch(n) {
             case 4: p.flip_WHITE_G6(); [[fallthrough]];
             case 3: p.flip_WHITE_F6(); [[fallthrough]];
@@ -6223,7 +6224,7 @@ void RXBBPatterns::update_patterns_WHITE_C6(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002040810000000ULL);
+        const int n = std::popcount(flipped & 0X0002040810000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_G2(); [[fallthrough]];
             case 3: p.flip_WHITE_F3(); [[fallthrough]];
@@ -6235,7 +6236,7 @@ void RXBBPatterns::update_patterns_WHITE_C6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020202020000000ULL);
+        const int n = std::popcount(flipped & 0X0020202020000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_C2(); [[fallthrough]];
             case 3: p.flip_WHITE_C3(); [[fallthrough]];
@@ -6277,7 +6278,7 @@ void RXBBPatterns::update_patterns_WHITE_D6(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X00000000000E0000ULL);
+        const int n = std::popcount(flipped & 0X00000000000E0000ULL);
         switch(n) {
             case 3: p.flip_WHITE_G6(); [[fallthrough]];
             case 2: p.flip_WHITE_F6(); [[fallthrough]];
@@ -6288,7 +6289,7 @@ void RXBBPatterns::update_patterns_WHITE_D6(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000020408000000ULL);
+        const int n = std::popcount(flipped & 0X0000020408000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_G3(); [[fallthrough]];
             case 2: p.flip_WHITE_F4(); [[fallthrough]];
@@ -6299,7 +6300,7 @@ void RXBBPatterns::update_patterns_WHITE_D6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010101010000000ULL);
+        const int n = std::popcount(flipped & 0X0010101010000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_D2(); [[fallthrough]];
             case 3: p.flip_WHITE_D3(); [[fallthrough]];
@@ -6311,7 +6312,7 @@ void RXBBPatterns::update_patterns_WHITE_D6(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000004020000000ULL);
+        const int n = std::popcount(flipped & 0X0000004020000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_B4(); [[fallthrough]];
             case 1: p.flip_WHITE_C5();
@@ -6325,7 +6326,7 @@ void RXBBPatterns::update_patterns_WHITE_D6(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000600000ULL);
+        const int n = std::popcount(flipped & 0X0000000000600000ULL);
         switch(n) {
             case 2: p.flip_WHITE_B6(); [[fallthrough]];
             case 1: p.flip_WHITE_C6();
@@ -6353,7 +6354,7 @@ void RXBBPatterns::update_patterns_WHITE_E6(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000060000ULL);
+        const int n = std::popcount(flipped & 0X0000000000060000ULL);
         switch(n) {
             case 2: p.flip_WHITE_G6(); [[fallthrough]];
             case 1: p.flip_WHITE_F6();
@@ -6363,7 +6364,7 @@ void RXBBPatterns::update_patterns_WHITE_E6(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000204000000ULL);
+        const int n = std::popcount(flipped & 0X0000000204000000ULL);
         switch(n) {
             case 2: p.flip_WHITE_G4(); [[fallthrough]];
             case 1: p.flip_WHITE_F5();
@@ -6373,7 +6374,7 @@ void RXBBPatterns::update_patterns_WHITE_E6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008080808000000ULL);
+        const int n = std::popcount(flipped & 0X0008080808000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_E2(); [[fallthrough]];
             case 3: p.flip_WHITE_E3(); [[fallthrough]];
@@ -6385,7 +6386,7 @@ void RXBBPatterns::update_patterns_WHITE_E6(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000402010000000ULL);
+        const int n = std::popcount(flipped & 0X0000402010000000ULL);
         switch(n) {
             case 3: p.flip_WHITE_B3(); [[fallthrough]];
             case 2: p.flip_WHITE_C4(); [[fallthrough]];
@@ -6400,7 +6401,7 @@ void RXBBPatterns::update_patterns_WHITE_E6(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000700000ULL);
+        const int n = std::popcount(flipped & 0X0000000000700000ULL);
         switch(n) {
             case 3: p.flip_WHITE_B6(); [[fallthrough]];
             case 2: p.flip_WHITE_C6(); [[fallthrough]];
@@ -6437,7 +6438,7 @@ void RXBBPatterns::update_patterns_WHITE_F6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004040404000000ULL);
+        const int n = std::popcount(flipped & 0X0004040404000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_F2(); [[fallthrough]];
             case 3: p.flip_WHITE_F3(); [[fallthrough]];
@@ -6449,7 +6450,7 @@ void RXBBPatterns::update_patterns_WHITE_F6(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040201008000000ULL);
+        const int n = std::popcount(flipped & 0X0040201008000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_B2(); [[fallthrough]];
             case 3: p.flip_WHITE_C3(); [[fallthrough]];
@@ -6465,7 +6466,7 @@ void RXBBPatterns::update_patterns_WHITE_F6(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000780000ULL);
+        const int n = std::popcount(flipped & 0X0000000000780000ULL);
         switch(n) {
             case 4: p.flip_WHITE_B6(); [[fallthrough]];
             case 3: p.flip_WHITE_C6(); [[fallthrough]];
@@ -6487,7 +6488,7 @@ void RXBBPatterns::update_patterns_WHITE_G6(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X00000000007C0000ULL);
+        const int n = std::popcount(flipped & 0X00000000007C0000ULL);
         switch(n) {
             case 5: p.flip_WHITE_B6(); [[fallthrough]];
             case 4: p.flip_WHITE_C6(); [[fallthrough]];
@@ -6504,7 +6505,7 @@ void RXBBPatterns::update_patterns_WHITE_G6(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020100804000000ULL);
+        const int n = std::popcount(flipped & 0X0020100804000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_C2(); [[fallthrough]];
             case 3: p.flip_WHITE_D3(); [[fallthrough]];
@@ -6520,7 +6521,7 @@ void RXBBPatterns::update_patterns_WHITE_G6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002020202000000ULL);
+        const int n = std::popcount(flipped & 0X0002020202000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_G2(); [[fallthrough]];
             case 3: p.flip_WHITE_G3(); [[fallthrough]];
@@ -6542,7 +6543,7 @@ void RXBBPatterns::update_patterns_WHITE_H6(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X00000000007E0000ULL);
+        const int n = std::popcount(flipped & 0X00000000007E0000ULL);
         switch(n) {
             case 6: p.flip_WHITE_B6(); [[fallthrough]];
             case 5: p.flip_WHITE_C6(); [[fallthrough]];
@@ -6560,7 +6561,7 @@ void RXBBPatterns::update_patterns_WHITE_H6(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010080402000000ULL);
+        const int n = std::popcount(flipped & 0X0010080402000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_D2(); [[fallthrough]];
             case 3: p.flip_WHITE_E3(); [[fallthrough]];
@@ -6576,7 +6577,7 @@ void RXBBPatterns::update_patterns_WHITE_H6(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0001010101000000ULL);
+        const int n = std::popcount(flipped & 0X0001010101000000ULL);
         switch(n) {
             case 4: p.flip_WHITE_H2(); [[fallthrough]];
             case 3: p.flip_WHITE_H3(); [[fallthrough]];
@@ -6598,7 +6599,7 @@ void RXBBPatterns::update_patterns_WHITE_A7(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004081020400000ULL);
+        const int n = std::popcount(flipped & 0X0004081020400000ULL);
         switch(n) {
             case 5: p.flip_WHITE_F2(); [[fallthrough]];
             case 4: p.flip_WHITE_E3(); [[fallthrough]];
@@ -6611,7 +6612,7 @@ void RXBBPatterns::update_patterns_WHITE_A7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0080808080800000ULL);
+        const int n = std::popcount(flipped & 0X0080808080800000ULL);
         switch(n) {
             case 5: p.flip_WHITE_A2(); [[fallthrough]];
             case 4: p.flip_WHITE_A3(); [[fallthrough]];
@@ -6624,7 +6625,7 @@ void RXBBPatterns::update_patterns_WHITE_A7(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000007E00ULL);
+        const int n = std::popcount(flipped & 0X0000000000007E00ULL);
         switch(n) {
             case 6: p.flip_WHITE_G7(); [[fallthrough]];
             case 5: p.flip_WHITE_F7(); [[fallthrough]];
@@ -6648,7 +6649,7 @@ void RXBBPatterns::update_patterns_WHITE_B7(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002040810200000ULL);
+        const int n = std::popcount(flipped & 0X0002040810200000ULL);
         switch(n) {
             case 5: p.flip_WHITE_G2(); [[fallthrough]];
             case 4: p.flip_WHITE_F3(); [[fallthrough]];
@@ -6661,7 +6662,7 @@ void RXBBPatterns::update_patterns_WHITE_B7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040404040400000ULL);
+        const int n = std::popcount(flipped & 0X0040404040400000ULL);
         switch(n) {
             case 5: p.flip_WHITE_B2(); [[fallthrough]];
             case 4: p.flip_WHITE_B3(); [[fallthrough]];
@@ -6674,7 +6675,7 @@ void RXBBPatterns::update_patterns_WHITE_B7(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000003E00ULL);
+        const int n = std::popcount(flipped & 0X0000000000003E00ULL);
         switch(n) {
             case 5: p.flip_WHITE_G7(); [[fallthrough]];
             case 4: p.flip_WHITE_F7(); [[fallthrough]];
@@ -6697,7 +6698,7 @@ void RXBBPatterns::update_patterns_WHITE_C7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020202020200000ULL);
+        const int n = std::popcount(flipped & 0X0020202020200000ULL);
         switch(n) {
             case 5: p.flip_WHITE_C2(); [[fallthrough]];
             case 4: p.flip_WHITE_C3(); [[fallthrough]];
@@ -6710,7 +6711,7 @@ void RXBBPatterns::update_patterns_WHITE_C7(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000020408100000ULL);
+        const int n = std::popcount(flipped & 0X0000020408100000ULL);
         switch(n) {
             case 4: p.flip_WHITE_G3(); [[fallthrough]];
             case 3: p.flip_WHITE_F4(); [[fallthrough]];
@@ -6726,7 +6727,7 @@ void RXBBPatterns::update_patterns_WHITE_C7(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000001E00ULL);
+        const int n = std::popcount(flipped & 0X0000000000001E00ULL);
         switch(n) {
             case 4: p.flip_WHITE_G7(); [[fallthrough]];
             case 3: p.flip_WHITE_F7(); [[fallthrough]];
@@ -6752,7 +6753,7 @@ void RXBBPatterns::update_patterns_WHITE_D7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010101010100000ULL);
+        const int n = std::popcount(flipped & 0X0010101010100000ULL);
         switch(n) {
             case 5: p.flip_WHITE_D2(); [[fallthrough]];
             case 4: p.flip_WHITE_D3(); [[fallthrough]];
@@ -6765,7 +6766,7 @@ void RXBBPatterns::update_patterns_WHITE_D7(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000204080000ULL);
+        const int n = std::popcount(flipped & 0X0000000204080000ULL);
         switch(n) {
             case 3: p.flip_WHITE_G4(); [[fallthrough]];
             case 2: p.flip_WHITE_F5(); [[fallthrough]];
@@ -6776,7 +6777,7 @@ void RXBBPatterns::update_patterns_WHITE_D7(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000040200000ULL);
+        const int n = std::popcount(flipped & 0X0000000040200000ULL);
         switch(n) {
             case 2: p.flip_WHITE_B5(); [[fallthrough]];
             case 1: p.flip_WHITE_C6();
@@ -6786,7 +6787,7 @@ void RXBBPatterns::update_patterns_WHITE_D7(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000000E00ULL);
+        const int n = std::popcount(flipped & 0X0000000000000E00ULL);
         switch(n) {
             case 3: p.flip_WHITE_G7(); [[fallthrough]];
             case 2: p.flip_WHITE_F7(); [[fallthrough]];
@@ -6797,7 +6798,7 @@ void RXBBPatterns::update_patterns_WHITE_D7(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000006000ULL);
+        const int n = std::popcount(flipped & 0X0000000000006000ULL);
         switch(n) {
             case 2: p.flip_WHITE_B7(); [[fallthrough]];
             case 1: p.flip_WHITE_C7();
@@ -6817,7 +6818,7 @@ void RXBBPatterns::update_patterns_WHITE_E7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008080808080000ULL);
+        const int n = std::popcount(flipped & 0X0008080808080000ULL);
         switch(n) {
             case 5: p.flip_WHITE_E2(); [[fallthrough]];
             case 4: p.flip_WHITE_E3(); [[fallthrough]];
@@ -6830,7 +6831,7 @@ void RXBBPatterns::update_patterns_WHITE_E7(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000002040000ULL);
+        const int n = std::popcount(flipped & 0X0000000002040000ULL);
         switch(n) {
             case 2: p.flip_WHITE_G5(); [[fallthrough]];
             case 1: p.flip_WHITE_F6();
@@ -6840,7 +6841,7 @@ void RXBBPatterns::update_patterns_WHITE_E7(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000004020100000ULL);
+        const int n = std::popcount(flipped & 0X0000004020100000ULL);
         switch(n) {
             case 3: p.flip_WHITE_B4(); [[fallthrough]];
             case 2: p.flip_WHITE_C5(); [[fallthrough]];
@@ -6851,7 +6852,7 @@ void RXBBPatterns::update_patterns_WHITE_E7(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000000600ULL);
+        const int n = std::popcount(flipped & 0X0000000000000600ULL);
         switch(n) {
             case 2: p.flip_WHITE_G7(); [[fallthrough]];
             case 1: p.flip_WHITE_F7();
@@ -6861,7 +6862,7 @@ void RXBBPatterns::update_patterns_WHITE_E7(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000007000ULL);
+        const int n = std::popcount(flipped & 0X0000000000007000ULL);
         switch(n) {
             case 3: p.flip_WHITE_B7(); [[fallthrough]];
             case 2: p.flip_WHITE_C7(); [[fallthrough]];
@@ -6882,7 +6883,7 @@ void RXBBPatterns::update_patterns_WHITE_F7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004040404040000ULL);
+        const int n = std::popcount(flipped & 0X0004040404040000ULL);
         switch(n) {
             case 5: p.flip_WHITE_F2(); [[fallthrough]];
             case 4: p.flip_WHITE_F3(); [[fallthrough]];
@@ -6899,7 +6900,7 @@ void RXBBPatterns::update_patterns_WHITE_F7(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000402010080000ULL);
+        const int n = std::popcount(flipped & 0X0000402010080000ULL);
         switch(n) {
             case 4: p.flip_WHITE_B3(); [[fallthrough]];
             case 3: p.flip_WHITE_C4(); [[fallthrough]];
@@ -6915,7 +6916,7 @@ void RXBBPatterns::update_patterns_WHITE_F7(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000007800ULL);
+        const int n = std::popcount(flipped & 0X0000000000007800ULL);
         switch(n) {
             case 4: p.flip_WHITE_B7(); [[fallthrough]];
             case 3: p.flip_WHITE_C7(); [[fallthrough]];
@@ -6937,7 +6938,7 @@ void RXBBPatterns::update_patterns_WHITE_G7(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040201008040000ULL);
+        const int n = std::popcount(flipped & 0X0040201008040000ULL);
         switch(n) {
             case 5: p.flip_WHITE_B2(); [[fallthrough]];
             case 4: p.flip_WHITE_C3(); [[fallthrough]];
@@ -6950,7 +6951,7 @@ void RXBBPatterns::update_patterns_WHITE_G7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002020202020000ULL);
+        const int n = std::popcount(flipped & 0X0002020202020000ULL);
         switch(n) {
             case 5: p.flip_WHITE_G2(); [[fallthrough]];
             case 4: p.flip_WHITE_G3(); [[fallthrough]];
@@ -6963,7 +6964,7 @@ void RXBBPatterns::update_patterns_WHITE_G7(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000007C00ULL);
+        const int n = std::popcount(flipped & 0X0000000000007C00ULL);
         switch(n) {
             case 5: p.flip_WHITE_B7(); [[fallthrough]];
             case 4: p.flip_WHITE_C7(); [[fallthrough]];
@@ -6986,7 +6987,7 @@ void RXBBPatterns::update_patterns_WHITE_H7(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020100804020000ULL);
+        const int n = std::popcount(flipped & 0X0020100804020000ULL);
         switch(n) {
             case 5: p.flip_WHITE_C2(); [[fallthrough]];
             case 4: p.flip_WHITE_D3(); [[fallthrough]];
@@ -6999,7 +7000,7 @@ void RXBBPatterns::update_patterns_WHITE_H7(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0001010101010000ULL);
+        const int n = std::popcount(flipped & 0X0001010101010000ULL);
         switch(n) {
             case 5: p.flip_WHITE_H2(); [[fallthrough]];
             case 4: p.flip_WHITE_H3(); [[fallthrough]];
@@ -7012,7 +7013,7 @@ void RXBBPatterns::update_patterns_WHITE_H7(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000007E00ULL);
+        const int n = std::popcount(flipped & 0X0000000000007E00ULL);
         switch(n) {
             case 6: p.flip_WHITE_B7(); [[fallthrough]];
             case 5: p.flip_WHITE_C7(); [[fallthrough]];
@@ -7036,7 +7037,7 @@ void RXBBPatterns::update_patterns_WHITE_A8(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002040810204000ULL);
+        const int n = std::popcount(flipped & 0X0002040810204000ULL);
         switch(n) {
             case 6: p.flip_WHITE_G2(); [[fallthrough]];
             case 5: p.flip_WHITE_F3(); [[fallthrough]];
@@ -7050,7 +7051,7 @@ void RXBBPatterns::update_patterns_WHITE_A8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0080808080808000ULL);
+        const int n = std::popcount(flipped & 0X0080808080808000ULL);
         switch(n) {
             case 6: p.flip_WHITE_A2(); [[fallthrough]];
             case 5: p.flip_WHITE_A3(); [[fallthrough]];
@@ -7064,7 +7065,7 @@ void RXBBPatterns::update_patterns_WHITE_A8(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000000000007EULL);
+        const int n = std::popcount(flipped & 0X000000000000007EULL);
         switch(n) {
             case 6: p.flip_WHITE_G8(); [[fallthrough]];
             case 5: p.flip_WHITE_F8(); [[fallthrough]];
@@ -7088,7 +7089,7 @@ void RXBBPatterns::update_patterns_WHITE_B8(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000020408102000ULL);
+        const int n = std::popcount(flipped & 0X0000020408102000ULL);
         switch(n) {
             case 5: p.flip_WHITE_G3(); [[fallthrough]];
             case 4: p.flip_WHITE_F4(); [[fallthrough]];
@@ -7101,7 +7102,7 @@ void RXBBPatterns::update_patterns_WHITE_B8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040404040404000ULL);
+        const int n = std::popcount(flipped & 0X0040404040404000ULL);
         switch(n) {
             case 6: p.flip_WHITE_B2(); [[fallthrough]];
             case 5: p.flip_WHITE_B3(); [[fallthrough]];
@@ -7115,7 +7116,7 @@ void RXBBPatterns::update_patterns_WHITE_B8(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000000000003EULL);
+        const int n = std::popcount(flipped & 0X000000000000003EULL);
         switch(n) {
             case 5: p.flip_WHITE_G8(); [[fallthrough]];
             case 4: p.flip_WHITE_F8(); [[fallthrough]];
@@ -7138,7 +7139,7 @@ void RXBBPatterns::update_patterns_WHITE_C8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0020202020202000ULL);
+        const int n = std::popcount(flipped & 0X0020202020202000ULL);
         switch(n) {
             case 6: p.flip_WHITE_C2(); [[fallthrough]];
             case 5: p.flip_WHITE_C3(); [[fallthrough]];
@@ -7152,7 +7153,7 @@ void RXBBPatterns::update_patterns_WHITE_C8(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000204081000ULL);
+        const int n = std::popcount(flipped & 0X0000000204081000ULL);
         switch(n) {
             case 4: p.flip_WHITE_G4(); [[fallthrough]];
             case 3: p.flip_WHITE_F5(); [[fallthrough]];
@@ -7168,7 +7169,7 @@ void RXBBPatterns::update_patterns_WHITE_C8(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000000000001EULL);
+        const int n = std::popcount(flipped & 0X000000000000001EULL);
         switch(n) {
             case 4: p.flip_WHITE_G8(); [[fallthrough]];
             case 3: p.flip_WHITE_F8(); [[fallthrough]];
@@ -7194,7 +7195,7 @@ void RXBBPatterns::update_patterns_WHITE_D8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0010101010101000ULL);
+        const int n = std::popcount(flipped & 0X0010101010101000ULL);
         switch(n) {
             case 6: p.flip_WHITE_D2(); [[fallthrough]];
             case 5: p.flip_WHITE_D3(); [[fallthrough]];
@@ -7208,7 +7209,7 @@ void RXBBPatterns::update_patterns_WHITE_D8(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000002040800ULL);
+        const int n = std::popcount(flipped & 0X0000000002040800ULL);
         switch(n) {
             case 3: p.flip_WHITE_G5(); [[fallthrough]];
             case 2: p.flip_WHITE_F6(); [[fallthrough]];
@@ -7219,7 +7220,7 @@ void RXBBPatterns::update_patterns_WHITE_D8(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000402000ULL);
+        const int n = std::popcount(flipped & 0X0000000000402000ULL);
         switch(n) {
             case 2: p.flip_WHITE_B6(); [[fallthrough]];
             case 1: p.flip_WHITE_C7();
@@ -7229,7 +7230,7 @@ void RXBBPatterns::update_patterns_WHITE_D8(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000000000000EULL);
+        const int n = std::popcount(flipped & 0X000000000000000EULL);
         switch(n) {
             case 3: p.flip_WHITE_G8(); [[fallthrough]];
             case 2: p.flip_WHITE_F8(); [[fallthrough]];
@@ -7240,7 +7241,7 @@ void RXBBPatterns::update_patterns_WHITE_D8(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000000060ULL);
+        const int n = std::popcount(flipped & 0X0000000000000060ULL);
         switch(n) {
             case 2: p.flip_WHITE_B8(); [[fallthrough]];
             case 1: p.flip_WHITE_C8();
@@ -7260,7 +7261,7 @@ void RXBBPatterns::update_patterns_WHITE_E8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0008080808080800ULL);
+        const int n = std::popcount(flipped & 0X0008080808080800ULL);
         switch(n) {
             case 6: p.flip_WHITE_E2(); [[fallthrough]];
             case 5: p.flip_WHITE_E3(); [[fallthrough]];
@@ -7274,7 +7275,7 @@ void RXBBPatterns::update_patterns_WHITE_E8(RXMove& move) const {
     
     /* direction NE */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000020400ULL);
+        const int n = std::popcount(flipped & 0X0000000000020400ULL);
         switch(n) {
             case 2: p.flip_WHITE_G6(); [[fallthrough]];
             case 1: p.flip_WHITE_F7();
@@ -7284,7 +7285,7 @@ void RXBBPatterns::update_patterns_WHITE_E8(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000040201000ULL);
+        const int n = std::popcount(flipped & 0X0000000040201000ULL);
         switch(n) {
             case 3: p.flip_WHITE_B5(); [[fallthrough]];
             case 2: p.flip_WHITE_C6(); [[fallthrough]];
@@ -7295,7 +7296,7 @@ void RXBBPatterns::update_patterns_WHITE_E8(RXMove& move) const {
     
     /* direction _E */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000000006ULL);
+        const int n = std::popcount(flipped & 0X0000000000000006ULL);
         switch(n) {
             case 2: p.flip_WHITE_G8(); [[fallthrough]];
             case 1: p.flip_WHITE_F8();
@@ -7305,7 +7306,7 @@ void RXBBPatterns::update_patterns_WHITE_E8(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000000070ULL);
+        const int n = std::popcount(flipped & 0X0000000000000070ULL);
         switch(n) {
             case 3: p.flip_WHITE_B8(); [[fallthrough]];
             case 2: p.flip_WHITE_C8(); [[fallthrough]];
@@ -7326,7 +7327,7 @@ void RXBBPatterns::update_patterns_WHITE_F8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0004040404040400ULL);
+        const int n = std::popcount(flipped & 0X0004040404040400ULL);
         switch(n) {
             case 6: p.flip_WHITE_F2(); [[fallthrough]];
             case 5: p.flip_WHITE_F3(); [[fallthrough]];
@@ -7344,7 +7345,7 @@ void RXBBPatterns::update_patterns_WHITE_F8(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000004020100800ULL);
+        const int n = std::popcount(flipped & 0X0000004020100800ULL);
         switch(n) {
             case 4: p.flip_WHITE_B4(); [[fallthrough]];
             case 3: p.flip_WHITE_C5(); [[fallthrough]];
@@ -7360,7 +7361,7 @@ void RXBBPatterns::update_patterns_WHITE_F8(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000000000000078ULL);
+        const int n = std::popcount(flipped & 0X0000000000000078ULL);
         switch(n) {
             case 4: p.flip_WHITE_B8(); [[fallthrough]];
             case 3: p.flip_WHITE_C8(); [[fallthrough]];
@@ -7382,7 +7383,7 @@ void RXBBPatterns::update_patterns_WHITE_G8(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0000402010080400ULL);
+        const int n = std::popcount(flipped & 0X0000402010080400ULL);
         switch(n) {
             case 5: p.flip_WHITE_B3(); [[fallthrough]];
             case 4: p.flip_WHITE_C4(); [[fallthrough]];
@@ -7395,7 +7396,7 @@ void RXBBPatterns::update_patterns_WHITE_G8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0002020202020200ULL);
+        const int n = std::popcount(flipped & 0X0002020202020200ULL);
         switch(n) {
             case 6: p.flip_WHITE_G2(); [[fallthrough]];
             case 5: p.flip_WHITE_G3(); [[fallthrough]];
@@ -7409,7 +7410,7 @@ void RXBBPatterns::update_patterns_WHITE_G8(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000000000007CULL);
+        const int n = std::popcount(flipped & 0X000000000000007CULL);
         switch(n) {
             case 5: p.flip_WHITE_B8(); [[fallthrough]];
             case 4: p.flip_WHITE_C8(); [[fallthrough]];
@@ -7432,7 +7433,7 @@ void RXBBPatterns::update_patterns_WHITE_H8(RXMove& move) const {
     
     /* direction NW */
     {
-        const int n = __builtin_popcountll(flipped & 0X0040201008040200ULL);
+        const int n = std::popcount(flipped & 0X0040201008040200ULL);
         switch(n) {
             case 6: p.flip_WHITE_B2(); [[fallthrough]];
             case 5: p.flip_WHITE_C3(); [[fallthrough]];
@@ -7446,7 +7447,7 @@ void RXBBPatterns::update_patterns_WHITE_H8(RXMove& move) const {
     
     /* direction _N */
     {
-        const int n = __builtin_popcountll(flipped & 0X0001010101010100ULL);
+        const int n = std::popcount(flipped & 0X0001010101010100ULL);
         switch(n) {
             case 6: p.flip_WHITE_H2(); [[fallthrough]];
             case 5: p.flip_WHITE_H3(); [[fallthrough]];
@@ -7460,7 +7461,7 @@ void RXBBPatterns::update_patterns_WHITE_H8(RXMove& move) const {
     
     /* direction _W */
     {
-        const int n = __builtin_popcountll(flipped & 0X000000000000007EULL);
+        const int n = std::popcount(flipped & 0X000000000000007EULL);
         switch(n) {
             case 6: p.flip_WHITE_B8(); [[fallthrough]];
             case 5: p.flip_WHITE_C8(); [[fallthrough]];

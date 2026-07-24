@@ -19,11 +19,11 @@
 #ifndef SOCKBUF_HPP
 #define SOCKBUF_HPP
 
-#include <sys/socket.h>
 #include <iostream>
 #include <fstream>
 
 #include "types.hpp"
+#include "sockcompat.hpp"   // sock_t, CLOSESOCK, sock_errno, WinsockInit, ...
 
 
 
@@ -65,7 +65,8 @@ protected:
     
     bool fConnected;
     
-    int sock; //SOCKET sock;
+    WinsockInit wsaInit;    // RAII: WSAStartup/WSACleanup on Windows, no-op elsewhere
+    sock_t sock;            // SOCKET on Windows, int on POSIX
     std::ofstream *fplog;
     enum {kLogNone, kLogRecv, kLogSend} loglast;
     char *buf;

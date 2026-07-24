@@ -21,8 +21,13 @@
 
 #include "RXBitBoard.hpp"
 
-#include <x86intrin.h>
-
+#if defined(_MSC_VER)
+    // Windows avec MSVC ou Clang-cl
+    #include <intrin.h>
+#else
+    // Linux, macOS ou Windows avec MinGW (GCC/Clang)
+    #include <x86intrin.h>
+#endif
 
 alignas(32) const unsigned long long MASK_X[66][4] = {
     { 0x0000000000000001ULL, 0x8040201008040201ULL, 0x0101010101010101ULL, 0x81412111090503ffULL },

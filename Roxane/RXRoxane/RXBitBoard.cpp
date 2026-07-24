@@ -203,7 +203,7 @@ void RXBitBoard::static_init() {
 //    uint64x1_t combined = vorr_u64(lo, hi);
 //    unsigned long long result = vget_lane_u64(combined, 0) & ~(P | O);
 //        
-//    return __builtin_popcountll(result);
+//    return std::popcount(result);
 //
 //}
 
@@ -233,8 +233,8 @@ void RXBitBoard::dual_potential_mobility(const unsigned long long P, const unsig
     uint64x2_t final_pot = vreinterpretq_u64_u8(final_pot_v);
 
     // Extraction et Popcount
-    p_pmob = __builtin_popcountll(vgetq_lane_u64(final_pot, 0));
-    o_pmob = __builtin_popcountll(vgetq_lane_u64(final_pot, 1));
+    p_pmob = std::popcount(vgetq_lane_u64(final_pot, 0));
+    o_pmob = std::popcount(vgetq_lane_u64(final_pot, 1));
 }
 
 
@@ -509,7 +509,7 @@ std::ostream& operator<<(std::ostream& os, RXBitBoard& board) {
 		}
 		os << iLine;
 		if(iLine == 4)
-			os << "\tNoirs: " << __builtin_popcountll(board.discs[BLACK]) << "\tBlancs: " << __builtin_popcountll(board.discs[WHITE]);
+			os << "\tNoirs: " << std::popcount(board.discs[BLACK]) << "\tBlancs: " << std::popcount(board.discs[WHITE]);
 		if(iLine == 5)
 			os << "\t" << (board.player == WHITE ? "BLANCS" : "NOIRS") << " au trait";
 //        if(iLine == 6)
@@ -557,7 +557,7 @@ bool RXBitBoard::isEndGame() {
 
 int RXBitBoard::final_score() const {
         
-	int score = __builtin_popcountll(discs[player]) -__builtin_popcountll(discs[player^1]);
+	int score = std::popcount(discs[player]) -std::popcount(discs[player^1]);
 	if(score<0)
 		score -= n_empty;
 	else if(score>0)
@@ -570,7 +570,7 @@ int RXBitBoard::final_score() const {
 unsigned int RXBitBoard::n_moves() const {
     
     const unsigned long long legal_movesBB = get_legal_moves(discs[player], discs[player^1]);
-    return __builtin_popcountll(legal_movesBB);
+    return std::popcount(legal_movesBB);
     
 }
 
@@ -725,7 +725,7 @@ void RXBitBoard::print_Board() {
         }
         std::cout << iLine;
         if(iLine == 4)
-            std::cout << "\tNoirs: " << __builtin_popcountll(discs[BLACK]) << "\tBlancs: " << __builtin_popcountll(discs[WHITE]);
+            std::cout << "\tNoirs: " << std::popcount(discs[BLACK]) << "\tBlancs: " << std::popcount(discs[WHITE]);
         if(iLine == 5)
             std::cout << "\t" << (player == WHITE ? "BLANCS" : "NOIRS") << " au trait";
         

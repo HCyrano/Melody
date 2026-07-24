@@ -1,0 +1,52 @@
+name: Build Melody (Multiplateforme)
+
+on:
+  push:
+    branches: [ "cross_platform", "multiplateforme" ]
+  pull_request:
+    branches: [ "cross_platform", "multiplateforme" ]
+
+jobs:
+  # --- BUILD LINUX ---
+  build-linux:
+    name: Linux (Ubuntu + GCC 13)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code source
+        uses: actions/checkout@v6
+
+      - name: Installer GCC 13 & Make
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-13 make
+
+      - name: Compiler Melody
+        # Passer CXX=g++-13 pour garantir la norme C++23
+        run: make CXX=g++-13
+
+  # --- BUILD MACOS ---
+  build-macos:
+    name: macOS (Apple Silicon / Clang)
+    runs-on: macos-latest
+    steps:
+      - name: Récupérer le code source
+        uses: actions/checkout@v6
+
+      - name: Compiler Melody
+        run: make
+
+  # --- BUILD WINDOWS ---
+  build-windows:
+    name: Windows (x64 MSVC)
+    runs-on: windows-latest
+    steps:
+      - name: Récupérer le code source
+        uses: actions/checkout@v6
+
+      - name: Configurer l'environnement Visual Studio MSVC (x64)
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Compiler Melody (NMake)
+        run: nmake /f Makefile.win

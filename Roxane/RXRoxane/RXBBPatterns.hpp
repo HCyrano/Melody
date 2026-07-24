@@ -21,6 +21,7 @@
 #include <algorithm> //std::min
 #include <atomic>
 
+#include "RXTools.hpp"
 #include "RXConstantes.hpp"
 #include "RXBitBoard.hpp"
 #include "RXPattern.hpp"
@@ -29,7 +30,13 @@
 #if ARCH ==  ARCH_ARM_NEON
     #include <arm_neon.h>
 #elif ARCH == ARCH_X86_AVX2
-    #include <x86intrin.h>
+    #if defined(_MSC_VER)
+        // Windows avec MSVC ou Clang-cl
+        #include <intrin.h>
+    #else
+       // Linux, macOS, ou Windows avec MinGW (GCC/Clang)
+        #include <x86intrin.h>
+    #endif
 #endif
 
 
@@ -120,8 +127,7 @@ class RXBBPatterns {
     
 };
 
-__attribute__((always_inline))
-inline RXBBPatterns& RXBBPatterns::operator=(const RXBBPatterns& src) {
+RX_ALWAYS_INLINE RXBBPatterns& RXBBPatterns::operator=(const RXBBPatterns& src) {
 
     // Optimization: Skip self-assignment check to avoid branch misprediction.
     // Safe because 'pattern' pointers are stable (allocated at startup,
@@ -137,20 +143,17 @@ inline RXBBPatterns& RXBBPatterns::operator=(const RXBBPatterns& src) {
     return *this;
 }
 
-__attribute__((always_inline))
-inline void RXBBPatterns::patterns_update(RXMove& move) const {
+RX_ALWAYS_INLINE void RXBBPatterns::patterns_update(RXMove& move) const {
     (this->*RXBBPatterns::update_patterns[move.position][board.player])(move);
 }
 
-__attribute__((always_inline))
-inline void RXBBPatterns::do_move(RXMove& move) {
+RX_ALWAYS_INLINE void RXBBPatterns::do_move(RXMove& move) {
     board.do_move(move);
     move.undo_pattern = pattern;
     pattern = move.pattern;
 }
 
-__attribute__((always_inline))
-inline void RXBBPatterns::undo_move(const RXMove& move) {
+RX_ALWAYS_INLINE void RXBBPatterns::undo_move(const RXMove& move) {
     pattern = move.undo_pattern;
     board.undo_move(move);
 }
@@ -326,7 +329,7 @@ inline int acc_score(const int   stage,
     const int cp48 = _mm256_extract_epi32(vcp48_51, 0), cp49 = _mm256_extract_epi32(vcp48_51, 1);
 
 #else
-    auto cp = [mask, p](int i) __attribute__((always_inline)) -> int {
+    auto cp = [mask, p](int i) RX_LAMBDA_INLINE -> int {
         return (p[i] ^ mask) - mask;
     };
     
@@ -410,7 +413,7 @@ inline int acc_score(const int   stage,
             int32x4_t sumsq_2 = vdupq_n_s32(0);
             int32x4_t sumsq_3 = vdupq_n_s32(0);
             
-            auto acc = [&](const Vec_short* __restrict V, int idx) __attribute__((always_inline)) {
+            auto acc = [&] RX_LAMBDA_INLINE (const Vec_short* __restrict V, int idx) {
                 const Vec_short& v_ref = V[idx];
                 
                 // accumulation (48 fois) :
@@ -436,7 +439,7 @@ inline int acc_score(const int   stage,
             __m256i sumsq_0 = _mm256_setzero_si256();  // 8  × int32 : -Σ x_i² lanes 0..7
             __m256i sumsq_1 = _mm256_setzero_si256();  // 8  × int32 : -Σ x_i² lanes 8..15
             
-            auto acc = [&](const Vec_short* __restrict V, int idx) __attribute__((always_inline)) {
+            auto acc = [&] RX_LAMBDA_INLINE (const Vec_short* __restrict V, int idx) {
                 const Vec_short& v_ref = V[idx];
                 
                 // sumsq -= x² (équivalent NEON version 2 : sumsq = -Σx²)
@@ -453,7 +456,7 @@ inline int acc_score(const int   stage,
             int sum_vx[RANK]    = {};
             int sum_vx_sq[RANK] = {};
             
-            auto acc = [&](const Vec_short* V, int idx) __attribute__((always_inline)) {
+            auto acc = [&](const Vec_short* V, int idx) RX_LAMBDA_INLINE {
                 const Vec_short& vec = V[idx];
                 for (unsigned int f = 0; f < RANK; ++f) {
                     sum_vx[f]    += vec.data[f];    // Addition simple
@@ -485,31 +488,6 @@ inline int acc_score(const int   stage,
             const Vec_short* __restrict const vEdgeC = maskC ? vEdge1 : vEdge2;
             const Vec_short* __restrict const vEdgeD = maskD ? vEdge1 : vEdge2;
             
-            /*
-             // Defer to the compiler.
-             
-             // CORNER — 4 accès dans 177147 entrées → priorité max, prefetch en premier
-             __builtin_prefetch(&vCorner[cp42], 0, 3);
-             __builtin_prefetch(&vCorner[cp43], 0, 3);
-             __builtin_prefetch(&vCorner[cp44], 0, 3);
-             __builtin_prefetch(&vCorner[cp45], 0, 3);
-             
-             // EDGE2X — 4 accès dans 59049 entrées / EDGE64 — 4 accès
-             __builtin_prefetch(&vEdgeA[cpA], 0, 1);
-             __builtin_prefetch(&vEdgeB[cpB], 0, 1);
-             __builtin_prefetch(&vEdgeC[cpC], 0, 1);
-             __builtin_prefetch(&vEdgeD[cpD], 0, 1);
-             
-             // EDGE5 — 8 accès
-             __builtin_prefetch(&vEdge3[cp22], 0, 1);
-             __builtin_prefetch(&vEdge3[cp23], 0, 1);
-             __builtin_prefetch(&vEdge3[cp24], 0, 1);
-             __builtin_prefetch(&vEdge3[cp25], 0, 1);
-             __builtin_prefetch(&vEdge3[cp26], 0, 1);
-             __builtin_prefetch(&vEdge3[cp27], 0, 1);
-             __builtin_prefetch(&vEdge3[cp28], 0, 1);
-             __builtin_prefetch(&vEdge3[cp29], 0, 1);
-             */
             
             // mobilités
             acc(vMob_P, mob_Player);

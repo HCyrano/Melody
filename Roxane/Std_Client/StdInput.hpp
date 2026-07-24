@@ -23,7 +23,11 @@
 #include <cstdlib>  // Pour malloc/free, si nécessaire
 #include <cstring>  // Pour memcpy, strlen
 #include <cerrno>   // Pour errno
-#include <unistd.h> // Pour read
+#if defined(_MSC_VER) || defined(_WIN32)
+    #include <io.h>       // Pour _read et _fileno sous Windows
+#else
+    #include <unistd.h>   // Pour read et fileno sous Linux/macOS
+#endif
 #include <string>   // La bibliothèque string de C++ est souvent meilleure
 #include <vector>   // Pour gérer les arguments de manière dynamique
 

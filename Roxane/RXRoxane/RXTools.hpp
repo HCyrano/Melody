@@ -19,16 +19,44 @@
 #define RXTOOLS_HPP
 
 #include <string>
-#include <sys/time.h>
+#include <chrono>
 #include <sstream>
 #include <cmath>
 #include <iomanip>
+#include <random>
 
+#include <bit>
+#include <cstdint>
 
-static inline unsigned long long _bsrll(const unsigned long long Mask)
-{
-    return __builtin_clzll(Mask)^63;
+#if defined(_MSC_VER) && !defined(__clang__)
+    #include <intrin.h>
+    #define RX_ALWAYS_INLINE __forceinline
+    #define RX_LAMBDA_INLINE [[msvc::forceinline]]
+    #define RX_RESTRICT      __restrict
+    #if defined(_M_ARM64)
+        #define RX_PREFETCH(addr) __prefetch(addr)
+    #else
+        #include <xmmintrin.h>
+        #define RX_PREFETCH(addr) _mm_prefetch((const char*)(addr), _MM_HINT_T0)
+    #endif
+#elif defined(__clang__)
+    #define RX_ALWAYS_INLINE __attribute__((always_inline)) inline
+    #define RX_LAMBDA_INLINE [[clang::always_inline]]
+    #define RX_RESTRICT      __restrict__
+    #define RX_PREFETCH(addr) __builtin_prefetch(addr, 0, 3)
+#else
+    #define RX_ALWAYS_INLINE __attribute__((always_inline)) inline
+    #define RX_LAMBDA_INLINE [[gnu::always_inline]]
+    #define RX_RESTRICT      __restrict__
+    #define RX_PREFETCH(addr) __builtin_prefetch(addr, 0, 3)
+#endif
+
+static inline unsigned long long _bsrll(const unsigned long long Mask) {
+    if (Mask == 0)
+        return 0;
+    return 63 - static_cast<unsigned long long>(std::countl_zero(Mask));
 }
+
 
 static inline std::string toHMS(double t) {
 	
@@ -43,24 +71,24 @@ static inline std::string toHMS(double t) {
 	return buffer.str();
 }
 
-// get_system_time() returns the current system time, measured in
+// returns the current system time, measured in
 // milliseconds.
 static inline int get_system_time() {
-	struct timeval t;
-	gettimeofday(&t, nullptr);
-	return static_cast<int>(t.tv_sec*1000 + t.tv_usec/1000); 
+    auto now = std::chrono::system_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+    return static_cast<int>(duration.count());
 }
 
 //random int [min ; max]
 static inline int random_bounds(int min, int max)
 {
-    static bool rand_is_seeded = false;
-    if(!rand_is_seeded)
-    {
-        srand(static_cast<unsigned int>(time(nullptr)));
-        rand_is_seeded = true;
-    }
-    return rand()%(max-min+1) + min;
+    static std::mt19937 rng(
+        static_cast<unsigned int>(
+            std::chrono::high_resolution_clock::now().time_since_epoch().count()
+        )
+    );
+    std::uniform_int_distribution<int> dist(min, max);
+    return dist(rng);
 }
 
 // --- Sigmoïde lisse pour les transitions ---

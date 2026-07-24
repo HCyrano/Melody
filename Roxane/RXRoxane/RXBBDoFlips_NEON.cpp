@@ -20,8 +20,6 @@
 
 #if ARCH == ARCH_ARM_NEON
 
-#include <bit> // std::rotl
-
 #include "RXBitBoard.hpp"
 
 
