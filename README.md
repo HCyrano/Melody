@@ -30,7 +30,7 @@ The engine was originally optimized for the Apple ecosystem to maximize nodes co
 
 * Environment: **macOS**, **Windows**, **Linux**
 * Architecture: Fully optimized for **Apple Silicon (M-series)** chips. Intensive use of **NEON (ARM)** instructions to accelerate bitboard operations and FM evaluation computations. x86-64 builds (Windows/Linux) leverage **AVX2** for the same operations.
-* Language: C++ (standard `gnu++23` on macOS/Linux, `/std:c++20` on MSVC)
+* Language: C++ (standard `C++23` on macOS/Linux, `/std:c++23` on MSVC)
 * Tooling:
   * macOS: Xcode project (`.xcodeproj`) included.
   * Linux: GNU `Makefile`.

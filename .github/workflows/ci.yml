@@ -1,10 +1,10 @@
-name: Build Melody (Multiplateforme)
+name: Build Melody (Developer)
 
 on:
   push:
-    branches: [ "cross_platform", "multiplateforme" ]
+    branches: [ "Dev", "Développeur" ]
   pull_request:
-    branches: [ "cross_platform", "multiplateforme" ]
+    branches: [ "Dev", "Développeur" ]
 
 jobs:
   # --- BUILD LINUX ---
