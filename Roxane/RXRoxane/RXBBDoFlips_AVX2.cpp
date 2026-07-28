@@ -119,7 +119,7 @@ const V8DI LR_MASK[66] = {
  * @return partially reduced flipped disc pattern.
  */
 
-unsigned long long mm_flip(const __m256i PP, const __m256i OO, int pos)
+static inline unsigned long long mm_flip(const __m256i PP, const __m256i OO, int pos)
 {
 	__m256i	flip, mask, rP, rS, rE, lO, lF;
 

@@ -26,7 +26,7 @@
 #endif
 
 // forward declaration - définie dans RXBBDoFlips_AVX2.cpp
-unsigned long long mm_flip(const __m256i PP, const __m256i OO, int pos);
+//unsigned long long mm_flip(const __m256i PP, const __m256i OO, int pos);
 
 
 /*

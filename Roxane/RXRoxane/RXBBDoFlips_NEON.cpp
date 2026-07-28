@@ -23,7 +23,7 @@
 #include "RXBitBoard.hpp"
 
 
-alignas(16) const uint64x2_t MASK_LR_v4[64][4] = {
+alignas(64) const uint64x2_t MASK_LR_v4[64][4] = {
     {{ 0x00000000000000fe, 0x0101010101010100 }, { 0x8040201008040200, 0x0000000000000000 }, { 0x0000000000000000, 0x0000000000000000 }, { 0x0000000000000000, 0x0000000000000000 }},
     {{ 0x00000000000000fc, 0x0202020202020200 }, { 0x0080402010080400, 0x0000000000000100 }, { 0x8000000000000000, 0x0000000000000000 }, { 0x0000000000000000, 0x0000000000000000 }},
     {{ 0x00000000000000f8, 0x0404040404040400 }, { 0x0000804020100800, 0x0000000000010200 }, { 0xc000000000000000, 0x0000000000000000 }, { 0x0000000000000000, 0x0000000000000000 }},
@@ -92,16 +92,18 @@ alignas(16) const uint64x2_t MASK_LR_v4[64][4] = {
 
 
 
-unsigned long long flips_NEON(const NeonBoardCtx *ctx, int pos)
+static inline unsigned long long flips_NEON(const NeonBoardCtx *ctx, int pos)
 {
     uint64x2_t flip, oflank0, oflank1;
     
-    // Load the 4 masks upfront — precharge [0][1] before bit-reversal
-    const uint64x2_t mask_r0 = MASK_LR_v4[pos][2];
-    const uint64x2_t mask_r1 = MASK_LR_v4[pos][3];
-    const uint64x2_t mask_l0 = MASK_LR_v4[pos][0];
-    const uint64x2_t mask_l1 = MASK_LR_v4[pos][1];
+    const uint64x2x4_t m = vld1q_u64_x4(
+        reinterpret_cast<const uint64_t*>(MASK_LR_v4[pos]));
 
+    const uint64x2_t mask_l0 = m.val[0];
+    const uint64x2_t mask_l1 = m.val[1];
+    const uint64x2_t mask_r0 = m.val[2];
+    const uint64x2_t mask_r1 = m.val[3];
+    
     // Precomputed rPP∩mask — parallelizable
     const uint64x2_t rPPm0 = vandq_u64(ctx->rPP, mask_r0);
     const uint64x2_t rPPm1 = vandq_u64(ctx->rPP, mask_r1);
