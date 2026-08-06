@@ -18,6 +18,8 @@
 #include <iostream> // pour std::cout eventuel
 #include <sstream>
 #include <algorithm>
+#include <cstdint>
+
 
 #include "RXHashTable.hpp"
 #include "RXEngine.hpp"

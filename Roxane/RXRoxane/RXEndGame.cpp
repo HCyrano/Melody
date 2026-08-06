@@ -668,7 +668,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
             
             move = list->next;
 
-            if((list->next)->next != nullptr) { //nb moves > 1
+            if(move->next != nullptr) { //nb moves > 1
                 
                 //sort list by mobility
                 for(RXMove* iter = list->next; iter != nullptr; iter = iter->next) {
@@ -867,9 +867,9 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
 //                    hTable->update(hash_code, board, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, stability_bound, bestmove);
                     return stability_bound;
                 }
-                if (stability_bound > lower) {
-                    lower = stability_bound;
-                }
+//                if (stability_bound > lower) {
+//                    lower = stability_bound;
+//                }
             }
 #endif
                         
@@ -923,9 +923,9 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
 //                        hTable->update(hash_code, board, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, stability_bound, pos);
                         return stability_bound;
                     }
-                    if (stability_bound > lower) {
-                        lower = stability_bound;
-                    }
+//                    if (stability_bound > lower) {
+//                        lower = stability_bound;
+//                    }
                 }
 #endif
                 
@@ -1189,9 +1189,9 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                 if ( stability_bound >= upper ) {
                     return stability_bound;
                 }
-                if (stability_bound > lower) {
-                    lower = stability_bound;
-                }
+//                if (stability_bound > lower) {
+//                    lower = stability_bound;
+//                }
             }
 #endif
             
@@ -1240,9 +1240,9 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                     if ( stability_bound >= upper ) {
                         return stability_bound;
                     }
-                    if (stability_bound > lower) {
-                        lower = stability_bound;
-                    }
+//                    if (stability_bound > lower) {
+//                        lower = stability_bound;
+//                    }
                 }
 #endif
                 

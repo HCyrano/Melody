@@ -20,6 +20,7 @@
 
 #include <algorithm> //std::min
 #include <atomic>
+#include <cstdint>
 
 #include "RXTools.hpp"
 #include "RXConstantes.hpp"

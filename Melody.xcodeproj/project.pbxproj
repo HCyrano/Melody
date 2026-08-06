@@ -84,7 +84,6 @@
 		3723270A2D1FF69D002CFAF4 /* RXSearch.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXSearch.cpp; sourceTree = "<group>"; };
 		3723270C2D1FF69D002CFAF4 /* RXTools.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXTools.hpp; sourceTree = "<group>"; };
 		3723270E2D1FF69D002CFAF4 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		3734D63B30124B0100FF03AF /* Melody.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = Melody.profdata; sourceTree = "<group>"; };
 		374071FF2FAB48640095268D /* RXBBDoFlips_NEON.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBDoFlips_NEON.cpp; sourceTree = "<group>"; };
 		3771E9022EE9629900D78E2D /* IOStdProtocol.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IOStdProtocol.hpp; sourceTree = "<group>"; };
 		3771E9032EE9629900D78E2D /* IOStdProtocol.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IOStdProtocol.cpp; sourceTree = "<group>"; };
@@ -96,7 +95,8 @@
 		37BF368C2E268CDC0029C7F6 /* RXSetting.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXSetting.hpp; sourceTree = "<group>"; };
 		37DCA1662FAB8B6600AC3503 /* RXBBCountFlips_AVX2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBCountFlips_AVX2.cpp; sourceTree = "<group>"; };
 		37DCA1682FAB9BA900AC3503 /* RXBBDoFlips_AVX2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBDoFlips_AVX2.cpp; sourceTree = "<group>"; };
-		37DFD6053012528A00BB3690 /* Melody */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Melody; sourceTree = BUILT_PRODUCTS_DIR; };
+		37DE919A302232EE0097BB3A /* Melody */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Melody; sourceTree = BUILT_PRODUCTS_DIR; };
+		37DE919B302233690097BB3A /* Melody.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = Melody.profdata; sourceTree = "<group>"; };
 		37FF9AF02F952E7E006338A1 /* COMPILATION.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = COMPILATION.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -124,7 +124,7 @@
 		371D4D612D1EBFBA0072E829 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				37DFD6053012528A00BB3690 /* Melody */,
+				37DE919A302232EE0097BB3A /* Melody */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -203,7 +203,7 @@
 		37C2DE1F2D1F0B4100B93DBD /* OptimizationProfiles */ = {
 			isa = PBXGroup;
 			children = (
-				3734D63B30124B0100FF03AF /* Melody.profdata */,
+				37DE919B302233690097BB3A /* Melody.profdata */,
 			);
 			path = OptimizationProfiles;
 			sourceTree = "<group>";
@@ -234,7 +234,7 @@
 			);
 			name = Melody;
 			productName = Roxane;
-			productReference = 37DFD6053012528A00BB3690 /* Melody */;
+			productReference = 37DE919A302232EE0097BB3A /* Melody */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */

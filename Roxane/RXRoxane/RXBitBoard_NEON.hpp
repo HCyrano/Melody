@@ -24,7 +24,7 @@ struct NeonBoardCtx {
         OO  = vdupq_n_u64(O);
         one = vdupq_n_u64(1);
 
-        // Ton excellente astuce d'inversion SIMD
+        // astuce d'inversion SIMD
         uint64x2_t OP  = vzip1q_u64(PP, OO); // [ O | P ]
         uint64x2_t rOP = vreinterpretq_u64_u8(
                             vrev64q_u8(
