@@ -108,7 +108,7 @@ alignas(64) const unsigned char COUNT_FLIP[8][256] = {
 };
 
 /* bit masks for diagonal lines (interleaved) */
-alignas(16) const uint64x2_t mask_dvhd[64][2] = {
+alignas(32) const uint64x2_t mask_dvhd[64][2] = {
     {{ 0x000000000000ff01, 0x0000000000000000 }, { 0x0801040102010101, 0x8001400120011001 }},
     {{ 0x000000000001ff02, 0x0000000000000000 }, { 0x1002080204020202, 0x0002800240022002 }},
     {{ 0x000000010002ff04, 0x0000000000000000 }, { 0x2004100408040404, 0x0004000480044004 }},
@@ -177,7 +177,7 @@ alignas(16) const uint64x2_t mask_dvhd[64][2] = {
 
 int RXBitBoard::count_flips_NEON(const int pos, const unsigned long long P)
 {
-    unsigned int    n_flips;
+    int n_flips;
     const unsigned char *COUNT_FLIP_X = COUNT_FLIP[pos & 7];
     const unsigned char *COUNT_FLIP_Y = COUNT_FLIP[pos >> 3];
     uint64x2_t    PP = vdupq_n_u64(P);

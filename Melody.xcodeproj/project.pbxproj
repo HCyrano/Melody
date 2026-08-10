@@ -47,6 +47,7 @@
 		3715C0F2300E1DCE00643B04 /* sockcompat.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = sockcompat.hpp; sourceTree = "<group>"; };
 		37187A9C2F8CF2DB00682FAA /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		37187AA02F8CF9D300682FAA /* LICENSE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = LICENSE.md; sourceTree = "<group>"; };
+		37203B153025D40D001E16BB /* Melody.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = Melody.profdata; sourceTree = "<group>"; };
 		372326DE2D1FF69D002CFAF4 /* GGSMessage.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GGSMessage.hpp; sourceTree = "<group>"; };
 		372326DF2D1FF69D002CFAF4 /* GGSMessage.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GGSMessage.cpp; sourceTree = "<group>"; };
 		372326E02D1FF69D002CFAF4 /* GGSObjects.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GGSObjects.hpp; sourceTree = "<group>"; };
@@ -95,8 +96,7 @@
 		37BF368C2E268CDC0029C7F6 /* RXSetting.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = RXSetting.hpp; sourceTree = "<group>"; };
 		37DCA1662FAB8B6600AC3503 /* RXBBCountFlips_AVX2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBCountFlips_AVX2.cpp; sourceTree = "<group>"; };
 		37DCA1682FAB9BA900AC3503 /* RXBBDoFlips_AVX2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RXBBDoFlips_AVX2.cpp; sourceTree = "<group>"; };
-		37DE919A302232EE0097BB3A /* Melody */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Melody; sourceTree = BUILT_PRODUCTS_DIR; };
-		37DE919B302233690097BB3A /* Melody.profdata */ = {isa = PBXFileReference; lastKnownFileType = file; path = Melody.profdata; sourceTree = "<group>"; };
+		37DE919A302232EE0097BB3A /* Melody */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = Melody; path = /Users/caussebruno/Documents/developpement/Melody/build/Debug/Melody; sourceTree = "<absolute>"; };
 		37FF9AF02F952E7E006338A1 /* COMPILATION.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = COMPILATION.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -124,7 +124,6 @@
 		371D4D612D1EBFBA0072E829 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				37DE919A302232EE0097BB3A /* Melody */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -203,7 +202,7 @@
 		37C2DE1F2D1F0B4100B93DBD /* OptimizationProfiles */ = {
 			isa = PBXGroup;
 			children = (
-				37DE919B302233690097BB3A /* Melody.profdata */,
+				37203B153025D40D001E16BB /* Melody.profdata */,
 			);
 			path = OptimizationProfiles;
 			sourceTree = "<group>";

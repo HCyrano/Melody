@@ -587,7 +587,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
         
         if(std::popcount(legal_movesBB) == 1) { //only 1 move
             
-            int pos = std::countr_zero(legal_movesBB);  // Get the index of the lowest set bit
+            const int pos = std::countr_zero(legal_movesBB);  // Get the index of the lowest set bit
 
             board.generate_flips(pos, *move);
             

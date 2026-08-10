@@ -89,11 +89,16 @@
 
 // type of coefficients probcut
 //#define SIGMA_1ZONE
+//#define SIGMA_2ZONES
+#define SIGMA_3ZONES
+
+#if defined(SIGMA_1ZONE) + defined(SIGMA_2ZONES) + defined(SIGMA_3ZONES) != 1
+#error "Exactement une option SIGMA_xZONE doit être définie"
+#endif
+
 #ifdef SIGMA_1ZONE
 #define PROBCUT_x2 // undefined use PROBCUT_x3
 #endif
-//#define SIGMA_2ZONES
-#define SIGMA_3ZONES
 
 //factorisation machine
 #define FACT_MACH

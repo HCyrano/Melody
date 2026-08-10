@@ -745,7 +745,7 @@ inline float RXEngine::sigma(const int n_empty, const int depth, const int depth
     float w_end   = 1.0 - s1;
 
     // Fonction polynomiale par zone
-    auto sigma = [&](int i) RX_LAMBDA_INLINE {
+    auto sigma = [&] RX_LAMBDA_INLINE (int i) {
         float r = probcut_a[i] * n_empty + probcut_b[i] * depth_probcut + probcut_c[i] * depth;
         return probcut_d[i] * r * r * r +
                probcut_e[i] * r * r +
