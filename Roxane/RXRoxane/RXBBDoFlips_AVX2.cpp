@@ -36,8 +36,15 @@
 #endif
 #include "RXBitBoard.hpp"
 
-typedef union {
-    alignas(64) unsigned long long v1[8];
+/**
+ * Why the V8DI union (v1[8] / v4[2]) is used here:
+ * 1. Static Initialization: Allows initializing SIMD masks with 64-bit hexadecimal
+ *    constants (v1), avoiding dynamic runtime initialization.
+ * 2. AVX2 Performance: Enables direct reading as __m256i vector registers (v4)
+ *    with zero overhead, while enforcing a 64-byte memory alignment.
+ */
+typedef union alignas(64) {
+    unsigned long long v1[8];
     __m256i    v4[2];
 } V8DI;
 

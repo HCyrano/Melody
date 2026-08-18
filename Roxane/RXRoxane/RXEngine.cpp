@@ -342,7 +342,7 @@ int RXEngine::probcut(const unsigned int threadID, RXBBPatterns& sBoard, const i
             sBoard.undo_move(*list1);
             
             //interrupt search
-            if(abort.load() || thread_should_stop(threadID))
+            if(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))
                 return INTERRUPT_SEARCH;
             
             if(bestscore >= upper_probcut) { //beta cut
@@ -417,7 +417,7 @@ int RXEngine::probcut(const unsigned int threadID, RXBBPatterns& sBoard, const i
                 sBoard.undo_move(*iter);
                 
                 //interrupt search
-                if(abort.load() || thread_should_stop(threadID))
+                if(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))
                     return INTERRUPT_SEARCH;
                 
                 if(bestscore >= upper_probcut) { //beta cut
@@ -497,7 +497,7 @@ int RXEngine::probcut(const unsigned int threadID, RXBBPatterns& sBoard, const i
                 sBoard.undo_move(*iter);
                 
                 //interrupt search
-                if(abort.load() || thread_should_stop(threadID))
+                if(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))
                     return INTERRUPT_SEARCH;
                 
                 if (iter->score > bestscore) {
@@ -850,7 +850,7 @@ int RXEngine::alphabeta_last_two_ply(const unsigned int threadID, RXBBPatterns& 
             RXSquareList* empties_1 = board.empties_list;
             do { /* order JWC */
                 empties_1 = empties_1->next;
-                const int pos_1              = empties_1->position;
+                const int pos_1 = empties_1->position;
                 const unsigned long long bit_1 = 0x1ULL << pos_1;
 
                 if (legal_movesBB_1 & bit_1) {
@@ -1604,7 +1604,7 @@ void* RXEngine::run() {
             iterative_deepening(search_sBoard, list, MG_selectivity, depth, max_depth);
         }
         
-        if (!abort.load() && search_depth > (search_sBoard.board.n_empty-(USE_PV_EXTENSION ? 10: 6))) {
+        if (!abort.load(std::memory_order_relaxed) && search_depth > (search_sBoard.board.n_empty-(USE_PV_EXTENSION ? 10: 6))) {
             
             //coherence selectivty et end_selectivity
             int end_selectivity = search_depth < search_sBoard.board.n_empty? EG_HIGH_SELECT:search_selectivity;

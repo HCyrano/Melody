@@ -377,7 +377,7 @@ class RXEngine: public Runnable {
 public :
     static constexpr int EG_DEEP_TO_MEDIUM = 17;
     static constexpr int EG_MEDIUM_HI_TO_LOW = 14;
-    static constexpr int EG_MEDIUM_TO_SHALLOW = 7; //8
+    static constexpr int EG_MEDIUM_TO_SHALLOW = 7;
     static constexpr int MIN_DEPTH_USE_ENDCUT = 16;
 
 private:

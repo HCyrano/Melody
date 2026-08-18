@@ -470,7 +470,7 @@ int RXEngine::EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, c
                 move->score =
                   (RXBitBoard::count_potential_moves(next_P, next_O)<<4)
                 - (RXBitBoard::get_edge_stability(next_O, next_P)<<2)
-                - (((board.parity & RXBitBoard::QUADRANT_ID[pos])>>RXBitBoard::QUADRANT_SHIFT[pos])<<4)
+                - (((board.parity & RXBitBoard::QUADRANT_ID[pos])>>RXBitBoard::QUADRANT_SHIFT[pos])<<3)
                 + ((move->square & 0x8100000000000081) != 0);
                 
                 previous = previous->next = move++;
@@ -769,7 +769,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
         return EG_PVS_ETC_LTT(threadID, sBoard.board, pv, alpha, beta, passed);
 
      
-    if(abort.load() || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
     RXBitBoard& board = sBoard.board;
@@ -1055,7 +1055,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
     }
     
     //interrupt search
-    if(abort.load()  || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed)  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
     hTable->update(hash_code, board, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
@@ -1078,7 +1078,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
     if(dependent_time && get_current_dependentTime() > time_limit())
         abort.store(true);
 
-    if(abort.load() || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
     
@@ -1147,7 +1147,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
         else
             MG_PVS_deep(threadID, sBoard, pv, MG_SELECT, board.n_empty-(USE_PV_EXTENSION? 10 : 8), -MAX_SCORE, MAX_SCORE, passed); //lower, upper,
         
-        if(abort.load() || thread_should_stop(threadID))
+        if(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))
             return INTERRUPT_SEARCH;
         
         if(hTable->get(hash_code, board, type_hashtable, entry)) {
@@ -1471,7 +1471,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                 if (move->next != nullptr) {
                     
                     // Split?
-                    if(activeThreads > 1  && !abort.load() && !thread_should_stop(threadID) && idle_thread_exists(threadID)
+                    if(activeThreads > 1 && board.n_empty > 19 && !abort.load(std::memory_order_relaxed) && !thread_should_stop(threadID) && idle_thread_exists(threadID)
                        && split(sBoard, pv, 1, board.n_empty, selectivity, lower, upper, bestscore, bestmove, list, threadID, RXSplitPoint::END_PVS)) {
                         
                         break;
@@ -1511,7 +1511,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
     }
     
     //interrupt search
-    if(abort  || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed)  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
     hTable->update(   hash_code, board, type_hashtable, selectivity, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
@@ -1538,7 +1538,7 @@ void RXEngine::EG_SP_search_DEEP(RXSplitPoint* sp, const unsigned int threadID) 
     
     
     //here sp->beta is const
-    while(sp->alpha < sp->beta && !abort.load() && !thread_should_stop(threadID)) {
+    while(sp->alpha < sp->beta && !abort.load(std::memory_order_relaxed) && !thread_should_stop(threadID)) {
         
         RXMove* move = nullptr;
         {
@@ -1620,7 +1620,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
     if(dependent_time && get_current_dependentTime() > time_limit())
         abort.store(true);
 
-    if(abort.load()  || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed)  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
 
     RXBitBoard& board = sBoard.board;
@@ -1874,7 +1874,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
         for(RXMove* iter = list->next; bestscore<=alpha && iter != nullptr; iter = iter->next, list = list->next) {
             
             if(activeThreads > 1 && board.n_empty>=MIN_DEPTH_USE_ENDCUT && iter->next != nullptr
-               && !abort.load() && !thread_should_stop(threadID) &&  idle_thread_exists(threadID)
+               && !abort.load(std::memory_order_relaxed) && !thread_should_stop(threadID) &&  idle_thread_exists(threadID)
                && split(sBoard, false, pvDev+1, board.n_empty, selectivity,
                         alpha, (alpha + 1), bestscore, bestmove, list, threadID, RXSplitPoint::END_XPROBCUT)) {
              
@@ -1902,7 +1902,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
     
     
     //interrupt search
-    if(abort.load()  || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed)  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
     hTable->update(hash_code, board, type_hashtable, hash_select, hash_depth, alpha, bestscore, bestmove);
@@ -1932,7 +1932,7 @@ void RXEngine::EG_SP_search_XEndcut(RXSplitPoint* sp, const unsigned int threadI
     RXBitBoard& board = sBoard.board;
     
     //here sp->alpha is const
-    while(sp->bestscore <= sp->alpha && !abort.load()  && !thread_should_stop(threadID)) {
+    while(sp->bestscore <= sp->alpha && !abort.load(std::memory_order_relaxed)  && !thread_should_stop(threadID)) {
         
         RXMove* move = nullptr;
         {
@@ -2044,7 +2044,7 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
 
     sBoard.undo_move(*iter);
     
-    if(!abort.load() && std::abs(bestscore) != INTERRUPT_SEARCH) {
+    if(!abort.load(std::memory_order_relaxed) && std::abs(bestscore) != INTERRUPT_SEARCH) {
         
         if(search_client == RXSearch::kGGSMode) {	// GGS mode
             
@@ -2063,12 +2063,12 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
         int score;
         first_move.store(false);
         
-        for (iter = iter->next; !abort.load()  && lower < upper && iter != nullptr; iter = iter->next) {
+        for (iter = iter->next; !abort.load(std::memory_order_relaxed)  && lower < upper && iter != nullptr; iter = iter->next) {
             
 #ifdef USE_SPLIT_AT_ROOT
             
             if(activeThreads > 1 && iter->next != nullptr && board.n_empty >= EG_DEEP_TO_MEDIUM
-               && !abort.load() && idle_thread_exists(0) && !thread_should_stop(0)
+               && !abort.load(std::memory_order_relaxed) && idle_thread_exists(0) && !thread_should_stop(0)
                && split(sBoard, true, 0, board.n_empty, selectivity,
                         lower, upper, bestscore, bestmove, iter, 0, RXSplitPoint::END_ROOT)) {
                 
@@ -2099,7 +2099,7 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
                     score = -EG_PVS_deep(0, sBoard, false, selectivity, -lower-1, -lower, false); //simple-PV pv == false ????
                 
                 
-                if (!abort.load() && board.n_empty > 4 && lower < score && score < upper) {
+                if (!abort.load(std::memory_order_relaxed) && board.n_empty > 4 && lower < score && score < upper) {
                     
                     if(search_client == RXSearch::kGGSMode) {	// GGS mode
                         
@@ -2120,7 +2120,7 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
                         
                         score = -EG_PVS_deep(0, sBoard, true, selectivity, -upper, -score, false);
                         
-                        if(search_client == RXSearch::kGGSMode && !abort.load()) {    // GGS mode
+                        if(search_client == RXSearch::kGGSMode && !abort.load(std::memory_order_relaxed)) {    // GGS mode
                             if(dependent_time && board.n_empty>19 && score <= bestscore)
                                 manager->sendMsg("         " + RXMove::index_to_coord(iter->position) + " refuted ");
                         }
@@ -2143,7 +2143,7 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
             sBoard.undo_move(*iter);
             
             
-            if (!abort.load()  && std::abs(score) != INTERRUPT_SEARCH) {
+            if (!abort.load(std::memory_order_relaxed)  && std::abs(score) != INTERRUPT_SEARCH) {
                 
                 if(score > bestscore) {
                     
@@ -2198,7 +2198,7 @@ void RXEngine::EG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
     RXBitBoard& board = sBoard.board;
     
     //here sp->beta is const
-    while(sp->alpha < sp->beta && !abort.load() && !thread_should_stop(threadID)) {
+    while(sp->alpha < sp->beta && !abort.load(std::memory_order_relaxed) && !thread_should_stop(threadID)) {
         
         RXMove* move = nullptr;
         {
@@ -2215,7 +2215,7 @@ void RXEngine::EG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
         
         int score = -EG_PVS_deep(threadID, sBoard, false, sp->selectivity, -alpha-1, -alpha, false);
         
-        if (!(abort.load() || thread_should_stop(threadID)) && alpha < score && score < sp->beta) {
+        if (!(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID)) && alpha < score && score < sp->beta) {
             
             ++extra_time;
             
@@ -2227,7 +2227,7 @@ void RXEngine::EG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
             else
                 score = -EG_PVS_deep(threadID, sBoard, true, sp->selectivity, -sp->beta, -score, false);
             
-            if(search_client == RXSearch::kGGSMode && !(abort.load() || thread_should_stop(threadID))) {    // GGS mode
+            if(search_client == RXSearch::kGGSMode && !(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))) {    // GGS mode
                 if(dependent_time && board.n_empty>19 && score <= sp->bestscore)
                     manager->sendMsg("         " + RXMove::index_to_coord(move->position) + " refuted ");
             }
@@ -2318,9 +2318,9 @@ void RXEngine::EG_driver(RXBBPatterns& sBoard, int selectivity, int end_selectiv
     s_beta  = std::min( 64, s_beta);
     
 #ifdef SOLVER_DRIVER
-    for(selectivity = 2; !abort.load()  && selectivity <= end_selectivity; selectivity+=(selectivity == NO_SELECT? 1:(NO_SELECT-selectivity)))
+    for(selectivity = 2; !abort.load(std::memory_order_relaxed)  && selectivity <= end_selectivity; selectivity+=(selectivity == NO_SELECT? 1:(NO_SELECT-selectivity)))
 #else
-    for(; !abort.load()  && selectivity <= end_selectivity; selectivity++)
+    for(; !abort.load(std::memory_order_relaxed)  && selectivity <= end_selectivity; selectivity++)
 #endif
     {
         
@@ -2375,7 +2375,7 @@ void RXEngine::EG_driver(RXBBPatterns& sBoard, int selectivity, int end_selectiv
         int left = 2;
         int right = 2;
         
-        while (!abort.load() && !(alpha < score && score < beta)) {
+        while (!abort.load(std::memory_order_relaxed) && !(alpha < score && score < beta)) {
             
             //std::cout << "                  EG research : [" << alpha << " < " << list->next->score << " < " << beta << "]" <<std::endl;
             
@@ -2443,7 +2443,7 @@ void RXEngine::EG_driver(RXBBPatterns& sBoard, int selectivity, int end_selectiv
             
             score = list->next->score;
             if(entry.lower == entry.upper) {
-                if(abort.load())
+                if(abort.load(std::memory_order_relaxed))
                     type = INTERRUPT;
             } else if(list->next->score == entry.lower || entry.upper ==  MAX_SCORE) {
                 type = SUPERIOR;
@@ -2460,7 +2460,7 @@ void RXEngine::EG_driver(RXBBPatterns& sBoard, int selectivity, int end_selectiv
         
         //check PV at 100%
 #ifdef EG_CHECK_PV
-        if(!abort.load() && sBoard.board.n_empty-6 > 0 && selectivity == NO_SELECT && s_alpha <= list->next->score && list->next->score <= s_beta) {
+        if(!abort.load(std::memory_order_relaxed) && sBoard.board.n_empty-6 > 0 && selectivity == NO_SELECT && s_alpha <= list->next->score && list->next->score <= s_beta) {
             RXSearch::t_client save_client = search_client;
             search_client = RXSearch::kPrivate;
             EG_check_PV(search_sBoard, list->next->score);
@@ -2469,7 +2469,7 @@ void RXEngine::EG_driver(RXBBPatterns& sBoard, int selectivity, int end_selectiv
 #endif
 
         
-        if(abort.load() )
+        if(abort.load(std::memory_order_relaxed) )
             break;
         
         time_nextLevel = pTime_next_level(sBoard.board, eTime - eTime_start_level);
