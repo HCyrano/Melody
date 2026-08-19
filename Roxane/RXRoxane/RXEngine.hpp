@@ -398,7 +398,7 @@ private:
     int  EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int selectivity, const int alpha, const int beta, const bool passed);
     void EG_SP_search_DEEP(RXSplitPoint* sp, const unsigned int threadID);
     
-    int EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int alpha, const int beta, const bool passed);
+    int EG_PVS_ETC_mobility(const unsigned int threadID, RXBitBoard& board, const bool pv, const int alpha, const int beta, const bool passed);
     
     int EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, const int alpha, const int beta, const bool passed);
     int EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, const int alpha, const int beta, const bool passed);
