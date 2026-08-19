@@ -13,24 +13,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Récupérer le code source
-        uses: actions/checkout@v6
-
-      - name: Installer GCC 13 & Make
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y g++-13 make
+        uses: actions/checkout@v7
 
       - name: Compiler Melody
-        # Passer CXX=g++-13 pour garantir la norme C++23
         run: make CXX=g++-13
-
+        
   # --- BUILD MACOS ---
   build-macos:
     name: macOS (Apple Silicon / Clang)
     runs-on: macos-latest
     steps:
       - name: Récupérer le code source
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Compiler Melody
         run: make
