@@ -26,8 +26,8 @@ const int RXEngine::MG_DEEP_TO_SHALLOW = 4;
 const int RXEngine::MG_MOVING_WINDOW = 4; //4
 
 #ifdef USE_LMR
-    const int RXEngine::LMR_MIN_DEPTH = 8; //standard 10
-    const int RXEngine::LMR_DEEP_DEPTH = 16; //standard 20
+const int RXEngine::LMR_MIN_DEPTH = 10; //8; //standard 10
+const int RXEngine::LMR_DEEP_DEPTH = 20; //16; //standard 20
 #endif
 
 
@@ -461,22 +461,21 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
     const unsigned long long hash_code = board.hashcode();
     if(hTable->get(hash_code, board, type_hashtable, entry)) {
         
-        if(entry.selectivity >= selectivity && entry.depth >= depth) {
+        if(!pv && entry.selectivity >= selectivity && entry.depth >= depth) {
             
-            if(entry.lower > lower) {
-                
+            if (entry.lower > lower) {
                 lower = entry.lower;
-                if(lower >= upper)
+                if (lower >= upper)
                     return lower;
-                
             }
-            
-            if(!pv && entry.upper <= lower) {
-                return  entry.upper;
+            if (entry.upper < upper) {
+                upper = entry.upper;
+                if (upper <= lower)
+                    return upper;
             }
             
         }
-        
+            
         bestmove = entry.move;
     }
     
@@ -1004,24 +1003,23 @@ int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, 
     RXHashValue entry;
     if(hTable->get(hash_code, board, type_hashtable, entry)) {
         
-        if(entry.selectivity == NO_SELECT && entry.depth >= depth) {
+        if(!pv && entry.selectivity == NO_SELECT && entry.depth >= depth) {
             
-            if(entry.lower > lower) {
-                
+            if (entry.lower > lower) {
                 lower = entry.lower;
-                if(lower >= upper)
+                if (lower >= upper)
                     return lower;
-                
+            }
+            if (entry.upper < upper) {
+                upper = entry.upper;
+                if (upper <= lower)
+                    return upper;
             }
             
-            if(!pv && entry.upper <= lower) {
-                return  entry.upper;
-            }
-            
-            bestmove = entry.move;
-
         }
-        
+
+        bestmove = entry.move;
+
     }
     
     
@@ -1372,11 +1370,11 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
 #ifdef USE_LMR
             
             //before pvDev+1
-            if(pvDev>1) {
+            if(pvDev>2) {
                 ++n_moves;
                 if(n_moves>3 && depth>LMR_MIN_DEPTH) {
                     depth_reduction = DEPTH_2;
-                    if(pvDev>2 && n_moves>5 && depth>LMR_DEEP_DEPTH) {
+                    if(pvDev>3 && n_moves>5 && depth>LMR_DEEP_DEPTH) {
                         depth_reduction = DEPTH_4;
                     }
                 }
@@ -1453,12 +1451,12 @@ void RXEngine::MG_SP_search_XProbcut(RXSplitPoint* sp, const unsigned int thread
         //after pvDev+1
 
         //LMR
-        if(sp->pvDev > 2) {
+        if(sp->pvDev > 3) {
             ++n_moves;
 
             if(n_moves>3 && sp->depth>LMR_MIN_DEPTH) {
                 depth_reduction = DEPTH_2;
-                if(sp->pvDev>3 && n_moves>5 && sp->depth>LMR_DEEP_DEPTH) {
+                if(sp->pvDev>4 && n_moves>5 && sp->depth>LMR_DEEP_DEPTH) {
                     depth_reduction = DEPTH_4;
                 }
             }
