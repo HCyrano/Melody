@@ -98,8 +98,9 @@ public:
     int pvDev;
     int depth;
     int selectivity;
-    int alpha, beta, bestscore, bestmove;
+    int beta, bestmove;
     
+    std::atomic<int> alpha, bestscore;
     
     mutable std::mutex lock;
     
@@ -107,44 +108,50 @@ public:
     unsigned int master;
     std::atomic<unsigned int> n_Slaves;
     
-    std::vector<bool>  slaves;
+    unsigned int maxThreads;
+    std::unique_ptr<std::atomic<bool>[]> slaves;
     
     std::atomic_bool explored;
     
-    RXSplitPoint(int maxThreads) : parent(nullptr), sBoard(nullptr), sBoardStack(maxThreads), slaves(maxThreads),
-    list(nullptr) {
+    RXSplitPoint(unsigned int _maxThreads)
+        : parent(nullptr), sBoard(nullptr), sBoardStack(_maxThreads),
+          list(nullptr), maxThreads(_maxThreads),
+          slaves(std::make_unique<std::atomic<bool>[]>(_maxThreads))
+    {
         n_Slaves = 0;
         explored = false;
+        for (unsigned int i = 0; i < _maxThreads; ++i)
+            slaves[i].store(false, std::memory_order_relaxed);
     }
-    
-    // Copy constructor — called once at init by std::vector(count, value), never at runtime
+
+    // Copy constructor — appelé une seule fois à l'init par vector(count, value)
     RXSplitPoint(const RXSplitPoint& o) :
         parent(o.parent), sBoard(o.sBoard), sBoardStack(o.sBoardStack),
         list(o.list), CBSearch(o.CBSearch),
         pv(o.pv), pvDev(o.pvDev), depth(o.depth), selectivity(o.selectivity),
-        alpha(o.alpha), beta(o.beta), bestscore(o.bestscore), bestmove(o.bestmove),
+        alpha(o.alpha.load()), beta(o.beta), bestscore(o.bestscore.load()), bestmove(o.bestmove),
         master(o.master), n_Slaves(o.n_Slaves.load()),
-        slaves(o.slaves), explored(o.explored.load())
+        maxThreads(o.maxThreads),
+        slaves(std::make_unique<std::atomic<bool>[]>(o.maxThreads)),
+        explored(o.explored.load())
     {
-        // lock est reconstruit par défaut plutôt que copié — correct,
-        // std::mutex n'est de toute façon pas copiable
+        for (unsigned int i = 0; i < maxThreads; ++i)
+            slaves[i].store(o.slaves[i].load(std::memory_order_relaxed), std::memory_order_relaxed);
     }
-    
-    // Move constructor
-    // Uses std::move() on vectors to transfer memory without copying (more efficient)
-    // noexcept is required so that STL containers (std::vector) can use this constructor during reallocation
+
+    // Move constructor — noexcept requis pour vector<RXSplitPoint>
     RXSplitPoint(RXSplitPoint&& o) noexcept :
         parent(o.parent), sBoard(o.sBoard), sBoardStack(std::move(o.sBoardStack)),
         list(o.list), CBSearch(o.CBSearch),
         pv(o.pv), pvDev(o.pvDev), depth(o.depth), selectivity(o.selectivity),
-        alpha(o.alpha), beta(o.beta), bestscore(o.bestscore), bestmove(o.bestmove),
+        alpha(o.alpha.load()), beta(o.beta), bestscore(o.bestscore.load()), bestmove(o.bestmove),
         master(o.master), n_Slaves(o.n_Slaves.load()),
-        slaves(std::move(o.slaves)), explored(o.explored.load())
+        maxThreads(o.maxThreads),
+        slaves(std::move(o.slaves)),        // déplacement du pointeur, trivial, noexcept
+        explored(o.explored.load())
     {
-        // std::mutex n'est pas déplaçable non plus : lock reste simplement
-        // un mutex neuf construit par défaut, comme dans le copy constructor.
     }
-
+    
     // Required by std::vector<RXSplitPoint>, never called at runtime
     RXSplitPoint& operator=(const RXSplitPoint&) = delete;
     
@@ -170,7 +177,7 @@ public:
     
     RXSplitPoint* splitPoint;
     
-    unsigned int activeSplitPoints;
+    std::atomic<unsigned int> activeSplitPoints;
     
     //non copiableAssignable, mais il n'y a pas de redimensionnenent (semble fonctionner)
     //soluce : remplacer le vector par un tableau static a taille fixe :-(
@@ -198,7 +205,7 @@ public:
     // Déplaçable pour permettre emplace_back
     RXThread(RXThread&& o) noexcept :
         splitPoint(o.splitPoint),
-        activeSplitPoints(o.activeSplitPoints),
+        activeSplitPoints(o.activeSplitPoints.load()),
         splitPointStack(std::move(o.splitPointStack)),
         state(o.state.load())
     {
@@ -882,7 +889,7 @@ inline bool RXEngine::thread_should_stop(unsigned int threadID) {
     RXSplitPoint* sp = threads[threadID].splitPoint;
     
     //emptie loop
-    while(sp != nullptr && sp->explored == false)
+    while(sp != nullptr && !sp->explored.load(std::memory_order_relaxed))
         sp = sp->parent;
     
     return sp != nullptr;

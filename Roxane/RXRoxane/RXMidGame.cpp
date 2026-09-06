@@ -337,7 +337,7 @@ void RXEngine::MG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
     RXBitBoard& board = sBoard.board;
     
     //here sp->beta is const
-    while(sp->alpha < sp->beta && !abort.load(std::memory_order_relaxed) && !thread_should_stop(threadID)) {
+    while(sp->alpha.load(std::memory_order_relaxed) < sp->beta && !abort.load(std::memory_order_relaxed) && !thread_should_stop(threadID)) {
         
         RXMove* move = nullptr;
         {
@@ -347,7 +347,7 @@ void RXEngine::MG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
             sp->list = move;
         }
 
-        const int alpha = sp->alpha; //local copy
+        const int alpha = sp->alpha.load(std::memory_order_relaxed); //local copy
         int depth = sp->depth;
         
         sBoard.do_move(*move);
@@ -366,7 +366,7 @@ void RXEngine::MG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
             
             
             if(search_client == RXSearch::kGGSMode && !(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))) {    // GGS mode
-                if(dependent_time && depth>13 && score <= sp->bestscore)
+                if(dependent_time && depth>13 && score <= sp->bestscore.load(std::memory_order_relaxed))
                     manager->sendMsg("         " + RXMove::index_to_coord(move->position) + " refuted ");
             }
             
@@ -381,27 +381,27 @@ void RXEngine::MG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
 //            break;
         
         //first without mutex
-        if(score > sp->bestscore) {
+        if(score > sp->bestscore.load(std::memory_order_relaxed)) {
             
             //update
             std::lock_guard<std::mutex> lk(sp->lock);
 
-            if(sp->explored == false) {
+            if(!sp->explored.load(std::memory_order_relaxed)) {
                 
                 // New best move?
-                if(score > sp->bestscore) {
-                    sp->bestscore = score;
+                if(score > sp->bestscore.load(std::memory_order_relaxed)) {
+                    sp->bestscore.store(score, std::memory_order_relaxed);
                     sp->bestmove = move->position;
                     
                     if(dependent_time && depth>13)
-                        manager->sendMsg(showBestmove(depth, sp->selectivity, sp->alpha, sp->beta, sp->bestscore, sp->bestmove));
+                        manager->sendMsg(showBestmove(depth, sp->selectivity, sp->alpha.load(std::memory_order_relaxed), sp->beta, sp->bestscore.load(std::memory_order_relaxed), sp->bestmove));
                     
-                    if(score > sp->alpha) {
+                    if(score > sp->alpha.load(std::memory_order_relaxed)) {
                         
                         if(score >= sp->beta) {
-                            sp->explored = true;
+                            sp->explored.store(true, std::memory_order_release);
                         } else {
-                            sp->alpha = score;
+                            sp->alpha.store(score, std::memory_order_relaxed);
                         }
                         
                     }
@@ -451,7 +451,7 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
         if (board.n_empty < EG_MEDIUM_HI_TO_LOW)
             return EG_PVS_ETC_LTT(threadID, board, true, lower, upper, passed);
         
-        return EG_PVS_ETC_mobility(threadID, sBoard, true, lower, upper, passed);
+        return EG_PVS_ETC_mobility(threadID, board, true, lower, upper, passed);
         
     }
 #endif
@@ -851,7 +851,7 @@ void RXEngine::MG_SP_search_deep(RXSplitPoint* sp, const unsigned int threadID) 
     RXBitBoard& board = sBoard.board;
     
     //here sp->beta is const
-    while(sp->alpha < sp->beta && !abort.load(std::memory_order_relaxed)  && !thread_should_stop(threadID)) {
+    while(sp->alpha.load(std::memory_order_relaxed) < sp->beta && !abort.load(std::memory_order_relaxed)  && !thread_should_stop(threadID)) {
         
         RXMove* move = nullptr;
         {
@@ -862,7 +862,7 @@ void RXEngine::MG_SP_search_deep(RXSplitPoint* sp, const unsigned int threadID) 
         }
 
         int score;
-        const int alpha = sp->alpha; //local copy
+        const int alpha = sp->alpha.load(std::memory_order_relaxed); //local copy
         
         sBoard.do_move(*move);
         
@@ -871,7 +871,7 @@ void RXEngine::MG_SP_search_deep(RXSplitPoint* sp, const unsigned int threadID) 
             score = -MG_NWS_XProbCut(threadID, sBoard, sp->pvDev, sp->selectivity, sp->depth-1, -alpha-1, false);
             
             if(alpha < score && score < sp->beta)
-                score = -MG_PVS_deep(threadID, sBoard, sp->pv, sp->selectivity, sp->depth-1, -sp->beta, -sp->alpha, false);
+                score = -MG_PVS_deep(threadID, sBoard, sp->pv, sp->selectivity, sp->depth-1, -sp->beta, -sp->alpha.load(std::memory_order_relaxed), false);
 
         } else {
             
@@ -886,24 +886,24 @@ void RXEngine::MG_SP_search_deep(RXSplitPoint* sp, const unsigned int threadID) 
         
         
         //first without mutex
-        if(score > sp->bestscore) {
+        if(score > sp->bestscore.load(std::memory_order_relaxed)) {
             
             //update
             std::lock_guard<std::mutex> lk(sp->lock);
 
             
-            if(sp->explored == false) {
+            if(!sp->explored.load(std::memory_order_relaxed)) {
                 
                 // New best move?
-                if(score > sp->bestscore) {
-                    sp->bestscore = score;
+                if(score > sp->bestscore.load(std::memory_order_relaxed)) {
+                    sp->bestscore.store(score, std::memory_order_relaxed);
                     sp->bestmove = move->position;
-                    if(score > sp->alpha) {
+                    if(score > sp->alpha.load(std::memory_order_relaxed)) {
                         
                         if(score >= sp->beta) {
-                            sp->explored =true;
+                            sp->explored.store(true, std::memory_order_release);
                         } else {
-                            sp->alpha = score;
+                            sp->alpha.store(score, std::memory_order_relaxed);
                         }
                     }
                 }
@@ -990,7 +990,7 @@ int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, 
         if (board.n_empty < EG_MEDIUM_HI_TO_LOW)
             return EG_PVS_ETC_LTT(threadID, board, true, alpha, beta, passed);
         
-        return EG_PVS_ETC_mobility(threadID, sBoard, true, alpha, beta, passed);
+        return EG_PVS_ETC_mobility(threadID, board, true, alpha, beta, passed);
         
     }
 #endif
@@ -1361,7 +1361,7 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
             
             // Split?
             if(activeThreads > 1 && (depth-depth_reduction)>MIN_DEPTH_SPLITPOINT && iter->next != nullptr && !abort.load(std::memory_order_relaxed)
-               && !thread_should_stop(threadID && idle_thread_exists(threadID))
+               && !thread_should_stop(threadID) && idle_thread_exists(threadID)
                && split(sBoard, false, pvDev+1, depth, selectivity, alpha, (alpha+1), bestscore, bestmove, list, threadID, RXSplitPoint::MID_XPROBCUT)) {
                 
                 break;
@@ -1431,12 +1431,11 @@ void RXEngine::MG_SP_search_XProbcut(RXSplitPoint* sp, const unsigned int thread
     sBoard = *(sp->sBoard);                                 //operator=
     RXBitBoard& board = sBoard.board;
     
-    unsigned int depth_reduction = LMR_NO_REDUCTION;
-
-    unsigned int n_moves = 1;
+//    unsigned int depth_reduction = LMR_NO_REDUCTION;
+//    unsigned int n_moves = 1;
     
     //here sp->alpha is const
-    while(sp->bestscore <= sp->alpha && !abort.load(std::memory_order_relaxed)  && !thread_should_stop(threadID)) {
+    while(sp->bestscore.load(std::memory_order_relaxed) <= sp->alpha.load(std::memory_order_relaxed) && !abort.load(std::memory_order_relaxed)  && !thread_should_stop(threadID)) {
         
         RXMove* move = nullptr;
         {
@@ -1446,51 +1445,51 @@ void RXEngine::MG_SP_search_XProbcut(RXSplitPoint* sp, const unsigned int thread
             sp->list = move;
         }
  
-#ifdef USE_LMR
-        
-        //after pvDev+1
+//#ifdef USE_LMR
+//        
+//        //after pvDev+1
+//
+//        //LMR
+//        if(sp->pvDev > 3) {
+//            ++n_moves;
+//
+//            if(n_moves>3 && sp->depth>LMR_MIN_DEPTH) {
+//                depth_reduction = DEPTH_2;
+//                if(sp->pvDev>4 && n_moves>5 && sp->depth>LMR_DEEP_DEPTH) {
+//                    depth_reduction = DEPTH_4;
+//                }
+//            }
+//        }
+//        
+//#endif
 
-        //LMR
-        if(sp->pvDev > 3) {
-            ++n_moves;
-
-            if(n_moves>3 && sp->depth>LMR_MIN_DEPTH) {
-                depth_reduction = DEPTH_2;
-                if(sp->pvDev>4 && n_moves>5 && sp->depth>LMR_DEEP_DEPTH) {
-                    depth_reduction = DEPTH_4;
-                }
-            }
-        }
-        
-#endif
-
-        const int alpha = sp->alpha; //local copy
+        const int alpha = sp->alpha.load(std::memory_order_relaxed); //local copy
 
         sBoard.do_move(*move);
         
         // here depth > MIN_DEPTH_SPLITPOINT <=> depth > 7
-        int score = -MG_NWS_XProbCut(threadID, sBoard, sp->pvDev, sp->selectivity, sp->depth-1-depth_reduction, -alpha-1, false);
-#ifdef USE_LMR
-        if(depth_reduction > LMR_NO_REDUCTION && score>alpha)
-            score = -MG_NWS_XProbCut(threadID, sBoard, sp->pvDev, sp->selectivity, sp->depth-1, -alpha-1, false);
-#endif
+        int score = -MG_NWS_XProbCut(threadID, sBoard, sp->pvDev, sp->selectivity, sp->depth-1/*-depth_reduction*/, -alpha-1, false);
+//#ifdef USE_LMR
+//        if(depth_reduction > LMR_NO_REDUCTION && score>alpha)
+//            score = -MG_NWS_XProbCut(threadID, sBoard, sp->pvDev, sp->selectivity, sp->depth-1, -alpha-1, false);
+//#endif
 
         sBoard.undo_move(*move);
         
         //first without mutex
-        if(score > sp->bestscore) {
+        if(score > sp->bestscore.load(std::memory_order_relaxed)) {
             
             //update
             std::lock_guard<std::mutex> lk(sp->lock);
 
-            if(sp->explored == false) {
+            if(!sp->explored.load(std::memory_order_relaxed)) {
                                 
                 // New best move?
-                if(score > sp->bestscore) {
-                    sp->bestscore = score;
+                if(score > sp->bestscore.load(std::memory_order_relaxed)) {
+                    sp->bestscore.store(score, std::memory_order_relaxed);
                     sp->bestmove = move->position;
-                    if(score > sp->alpha) {
-                        sp->explored =true;
+                    if(score > sp->alpha.load(std::memory_order_relaxed)) {
+                        sp->explored.store(true, std::memory_order_release);
                     }
                 }
             }

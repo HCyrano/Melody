@@ -1931,10 +1931,12 @@ void* RXEngine::idle_loop(unsigned int threadID, RXSplitPoint* waitSp) {
         if(threads[threadID].state == RXThread::WORKISWAITING) {
             
             RXSplitPoint* splitPoint;   // déclaration hors scope
+            unsigned int spMaster;
             {
                 std::lock_guard<std::mutex> lk(threads[threadID].lock);
                 threads[threadID].state = RXThread::SEARCHING;
                 splitPoint = threads[threadID].splitPoint;   // assignation, pas de redéclaration
+                spMaster = splitPoint->master;
             }
 
             
@@ -1974,9 +1976,9 @@ void* RXEngine::idle_loop(unsigned int threadID, RXSplitPoint* waitSp) {
             
             // je dois proteger l'acces
             {
-                std::lock_guard<std::mutex> lk(threads[splitPoint->master].lock);
-                if (threadID != splitPoint->master && threads[splitPoint->master].state == RXThread::AVAILABLE) {
-                    threads[splitPoint->master].cond.notify_one();
+                std::lock_guard<std::mutex> lk(threads[spMaster].lock);
+                if (threadID != spMaster && threads[spMaster].state == RXThread::AVAILABLE) {
+                    threads[spMaster].cond.notify_one();
                 }
             }
             
@@ -2047,7 +2049,7 @@ bool RXEngine::thread_is_available(unsigned int slave, unsigned int master) {
     //    }
     
     //copy local (argh... bug 25/01/2010)
-    const unsigned int localActiveSplitPoints = threads[slave].activeSplitPoints;
+    const unsigned int localActiveSplitPoints = threads[slave].activeSplitPoints.load(std::memory_order_relaxed);
     
 #ifndef USE_IMPROVE_HELPFUL_MASTER_CONCEPT
     
@@ -2149,7 +2151,7 @@ bool RXEngine::split(RXBBPatterns& sBoard, bool pv, int pvDev,
     {
         std::lock_guard<std::mutex> lk_sync(MP_sync);
         
-        threads[master].activeSplitPoints++;
+        threads[master].activeSplitPoints.fetch_add(1, std::memory_order_relaxed);
         splitPoint.parent = threads[master].splitPoint;
         
         splitPoint.explored = false;
@@ -2224,7 +2226,7 @@ bool RXEngine::split(RXBBPatterns& sBoard, bool pv, int pvDev,
     std::lock_guard<std::mutex> lk_sync(MP_sync);
 
     threads[master].splitPoint = splitPoint.parent;
-    threads[master].activeSplitPoints--;
+    threads[master].activeSplitPoints.fetch_sub(1, std::memory_order_relaxed);
     
     return true;
 }

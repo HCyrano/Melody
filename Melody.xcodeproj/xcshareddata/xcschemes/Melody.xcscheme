@@ -98,6 +98,10 @@
             argument = "/Users/caussebruno/Documents/developpement/Melody/scripts/fforum-60-79.obf"
             isEnabled = "NO">
          </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/caussebruno/Documents/developpement/Melody/scripts/thread_Sanitizer.obf"
+            isEnabled = "NO">
+         </CommandLineArgument>
       </CommandLineArguments>
    </LaunchAction>
    <ProfileAction

@@ -57,10 +57,37 @@
 #define USE_SPLIT_AT_ROOT
 
 //not efficient
+//--- Calculateur de Performance ELO + SPRT (W/D/L) ---
+//Nombre de Victoires (W) : 2073
+//Nombre de Nuls (D)      : 3927
+//Nombre de Défaites (L)  : 2000
+//--------------------------------------------------
+//Performance ELO : +3 pts
+//Incertitude (σ) : 6 pts
+//Plage de confiance (95%) : [-9 , 15]
+//--------------------------------------------------
+//SPRT (H0: Elo=0, H1: Elo=+5, α=0.05, β=0.05)
+//LLR        : 0.4365  (bornes : [-2.9444, 2.9444])
+//Progression: 57.4%  vers la décision
+//Verdict    : ⏳ INDÉCIS      — continuer les tests
+//--------------------------------------------------
 //#define PV_EXTENSION
 
 //LMR 10/20
-//ELO +13 ±8 LLR 3,1078 (4000 games)
+//--- Calculateur de Performance ELO + SPRT (W/D/L) ---
+//Nombre de Victoires (W) : 871
+//Nombre de Nuls (D)      : 2376
+//Nombre de Défaites (L)  : 753
+//--------------------------------------------------
+//Performance ELO : +10 pts
+//Incertitude (σ) : 7 pts
+//Plage de confiance (95%) : [-4 , 24]
+//--------------------------------------------------
+//SPRT (H0: Elo=0, H1: Elo=+5, α=0.05, β=0.05)
+//LLR        : 3.1691  (bornes : [-2.9444, 2.9444])
+//Progression: 103.8%  vers la décision
+//Verdict    : ✅ H1 ACCEPTÉE  — amélioration significative détectée
+//--------------------------------------------------
 #define USE_LMR
 
 #define USE_ETC
