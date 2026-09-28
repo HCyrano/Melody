@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#ifdef RX_UNITY_BUILD
+
 
 #include "RXSetting.hpp"
 
@@ -207,3 +209,6 @@ int RXBitBoard::count_flips_AVX2(const int pos, unsigned long long P)
 }
 
 #endif
+
+#endif
+

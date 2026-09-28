@@ -16,6 +16,8 @@
  */
 
 #include <random>
+#include <vector>
+#include <cctype>
 
 #include "RXMove.hpp"
 
@@ -67,8 +69,8 @@ unsigned long long RXMove::random_pick_bit_in_legalmoves(const unsigned long lon
     unsigned long long temp_moves = legal_moves;
     while (temp_moves) {
         // Isoler le bit de poids faible (LSB)
-        // Expression mathématique : bit = temp_moves & -temp_moves
-        unsigned long long bit = temp_moves & -temp_moves;
+        // Expression mathématique : bit = temp_moves & (0ULL-temp_moves)
+        const unsigned long long bit = temp_moves & (0ULL-temp_moves);
         
         moves.push_back(bit);
 
@@ -87,10 +89,8 @@ unsigned long long RXMove::random_pick_bit_in_legalmoves(const unsigned long lon
 
     // Moteur aléatoire
 
-    // Utilisation :
-    auto seed = get_rd()();
-    
-    static std::mt19937 gen(seed);
+    //seed in static initaliser
+    static std::mt19937 gen(get_rd()());
     
     std::discrete_distribution<> d(weights.begin(), weights.end());
     

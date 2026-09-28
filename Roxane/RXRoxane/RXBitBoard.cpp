@@ -19,6 +19,8 @@
 #include "RXBitBoard.hpp"
 #include "RXTools.hpp"
 
+#define RX_UNITY_BUILD   // les .cpp ci-dessous sont inclus ici, pas compilés seuls
+
 #if ARCH == ARCH_X86_AVX2
     #include "RXBBDoFlips_AVX2.cpp"
     #include "RXBBCountFlips_AVX2.cpp"

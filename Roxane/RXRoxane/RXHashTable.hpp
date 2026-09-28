@@ -252,8 +252,8 @@ class RXHashTable {
     private :
     
     mutable std::vector<RXHashEntry> table;
-    unsigned int _offsetTable[3];
-    unsigned int _maskTable[3];
+    unsigned long long _offsetTable[3];
+    unsigned long long _maskTable[3];
     
     unsigned char date[2];
     

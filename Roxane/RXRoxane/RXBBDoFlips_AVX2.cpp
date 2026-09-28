@@ -23,6 +23,9 @@
  *
  */
 
+#ifdef RX_UNITY_BUILD
+
+
 #include "RXSetting.hpp"
 
 #if ARCH == ARCH_X86_AVX2
@@ -184,4 +187,7 @@ void RXBitBoard::generate_flips_AVX2(const int pos, RXMove& move) const {
 }
 
 #endif
+
+#endif
+
 

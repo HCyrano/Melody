@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#ifdef RX_UNITY_BUILD
+
+
 #include "RXSetting.hpp"
 
 
@@ -199,6 +202,8 @@ int RXBitBoard::count_flips_NEON(const int pos, const unsigned long long P)
 }
 
 
+
+#endif
 
 #endif
 

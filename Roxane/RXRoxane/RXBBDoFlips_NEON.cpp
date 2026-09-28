@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#ifdef RX_UNITY_BUILD
+
+
 #include "RXSetting.hpp"
 
 
@@ -162,5 +165,7 @@ void RXBitBoard::generate_flips_NEON(const int pos, RXMove& move) const {
 
 
 
+
+#endif
 
 #endif
