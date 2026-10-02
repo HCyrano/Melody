@@ -1,13 +1,9 @@
 # ============================================================
-# Makefile — Melody  (macOS + Linux, arm64 / x86_64)
+# Makefile -- Melody  (macOS + Linux, arm64 / x86_64)
 # ============================================================
 
 OS   := $(shell uname -s)
 ARCH := $(shell uname -m)
-
-# ============================================================
-# Flags d'Architecture (ARM vs x86_64)
-# ============================================================
 
 # ============================================================
 # Flags d'Architecture (ARM vs x86_64)
@@ -26,7 +22,7 @@ else
 endif
 
 # ============================================================
-# Compilateur et Flags spécifiques par OS
+# Compilateur et Flags specifiques par OS
 # ============================================================
 
 ifeq ($(OS), Darwin)
@@ -103,7 +99,7 @@ COMMON_OBJS = \
 OBJS = $(COMMON_OBJS) $(SIMD_OBJS)
 
 # ============================================================
-# Règles
+# Regles
 # ============================================================
 
 all: $(TARGET)
@@ -111,7 +107,7 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	@mkdir -p $(dir $@)
 	$(CXX) $(LDFLAGS) -o $@ $^
-	@echo "✅ Build OK → $(TARGET)  [$(OS)/$(ARCH)]"
+	@echo "Build OK -> $(TARGET)  [$(OS)/$(ARCH)]"
 	@du -h $(TARGET)
 
 # ============================================================
@@ -129,7 +125,7 @@ build/main.o: Roxane/main.cpp
 	@mkdir -p build && $(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
 
 # ============================================================
-# RXRoxane — code générique
+# RXRoxane -- code generique
 # ============================================================
 
 build/%.o: Roxane/RXRoxane/%.cpp
@@ -151,7 +147,7 @@ clean:
 
 cleanobj:
 	@rm -f build/*.o build/*.d
-	@echo "Objets supprimés"
+	@echo "Objets meutres"
 
 rebuild: clean all
 

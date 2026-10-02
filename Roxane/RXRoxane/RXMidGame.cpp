@@ -433,7 +433,7 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
         return INTERRUPT_SEARCH;
     
     //time gestion
-    if(threadID == 0 && dependent_time && get_current_dependentTime() > time_limit()) {
+    if(dependent_time && threadID == 0 && get_current_dependentTime() > time_limit()) {
         abort.store(true);
         return INTERRUPT_SEARCH;
     }
@@ -1159,7 +1159,7 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
         return INTERRUPT_SEARCH;
     
     //time gestion
-    if(threadID == 0 && dependent_time && get_current_dependentTime() > time_limit()) {
+    if(dependent_time && threadID == 0 && get_current_dependentTime() > time_limit()) {
         abort.store(true);
         return INTERRUPT_SEARCH;
     }

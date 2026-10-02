@@ -1,5 +1,5 @@
 # ============================================================
-# Makefile.win — Melody  (Windows natif, MSVC / NMake)
+# Makefile.win -- Melody  (Windows natif, MSVC / NMake)
 #
 # Utilisation (depuis un "Developer Command Prompt for VS" ou
 # "x64 Native Tools Command Prompt for VS") :
@@ -9,9 +9,9 @@
 #   nmake /f Makefile.win rebuild
 #
 # Ne fonctionne pas dans un shell MSYS2/Git Bash : nmake attend
-# cmd.exe (mkdir, del, rmdir "à la Windows"), pas des commandes
+# cmd.exe (mkdir, del, rmdir "a la Windows"), pas des commandes
 # Unix. Pour un build via g++/MinGW, utiliser le Makefile GNU
-# habituel à la place.
+# habituel a la place.
 # ============================================================
 
 CXX = cl
@@ -30,28 +30,26 @@ ARCH_FLAGS =
 ARCH_FLAGS = /arch:AVX2
 !ENDIF
 
-# ============================================================
-# Flags de compilation
-# ============================================================
-# /O2            	optimisation (équivalent -O3, MSVC n'a pas de /O3)
-# /GL            	whole-program optimization (LTO MSVC, cf /LTCG au link)
-# /fp:fast       	équivalent -ffast-math
-# /EHsc          	gestion d'exceptions C++ standard
-# /std:c++latest     	norme C++lastest
-# /W3            	niveau de warnings raisonnable (équivalent -Wall)
-# /wd....       	bruit habituel sur du code porté depuis GCC
-# /DWIN32_LEAN_AND_MEAN /DNOMINMAX  évite les conflits windows.h / std::min-max
-# /D_CRT_SECURE_NO_WARNINGS         équivalent tolérance GCC sur strerror etc.
+# /O2 optimization (/O3 n'existe pas sous MSVC)
+# /GL whole-program optimization (/LTCG au link)
+# /fp:fast equivalent -ffast-math
+# /EHsc gestion d'exceptions C++ standard
+# /std:c++latest norme C++latest
+# /utf-8 force l'encodage source et execution en UTF-8
+# /W3 niveau de warnings (equivalent -Wall)
+# /wd.... masque le bruit d'avertissements GCC
+# /DWIN32_LEAN_AND_MEAN /DNOMINMAX evite les conflits windows.h / std::min-max
+# /D_CRT_SECURE_NO_WARNINGS tolerance GCC sur strerror etc.
 
-CXXFLAGS = /nologo /std:c++latest /O2 /GL /fp:fast /EHsc /W3 \
+CXXFLAGS = /nologo /utf-8 /std:c++latest /O2 /GL /fp:fast /EHsc /W3 \
            /wd4267 /wd4244 /wd4101 /wd5054 \
            $(ARCH_FLAGS) \
            /DWIN32_LEAN_AND_MEAN /DNOMINMAX /D_CRT_SECURE_NO_WARNINGS \
            /I include /I Roxane\RXRoxane /I Roxane\GGS_Client /I Roxane\Std_Client \
            /c
-
-# /LTCG requis car les objets sont compilés avec /GL
-# /OPT:REF /OPT:ICF -> retrait du code mort, équivalent -Wl,-dead_strip / -s
+           
+# /LTCG requis car les objets sont compiles avec /GL
+# /OPT:REF /OPT:ICF -> retrait du code mort, equivalent -Wl,-dead_strip / -s
 LDFLAGS = /nologo /LTCG /OPT:REF /OPT:ICF
 LIBS = ws2_32.lib
 
@@ -83,60 +81,60 @@ OBJS = \
     $(BUILD_DIR)\StdInput.obj
 
 # ============================================================
-# Règles
+# Regles
 # ============================================================
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) /nologo $(OBJS) /Fe$(TARGET) /link $(LDFLAGS) $(LIBS)
-	@echo Build OK ^-^> $(TARGET)  [Windows/MSVC]
+    $(CXX) /nologo $(OBJS) /Fe$(TARGET) /link $(LDFLAGS) $(LIBS)
+    @echo Build OK ^-^> $(TARGET)  [Windows/MSVC]
 
 # ------------------------------------------------------------
 # GGS Client
 # ------------------------------------------------------------
 
 {Roxane\GGS_Client}.cpp{$(BUILD_DIR)}.obj:
-	@if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) /Fo$(BUILD_DIR)\ $<
+    @if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
+    $(CXX) $(CXXFLAGS) /Fo$(BUILD_DIR)\ $<
 
 # ------------------------------------------------------------
 # Main
 # ------------------------------------------------------------
 
 {Roxane}.cpp{$(BUILD_DIR)}.obj:
-	@if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) /Fo$(BUILD_DIR)\ $<
+    @if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
+    $(CXX) $(CXXFLAGS) /Fo$(BUILD_DIR)\ $<
 
 # ------------------------------------------------------------
-# RXRoxane — code générique
+# RXRoxane -- code generique
 # ------------------------------------------------------------
 
 {Roxane\RXRoxane}.cpp{$(BUILD_DIR)}.obj:
-	@if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) /Fo$(BUILD_DIR)\ $<
+    @if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
+    $(CXX) $(CXXFLAGS) /Fo$(BUILD_DIR)\ $<
 
 # ------------------------------------------------------------
 # Std Client
 # ------------------------------------------------------------
 
 {Roxane\Std_Client}.cpp{$(BUILD_DIR)}.obj:
-	@if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) /Fo$(BUILD_DIR)\ $<
+    @if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
+    $(CXX) $(CXXFLAGS) /Fo$(BUILD_DIR)\ $<
 
 # ============================================================
 # Utilitaires
 # ============================================================
 
 clean:
-	@if exist $(BUILD_DIR) rmdir /S /Q $(BUILD_DIR)
+    @if exist $(BUILD_DIR) rmdir /S /Q $(BUILD_DIR)
 
 rebuild: clean all
 
 info:
-	@echo CXX        : $(CXX)
-	@echo ARCH_FLAGS : $(ARCH_FLAGS)
-	@echo LDFLAGS    : $(LDFLAGS)
-	@echo TARGET     : $(TARGET)
+    @echo CXX        : $(CXX)
+    @echo ARCH_FLAGS : $(ARCH_FLAGS)
+    @echo LDFLAGS    : $(LDFLAGS)
+    @echo TARGET     : $(TARGET)
 
 .PHONY: all clean rebuild info

@@ -95,7 +95,7 @@ class RXBBPatterns {
     
     void reset();
     
-    double get_n_nodes() const { return board.get_n_nodes(); }
+    unsigned long long get_n_nodes() const { return board.get_n_nodes(); }
     int get_n_empty() const { return board.n_empty; }
     
     int final_score() const;

@@ -579,13 +579,13 @@ inline float RXEngine::sigma(const int n_empty, const int depth, const int depth
     constexpr int mid   = 1;
     constexpr int end   = 2;
     
-    alignas(16) constexpr float probcut_a[] = {0.29736871, 0.09169649, 0.41091810, 0.0f};
-    alignas(16) constexpr float probcut_b[] = {-0.15243659, -0.08251643, -0.44106809, 0.0f};
-    alignas(16) constexpr float probcut_c[] = {0.36970516, 0.08281715, -0.00975311, 0.0f};
-    alignas(16) constexpr float probcut_d[] = {0.01847852, 1.44446884, 0.06738396, 0.0f};
-    alignas(16) constexpr float probcut_e[] = {-1.10292167, -15.87003934, -0.77841377, 0.0f};
-    alignas(16) constexpr float probcut_f[] = {21.26408154, 57.60294113, 2.90508020, 0.0f};
-    alignas(16) constexpr float probcut_g[] = {-130.30442704, -69.06822646, 8.92764751, 0.0f};
+    alignas(16) constexpr float probcut_a[] = {0.29736871f, 0.09169649f, 0.41091810f, 0.0f};
+    alignas(16) constexpr float probcut_b[] = {-0.15243659f, -0.08251643f, -0.44106809f, 0.0f};
+    alignas(16) constexpr float probcut_c[] = {0.36970516f, 0.08281715f, -0.00975311f, 0.0f};
+    alignas(16) constexpr float probcut_d[] = {0.01847852f, 1.44446884f, 0.06738396f, 0.0f};
+    alignas(16) constexpr float probcut_e[] = {-1.10292167f, -15.87003934f, -0.77841377f, 0.0f};
+    alignas(16) constexpr float probcut_f[] = {21.26408154f, 57.60294113f, 2.90508020f, 0.0f};
+    alignas(16) constexpr float probcut_g[] = {-130.30442704f, -69.06822646f, 8.92764751f, 0.0f};
 
     
     // Récupérer les poids depuis la LUT

@@ -42,7 +42,7 @@
     #endif
 #endif
 
-//login ON / OFF
+//logging ON / OFF
 #define LOGGING_ON
 
 //Matchs avec / sans alpha_cut 91/157/49 [297]

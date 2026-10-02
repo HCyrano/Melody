@@ -106,8 +106,8 @@ void RXHashTable::reset() {
 void RXHashTable::update(const unsigned long long hash_code, const RXBitBoard& board, const t_hash type_hashtable,
                          const unsigned char selectivity, const unsigned char depth, const int alpha, const int beta, const int score, const char move) {
 
-    const unsigned int base_date = date[_shared ? 0 : (type_hashtable == HASH_WHITE ? WHITE : BLACK)];
-    unsigned int _date = base_date;
+    const unsigned char base_date = date[_shared ? 0 : (type_hashtable == HASH_WHITE ? WHITE : BLACK)];
+    unsigned char _date = base_date;
     
     if(alpha < score && score < beta)
         ++_date; // bonus pour score exact

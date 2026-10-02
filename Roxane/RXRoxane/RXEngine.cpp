@@ -1752,7 +1752,7 @@ void RXEngine::determine_move_time(RXBitBoard& board) {
         
         int n_empty_before_solved = std::max(2, board.n_empty-(24+static_cast<int>(activeThreads)/4)); //M3 Pro solved at 24 empties // 1 minute 26 empties
         
-        float n_remaining_moves = std::floor((n_empty_before_solved)/2.0);
+        float n_remaining_moves = std::floorf((n_empty_before_solved)/2.0f);
         
         //Midgame mode
         tMove = static_cast<int>((1+(n_remaining_moves-1)/n_remaining_moves)*(tRemaining-time_Safety) / n_remaining_moves);
