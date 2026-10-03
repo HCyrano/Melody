@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Récupérer le code source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Compiler Melody
         run: make CXX=g++-13
@@ -24,7 +24,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Récupérer le code source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Compiler Melody
         run: make
@@ -35,7 +35,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Récupérer le code source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Configurer l'environnement Visual Studio MSVC (x64)
         uses: TheMrMilchmann/setup-msvc-dev@v1
