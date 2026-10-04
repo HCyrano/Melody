@@ -44,7 +44,7 @@
 int main (int argc, char * argv[]) {
 
     
-#if ARCH ==  ARCH_ARM_NEON
+#ifdef  ARCH_ARM_NEON
     std::cout << "ARM NEON available" << std::endl;
 #else
     std::cout << "AVX2 available" << std::endl;
@@ -97,7 +97,7 @@ int main (int argc, char * argv[]) {
 		}
 	}
 
-    std::string version = "dev-2026-10-03 09h05";
+    std::string version = "dev-2026-10-04 16h45";
     std::string vers_eval = RXEvaluation::get_version();
 
 	std::cout << "Version Melody " << version << std::endl;

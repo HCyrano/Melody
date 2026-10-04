@@ -28,7 +28,7 @@
 
 #include "RXSetting.hpp"
 
-#if ARCH == ARCH_X86_AVX2
+#ifdef ARCH_X86_AVX2
 
 #if defined(_MSC_VER)
     // Windows avec MSVC ou Clang-cl

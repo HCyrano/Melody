@@ -19,7 +19,7 @@
 
 #include "RXSetting.hpp"
 
-#if ARCH == ARCH_X86_AVX2
+#ifdef ARCH_X86_AVX2
 
 #include "RXBitBoard.hpp"
 

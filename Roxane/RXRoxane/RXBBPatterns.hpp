@@ -28,9 +28,9 @@
 #include "RXPattern.hpp"
 #include "RXEvaluation.hpp"
 
-#if ARCH ==  ARCH_ARM_NEON
+#ifdef  ARCH_ARM_NEON
     #include <arm_neon.h>
-#elif ARCH == ARCH_X86_AVX2
+#elifdef ARCH_X86_AVX2
     #if defined(_MSC_VER)
         // Windows avec MSVC ou Clang-cl
         #include <intrin.h>
@@ -224,7 +224,7 @@ inline int acc_score(const int   stage,
     
     const int mask = color >> 31;   // 0x00000000 si color=+1, 0xFFFFFFFF si color=-1
     
-#if ARCH ==  ARCH_ARM_NEON
+#ifdef  ARCH_ARM_NEON
     
     // ── Calcul SIMD des (50+2) 50 cp = (patt[i] ^ mask) - mask ────────────────
     // patt[] est int[64], on charge en int32x4, on XOR+SUB vectoriellement
@@ -282,7 +282,7 @@ inline int acc_score(const int   stage,
     const int cp48 = vgetq_lane_s32(vcp48_51,  0), cp49 = vgetq_lane_s32(vcp48_51,  1);
     //    const int cp50 = vgetq_lane_s32(vcp48_51,  2), cp51 = vgetq_lane_s32(vcp48_51,  3); //padding
 
-#elif ARCH == ARCH_X86_AVX2
+#elifdef ARCH_X86_AVX2
 
     // ── Calcul AVX2 des 50 cp = (patt[i] ^ mask) - mask ──────────────────────
     // AVX2 traite 8 int32 à la fois (256 bits / 32 bits)
@@ -391,7 +391,7 @@ inline int acc_score(const int   stage,
             
             eval += RXEvaluation::eval_w0[stage];
             
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
             
             // OPTIMIZATION
             // Version 1
@@ -430,7 +430,7 @@ inline int acc_score(const int   stage,
                 
             };
             
-#elif ARCH == ARCH_X86_AVX2
+#elifdef ARCH_X86_AVX2
 
             // RANK=16 : sum_vx et sum_vx_sq en 2 registres __m256i (16 × int16)
             // sum en int16 (bounds garantis par la conception des vecteurs latents)
@@ -511,7 +511,7 @@ inline int acc_score(const int   stage,
             acc(vCorner,cp46); acc(vCorner,cp47); acc(vCorner,cp48); acc(vCorner,cp49);
             
             
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
             
 
             // widening multiply-accumulate depuis int16 (sum est encore int16x8_t)
@@ -527,7 +527,7 @@ inline int acc_score(const int   stage,
                                                       vaddq_s32(res2, res3))
                                             );
 
-#elif ARCH == ARCH_X86_AVX2
+#elifdef ARCH_X86_AVX2
             
             // Étape 1 : sq via madd (évite cvtepi16 + mullo)
             // sum est __m256i int16 → on travaille directement dessus
@@ -590,7 +590,7 @@ inline int RXBBPatterns::get_score() const
     
     const unsigned long long filled = board.discs[board.player] | board.discs[board.player^1];
 
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
 
     uint64x2_t mob  = board.dual_count_legal_moves();
     const int mob_P = std::min(23, (int)vgetq_lane_u64(mob, 0));
@@ -636,7 +636,7 @@ inline int RXBBPatterns::get_score(const RXMove& move) const
     
     const unsigned long long filled = discs_player | discs_opponent;
 
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
 
     uint64x2_t mob  = RXBitBoard::dual_count_legal_moves(discs_player, discs_opponent);
     const int mob_P = std::min(23, (int)vgetq_lane_u64(mob, 0));

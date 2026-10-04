@@ -21,7 +21,7 @@
 #include "RXSetting.hpp"
 
 
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
 
 #include "RXBitBoard.hpp"
 
