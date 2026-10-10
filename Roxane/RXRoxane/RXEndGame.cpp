@@ -34,7 +34,7 @@
 // soit typiquement 5 < n_empty <= 13
 //
 // Dimensionnement :
-//   DEPTH_RANGE = EG_MEDIUM_HI_TO_LOW_MAX - EG_MEDIUM_TO_SHALLOW_MAX -1
+//   DEPTH_RANGE = EG_MEDIUM_HI_TO_LOW - EG_MEDIUM_TO_SHALLOW -1
 //               = 14 - 7 - 1 = 8 niveaux  (indices 0..7 pour n_empty 6..13)
 //   SIZE        = 2048 entrées par niveau (~384 ko par thread, 0 contention)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -858,7 +858,11 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBitBoard& board
             const unsigned long long next_P = current_O ^ move->flipped;
             const unsigned long long next_O = current_P | (move->flipped | move->square);
             
-            
+//#ifdef USE_ETC
+//                next_hashcode = board.hashcode(next_P, next_O);
+//                hTable->entry_prefetch(next_hashcode, type_hashtable);
+//#endif
+
             
 #ifdef USE_ENHANCED_STABLILITY
             if (lower <= -stability_threshold[etc_depth]) {
@@ -915,7 +919,11 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBitBoard& board
                 const unsigned long long next_P = current_O ^ move->flipped;
                 const unsigned long long next_O = current_P | (move->flipped | move->square);
                 
-                
+//#ifdef USE_ETC
+//                next_hashcode = board.hashcode(next_P, next_O);
+//                hTable->entry_prefetch(next_hashcode, type_hashtable);
+//#endif
+
 #ifdef USE_ENHANCED_STABLILITY
                 if (lower <= -stability_threshold[etc_depth]) {
                     int stability_bound = 2 * board.get_stability(next_O, next_P) - 64;

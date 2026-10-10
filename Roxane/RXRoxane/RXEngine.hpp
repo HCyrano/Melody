@@ -35,7 +35,7 @@
 #include <cstddef>
 #include <array>
 
-
+#include "RXSetting.hpp"
 #include "RXBBPatterns.hpp"
 #include "RXBitBoard.hpp"
 #include "RXMove.hpp"
@@ -383,7 +383,7 @@ class RXEngine: public Runnable {
 
 public :
     static constexpr int EG_DEEP_TO_MEDIUM = 17;
-    static constexpr int EG_MEDIUM_HI_TO_LOW = 14;
+    static constexpr int EG_MEDIUM_HI_TO_LOW = 13; //14
     static constexpr int EG_MEDIUM_TO_SHALLOW = 7;
     static constexpr int MIN_DEPTH_USE_ENDCUT = 16;
 
@@ -449,7 +449,10 @@ private:
     bool split(RXBBPatterns& sBoard, bool pv, int pvDev,
                int depth, int selectivity, int alpha, int beta, int& bestscore, unsigned int& bestmove,
                RXMove* list, unsigned int master, RXSplitPoint::t_callBackSearch callback);
-   
+
+    
+#ifdef SIGMA_3ZONES
+
     // Table de lookup statique (partagée par toutes les instances)
     struct alignas(64) WeightLUT {
         static constexpr int MAX_EMPTY = 60;
@@ -478,7 +481,8 @@ private:
     
     // Instance statique unique de la table
     static inline const WeightLUT s_weight_lut;
-
+    
+#endif
     
 public:
     

@@ -546,21 +546,22 @@ int RXEngine::PVS_last_ply(const unsigned int threadID, RXBBPatterns& sBoard, co
     //synchronized access
     RXHashValue entry;
     if(hTable_shallow->get(hash_code, board, entry)) {
-        if(entry.depth >= depth) {
+        if(!pv && entry.depth >= depth) {
             
-            if (upper > entry.upper) {
+            if (entry.lower > lower) {
+                lower = entry.lower;
+                if (lower >= upper)
+                    return lower;
+            }
+            if (entry.upper < upper) {
                 upper = entry.upper;
                 if (upper <= lower)
                     return upper;
             }
-            
-            if (!pv && entry.lower >= upper) {
-                return entry.lower;
-            }
-            
-            bestmove = entry.move;
 
         }
+        
+        bestmove = entry.move;
 
     }
     
@@ -743,21 +744,25 @@ int RXEngine::alphabeta_last_three_ply(const unsigned int threadID, RXBBPatterns
     if (hTable_shallow->get(hash_code, board, entry)) {
         //if(entry.depth >= 3) { //always true
         
-        if (upper > entry.upper) {
-            upper = entry.upper;
-            if (upper <= lower)
-                return upper;
-        }
-        
-        if (!pv && entry.lower >= upper) {
-            return entry.lower;
-        }
+        if(!pv) {
+            
+            if (entry.lower > lower) {
+                lower = entry.lower;
+                if (lower >= upper)
+                    return lower;
+            }
+            if (entry.upper < upper) {
+                upper = entry.upper;
+                if (upper <= lower)
+                    return upper;
+            }
 
-        //}
+        }
         
         bestmove = entry.move;
+
     }
-    
+
     int bestscore = UNDEF_SCORE;
     
     if (bestmove != PASS) {
