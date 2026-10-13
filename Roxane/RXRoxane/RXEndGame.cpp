@@ -1644,22 +1644,25 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
     
     //synchronized acces
     RXHashValue entry;
+    bool TTHit = false;
     const unsigned long long hash_code = board.hashcode();
-    if(hTable->get(hash_code, board, type_hashtable, entry)) {
+    if((TTHit = hTable->get(hash_code, board, type_hashtable, entry))) {
         
-        if(entry.selectivity >= selectivity && entry.depth>=board.n_empty) {
+        if(entry.depth>=board.n_empty) {
             
-            if(entry.lower > alpha)
-                 return entry.lower;
-            
-            if(entry.upper <= alpha)
-                return  entry.upper;
+            if(entry.selectivity >= selectivity) {
+                
+                if(entry.lower > alpha)
+                    return entry.lower;
+                
+                if(entry.upper <= alpha)
+                    return  entry.upper;
+            }
             
             bestmove = entry.move;
 
         }
 
-        
     }
     
 #ifdef USE_STABILITY
@@ -1676,23 +1679,23 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
 /* *******************************************************************************
     Disable Not efficient : zero cutoff on Fforum-01-79
    ******************************************************************************* */
-//    //param mpc
-//    int lower_probcut, upper_probcut;
-//    int depth_probcut = (board.n_empty/4)*2 + (board.n_empty & 0x1UL);
-//    probcut_bounds(board, selectivity, board.n_empty, depth_probcut, pvDev, alpha, alpha+1, lower_probcut, upper_probcut);
-//
-//    if(bestmove != NOMOVE && entry.selectivity >= selectivity && entry.depth>=depth_probcut) {
-//        
-//        if(entry.lower >= upper_probcut) {
-//            return alpha+2 -(alpha & 1); //05/05/2026
-//        }
-//#ifdef USE_PROBCUT_ALPHA
-//        if(entry.upper <= lower_probcut) {
-//            alpha -(alpha & 1);
-//        }
-//#endif
-//        
-//    }
+    //param mpc
+    int lower_probcut, upper_probcut;
+    int depth_probcut = (board.n_empty/4)*2 + (board.n_empty & 0x1UL);
+    probcut_bounds(board, selectivity, board.n_empty, depth_probcut, pvDev, alpha, alpha+1, lower_probcut, upper_probcut);
+
+    if(TTHit && entry.selectivity >= selectivity && entry.depth>=depth_probcut) {
+
+        if(entry.lower >= upper_probcut) {
+            return alpha+2 -(alpha & 1); //05/05/2026
+        }
+#ifdef USE_PROBCUT_ALPHA
+        if(entry.upper <= lower_probcut) {
+            alpha -(alpha & 1);
+        }
+#endif
+        
+    }
 
     
     RXMove* list = threads[threadID]._move[board.n_empty];
@@ -1846,10 +1849,10 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
         
     } else {
 
-        //param mpc
-        int lower_probcut, upper_probcut;
-        const int depth_probcut = (board.n_empty/4)*2 + (board.n_empty & 0x1UL);
-        probcut_bounds(board, selectivity, board.n_empty, depth_probcut, pvDev, alpha, alpha+1, lower_probcut, upper_probcut);
+//        //param mpc
+//        int lower_probcut, upper_probcut;
+//        const int depth_probcut = (board.n_empty/4)*2 + (board.n_empty & 0x1UL);
+//        probcut_bounds(board, selectivity, board.n_empty, depth_probcut, pvDev, alpha, alpha+1, lower_probcut, upper_probcut);
 
         //XProbcut
         int type_probcut = probcut(threadID, sBoard, selectivity, alpha, board.n_empty, depth_probcut, lower_probcut, upper_probcut, list, bestmove != NOMOVE);
