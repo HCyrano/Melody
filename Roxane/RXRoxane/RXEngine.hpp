@@ -409,7 +409,7 @@ private:
     
     int EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, const int alpha, const int beta, const bool passed);
     int EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, const int alpha, const int beta, const bool passed);
-    int EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board, int alpha, int beta, const bool passed);
+    int EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board, const int alpha, const int beta, const bool passed);
     
     int EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, const int pvDev, const int selectivity, const int alpha, const bool passed);
     void EG_SP_search_XEndcut(RXSplitPoint* sp, const unsigned int threadID);

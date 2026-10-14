@@ -213,7 +213,7 @@ void CODKStream::SendMove(const std::string& idg, COsMoveListItem& mli) {
 void CODKStream::SendMsg(const std::string& msg) {
 
 	if(IsConnected()) {
-		(*this) << "tell ." << GetLogin() << " " << msg << std::endl;
+		(*this) << "tell ." << GetLogin().substr(0, 7) << " " << msg << std::endl;
 		flush();
 	} else {
 		std::cout << msg << std::endl;

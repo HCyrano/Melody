@@ -183,7 +183,7 @@ class alignas(32) RXBitBoard {
     
 
     static inline int get_mobility(const unsigned long long discs_player, const unsigned long long discs_opponent);
-    static inline int get_corner_stability(const unsigned long long& discs_player);
+    static inline int get_corner_stability(const unsigned long long discs_player);
     static inline int get_edge_stability(const unsigned long long  discs_player, const unsigned long long discs_opponent);
     static unsigned long long get_stable_edge(const unsigned long long  discs_player, const unsigned long long discs_opponent);
     inline int get_stability(const int player) const;
@@ -397,7 +397,7 @@ RX_ALWAYS_INLINE unsigned long long RXBitBoard::do_flips(const int pos1, const i
 inline int RXBitBoard::get_mobility(const unsigned long long P, const unsigned long long O) {
     
     const unsigned long long legals = get_legal_moves(P, O);
-    return std::popcount(legals)  +  std::popcount(legals & 0x8100000000000081ULL);
+    return std::popcount(legals) + std::popcount(legals & 0x8100000000000081ULL);
     
 }
 
@@ -433,11 +433,11 @@ RX_ALWAYS_INLINE unsigned long long RXBitBoard::get_stable_edge(const unsigned l
         return ((x & 0x8080808080808080ULL) * 0x0002040810204081ULL) >> 56;
     };
     
-    auto unpackA2A7 = []RX_LAMBDA_INLINE (const unsigned long long x) noexcept {
+    auto unpackA2A7 = [] RX_LAMBDA_INLINE (const unsigned long long x) noexcept {
         return ((x & 0x7eULL) * 0x0000040810204080ULL) & 0x0001010101010100ULL;
     };
     
-    auto unpackH2H7 = []RX_LAMBDA_INLINE (const unsigned long long x) noexcept {
+    auto unpackH2H7 = [] RX_LAMBDA_INLINE (const unsigned long long x) noexcept {
         return ((x & 0x7eULL) * 0x0002040810204000ULL) & 0x0080808080808000ULL;
     };
     
@@ -452,7 +452,7 @@ RX_ALWAYS_INLINE int RXBitBoard::get_edge_stability(const unsigned long long P, 
 }
 
 
-RX_ALWAYS_INLINE int RXBitBoard::get_corner_stability(const unsigned long long& discs_player) {
+RX_ALWAYS_INLINE int RXBitBoard::get_corner_stability(const unsigned long long discs_player) {
     
 //    unsigned long long stables = discs_player & 0x8100000000000081ULL;
 //    

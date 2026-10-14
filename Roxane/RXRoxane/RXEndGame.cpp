@@ -30,22 +30,22 @@
 // LocalTT — table de transposition locale par thread, sans spinlock
 // Adapted from acepck's pull request for Egaroucid.
 //
-// Couvre les Methodes EG_alphabeta_parity < n_empty <= EG_PVS_ETC_LTT
-// soit typiquement 5 < n_empty <= 13
+// Couvre les Methodes EG_alphabeta_parity <= n_empty <= EG_PVS_ETC_LTT
+// soit typiquement 5 <= n_empty <= 13
 //
 // Dimensionnement :
-//   DEPTH_RANGE = EG_MEDIUM_HI_TO_LOW - EG_MEDIUM_TO_SHALLOW -1
-//               = 14 - 7 - 1 = 8 niveaux  (indices 0..7 pour n_empty 6..13)
-//   SIZE        = 2048 entrées par niveau (~384 ko par thread, 0 contention)
+//   DEPTH_RANGE = EG_MEDIUM_HI_TO_LOW - 5
+//               = 14 - 5 = 9 niveaux  (indices 0..8 pour n_empty 5..13)
+//   SIZE        = 2048 entrées par niveau (~512 ko par thread, 0 contention)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // RXEngine constants mirror (required for compilation)
-static constexpr int LTT_END_FAST  = RXEngine::EG_MEDIUM_TO_SHALLOW-1; // 7-1 = 6
+static constexpr int LTT_END_FAST  = 5; //RXEngine::EG_MEDIUM_TO_SHALLOW-1; // 7-1 = 6
 static constexpr int LTT_END_DEEP  = RXEngine::EG_MEDIUM_HI_TO_LOW;  // 14
 
 struct LocalTT {
 
-    static constexpr int DEPTH_RANGE = LTT_END_DEEP - LTT_END_FAST; // 8 niveaux : 6-13 cases vides
+    static constexpr int DEPTH_RANGE = LTT_END_DEEP - LTT_END_FAST; // 9 niveaux : 5-13 cases vides
     static constexpr int SIZE        = 2048;
     static constexpr int MASK        = SIZE - 1;
 
@@ -167,21 +167,31 @@ const int RXEngine::stability_threshold[] =
  * \return        the final score, as a disc difference.
  */
 
-int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board, int alpha, int beta, const bool passed) {
+int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board, const int alpha, const int beta, const bool passed) {
     
     int score, bestscore = UNDEF_SCORE;
     
+    int lower = alpha;
+    int upper = beta;
+
+    
 #ifdef USE_STABILITY
-    if ( !passed && beta >= stability_threshold[board.n_empty]) {
+    if ( !passed && upper >= stability_threshold[board.n_empty]) {
         
         int stability_bound = 64- 2 * board.get_stability(board.player^1);
-        if ( stability_bound <= alpha )
+        if ( stability_bound <= lower )
             return stability_bound;
-        if ( stability_bound < beta )
-            beta = stability_bound;
+        if ( stability_bound < upper )
+            upper = stability_bound;
     }
 #endif
-    
+
+    const unsigned long long  hash_code = board.hashcode();
+
+    // TT local (no lock)
+    auto ltt = LocalTT::probe(board, hash_code, lower, upper);
+    if (lower == upper-1 && ltt.cutoff) return ltt.score;
+
     
     unsigned long long legal_movesBB = board.get_legal_moves();
     
@@ -206,9 +216,10 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                     
                 int diff_discs = 60 - 2*std::popcount(next_P);
                     
-                if ((alpha <= -stability_threshold[4]) || (alpha <= 0 && (diff_discs >= (alpha + 6)))){
+                if ((lower <= -stability_threshold[4]) || (lower <= 0 && (diff_discs >= (lower + 6)))){
                     int stability_bound = 2 * board.get_stability(next_O, next_P) - 64;
-                    if ( stability_bound >= beta ) {
+                    if ( stability_bound >= upper ) {
+//                        LocalTT::store(ltt.entry, hash_code, board, stability_bound, alpha, upper);
                         return stability_bound;
                     }
                 }
@@ -217,7 +228,7 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
 
                 RXSquareList *empties = board.position_to_empties[pos];
                 empties->previous->next = empties->next;
-                bestscore = -board.final_score_4(next_P, next_O, -beta, -alpha);
+                bestscore = -board.final_score_4(next_P, next_O, -upper, -lower);
                 empties->previous->next = empties;
 
                 
@@ -236,9 +247,10 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                     
                     int diff_discs = 60 - 2*std::popcount(next_P);
                     
-                    if ((alpha <= -stability_threshold[4]) || (alpha <= 0 && (diff_discs >= (alpha + 6)))){
+                    if ((lower <= -stability_threshold[4]) || (lower <= 0 && (diff_discs >= (lower + 6)))){
                         score = 2 * board.get_stability(next_O, next_P) - 64;
-                        if ( score >= beta ) {
+                        if ( score >= upper ) {
+//                            LocalTT::store(ltt.entry, hash_code, board, score, alpha, upper);
                             return true;
                         }
                     }
@@ -246,16 +258,16 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
 #endif
                     
                     empties->previous->next = empties->next;
-                    score = -board.final_score_4(next_P, next_O, -beta, -alpha);
+                    score = -board.final_score_4(next_P, next_O, -upper, -lower);
                     empties->previous->next = empties;
                     
-                    if (score >= beta)
+                    if (score >= upper)
                         return true; // Beta cut-off
                     
                     if (score > bestscore) {
                         bestscore = score;
-                        if (bestscore > alpha)
-                            alpha = bestscore;
+                        if (bestscore > lower)
+                            lower = bestscore;
                     }
                     
                     return false;
@@ -282,9 +294,11 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                         continue;
                     }
                     
-                    if (move_final_score_5(empties, pos, bit))
+                    if (move_final_score_5(empties, pos, bit)){
+//                        LocalTT::store(ltt.entry, hash_code, board, score, alpha, upper);
                         return score;
-                    
+                    }
+
                 }
                 
                 // second loop: even parity case
@@ -293,8 +307,10 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                     const int pos = empties->position;
                     const unsigned long long bit = 0x1ULL << pos;
                     
-                    if (move_final_score_5(empties, pos, bit))
+                    if (move_final_score_5(empties, pos, bit)){
+//                        LocalTT::store(ltt.entry, hash_code, board, score, alpha, upper);
                         return score;
+                    }
                 }
            }
 
@@ -318,16 +334,16 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                         board.generate_flips(pos, move);
                         
                         board.do_move(move);
-                        score = -EG_alphabeta_parity(threadID, board, -beta, -alpha, false);
+                        score = -EG_alphabeta_parity(threadID, board, -upper, -lower, false);
                         board.undo_move(move);
                         
-                        if (score >= beta)
+                        if (score >= upper)
                             return score;
                         
                         if (score > bestscore) {
                             bestscore = score;
-                            if (bestscore > alpha) {
-                                alpha = bestscore;
+                            if (bestscore > lower) {
+                                lower = bestscore;
                             }
                         }
                     }
@@ -351,16 +367,16 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                             board.generate_flips(pos, move);
                             
                             board.do_move(move);
-                            score = -EG_alphabeta_parity(threadID, board, -beta, -alpha, false);
+                            score = -EG_alphabeta_parity(threadID, board, -upper, -lower, false);
                             board.undo_move(move);
                             
-                            if (score >= beta)
+                            if (score >= upper)
                                 return score;
                             
                             if (score > bestscore) {
                                 bestscore = score;
-                                if (bestscore > alpha) {
-                                    alpha = bestscore;
+                                if (bestscore > lower) {
+                                    lower = bestscore;
                                 }
                             }
                         }
@@ -377,11 +393,13 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
             bestscore = board.final_score();
         } else {
             board.do_pass();
-            bestscore = -EG_alphabeta_parity(threadID, board, -beta, -alpha, true);
+            bestscore = -EG_alphabeta_parity(threadID, board, -upper, -lower, true);
             board.do_pass();
         }
     }
-    
+
+    LocalTT::store(ltt.entry, hash_code, board, bestscore, alpha, upper);
+
     return bestscore;
 }
 
@@ -461,7 +479,7 @@ int RXEngine::EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, c
                 if (lower <= -stability_threshold[etc_depth]) {
                     int stability_bound = 2 * board.get_stability(next_O, next_P) - 64;
                     if ( stability_bound >= upper ) {
-                        LocalTT::store(ltt.entry, hash_code, board, stability_bound, alpha, upper);
+//                        LocalTT::store(ltt.entry, hash_code, board, stability_bound, alpha, upper);
                         return stability_bound;
                     }
                 }
@@ -622,7 +640,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
                 if (lower <= -stability_threshold[etc_depth]) {
                     int stability_bound = 2 * board.get_stability(next_O, next_P) - 64;
                     if ( stability_bound >= upper ) {
-                        LocalTT::store(ltt.entry, hash_code, board, stability_bound, alpha, upper);
+//                        LocalTT::store(ltt.entry, hash_code, board, stability_bound, alpha, upper);
                         return stability_bound;
                     }
                 }
@@ -637,7 +655,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
                     if (etc_ltt.entry) {
 //                        if(-etc_ltt.beta>lower) {
                             if(-etc_ltt.beta>=upper) {
-                                LocalTT::store(ltt.entry, hash_code, board, -etc_ltt.beta, alpha, upper);
+//                                LocalTT::store(ltt.entry, hash_code, board, -etc_ltt.beta, alpha, upper);
                                 return -etc_ltt.beta;
                             }
 //                            lower = -etc_ltt.beta;
