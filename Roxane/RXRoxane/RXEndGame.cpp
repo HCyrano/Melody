@@ -710,12 +710,16 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
             
                         
             board.do_move(*move);
-            bestscore = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -lower, false);
+            int score = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -lower, false);
             board.undo_move(*move);
             
-            if (bestscore > lower)
-                lower = bestscore;
-            
+            // bestscore may have been set by ETC (upper bound of pruned moves): keep the max
+            if (score > bestscore) {
+                bestscore = score;
+                if (bestscore > lower)
+                    lower = bestscore;
+            }
+
             // other moves : try to refute the first/best one
             for(list = list->next; lower < upper && list->next != nullptr; list = list->next) {
                 
@@ -725,7 +729,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
                 
                 board.do_move(*move);
                 
-                int score = -EG_PVS_ETC_LTT(threadID, board, false, -lower-1, -lower, false);
+                score = -EG_PVS_ETC_LTT(threadID, board, false, -lower-1, -lower, false);
                 if (lower < score && score < upper)
                     score = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -score, false);
                 
