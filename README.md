@@ -30,7 +30,7 @@ The engine was originally optimized for the Apple ecosystem to maximize nodes co
 
 * Environment: **macOS**, **Windows**, **Linux**
 * Architecture: Fully optimized for **Apple Silicon (M-series)** chips. Intensive use of **NEON (ARM)** instructions to accelerate bitboard operations and FM evaluation computations. x86-64 builds (Windows/Linux) leverage **AVX2** for the same operations.
-* Language: C++ (standard `gnu++23` on macOS/Linux, `/std:c++20` on MSVC)
+* Language: C++ (standard `C++23` on macOS/Linux, `/std:c++23` on MSVC)
 * Tooling:
   * macOS: Xcode project (`.xcodeproj`) included.
   * Linux: GNU `Makefile`.
@@ -45,7 +45,7 @@ The engine was originally optimized for the Apple ecosystem to maximize nodes co
 
 > [!IMPORTANT]
 > Heritage and Credits:
-> Melody integrates ideas and logic segments from the Edax codebase. Immense respect and thanks to ***Richard Delorme*** and ***Toshihiko Okuhara*** for their invaluable contribution to the community.
+> Melody integrates ideas and logic segments from the Zebra/Edax codebase. Immense respect and thanks to ***Gunnar Andersson***, ***Richard Delorme*** and ***Toshihiko Okuhara*** for their invaluable contribution to the community.
 > GGS support is based on a modernization of the original ODK by ***C Welty***.
 > A warm thank-you to the GGS community for providing such a stimulating environment for exchanging ideas.
 

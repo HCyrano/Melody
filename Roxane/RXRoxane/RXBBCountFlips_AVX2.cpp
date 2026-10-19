@@ -14,10 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#ifdef RX_UNITY_BUILD
+
 
 #include "RXSetting.hpp"
 
-#if ARCH == ARCH_X86_AVX2
+#ifdef ARCH_X86_AVX2
 
 #include "RXBitBoard.hpp"
 
@@ -100,7 +102,7 @@ alignas(32) const unsigned long long MASK_X[66][4] = {
 };
 
 /** precomputed count flip array */
-const unsigned char COUNT_FLIP[8][256] = {
+alignas(64) const unsigned char COUNT_FLIP[8][256] = {
 	{
 		 0,  0,  0,  0,  2,  2,  0,  0,  4,  4,  0,  0,  2,  2,  0,  0,  6,  6,  0,  0,  2,  2,  0,  0,  4,  4,  0,  0,  2,  2,  0,  0,
 		 8,  8,  0,  0,  2,  2,  0,  0,  4,  4,  0,  0,  2,  2,  0,  0,  6,  6,  0,  0,  2,  2,  0,  0,  4,  4,  0,  0,  2,  2,  0,  0,
@@ -192,7 +194,7 @@ const unsigned char COUNT_FLIP[8][256] = {
  */
 int RXBitBoard::count_flips_AVX2(const int pos, unsigned long long P)
 {
-	uint_fast8_t	n_flipped;
+	int n_flipped;
 	int	h = pos & 7;
 	int	v = pos >> 3;
 
@@ -207,3 +209,6 @@ int RXBitBoard::count_flips_AVX2(const int pos, unsigned long long P)
 }
 
 #endif
+
+#endif
+

@@ -72,27 +72,27 @@ Once compiled, you must move the newly generated binary into the official Melody
 
     **macOS / Linux:**
     ```bash
-    cp build/Melody /path/to/your/extracted/Melody/build/Release/
+    cp build/Melody /path/to/your/extracted/Melody/Release/
     ```
 
     **Windows:**
     ```bat
-    copy build\Melody.exe \path\to\your\extracted\Melody\build\Release\
+    copy build\Melody.exe \path\to\your\extracted\Melody\Release\
     ```
 
 2. Ensure the binary has proper execution permissions:
 
     **macOS / Linux:**
     ```bash
-    chmod +x /path/to/your/extracted/Melody/build/Release/Melody
+    chmod +x /path/to/your/extracted/Melody/Release/Melody
     ```
 
     **Windows:** no action needed — `.exe` files are executable by default.
 
 3. Run the application using the startup script located inside the main `Melody/` folder:
-    * **macOS:** Double-click `*.command`.
-    * **Linux:** Run `./*.sh` in your terminal.
-    * **Windows:** Double-click `*.bat` (or `*.cmd`).
+    * **1-macos:** Double-click `*.command`.
+    * **2-linux:** Run `./*.sh` in your terminal.
+    * **3-windows:** Double-click `*.bat` (or `*.cmd`).
 
 ---
 

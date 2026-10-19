@@ -24,6 +24,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
+#include <cstdint>
 
 
 #include "sockbuf.hpp"
@@ -41,7 +42,7 @@ public:
     virtual ~ggsstream();
     
     // Connection, disconnection
-    virtual int Connect(const std::string& sServer, int nPort);
+    virtual int Connect(const std::string& sServer, uint16_t nPort);
     virtual int Disconnect();
     
     // login, logout
@@ -182,11 +183,11 @@ private:
     
     bool fAutoReconnect = false;
     int nMaxRetries = 5;
-    int nReconnectDelayMs = 2000;
+    uint32_t nReconnectDelayMs = 2000;
     int nCurrentRetry = 0;
     
     std::string sLastServer;
-    int nLastPort = 0;
+    uint32_t nLastPort = 0;
     
     bool TryReconnect();
         

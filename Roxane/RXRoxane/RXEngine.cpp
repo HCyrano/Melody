@@ -342,7 +342,7 @@ int RXEngine::probcut(const unsigned int threadID, RXBBPatterns& sBoard, const i
             sBoard.undo_move(*list1);
             
             //interrupt search
-            if(abort.load() || thread_should_stop(threadID))
+            if(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))
                 return INTERRUPT_SEARCH;
             
             if(bestscore >= upper_probcut) { //beta cut
@@ -417,7 +417,7 @@ int RXEngine::probcut(const unsigned int threadID, RXBBPatterns& sBoard, const i
                 sBoard.undo_move(*iter);
                 
                 //interrupt search
-                if(abort.load() || thread_should_stop(threadID))
+                if(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))
                     return INTERRUPT_SEARCH;
                 
                 if(bestscore >= upper_probcut) { //beta cut
@@ -497,7 +497,7 @@ int RXEngine::probcut(const unsigned int threadID, RXBBPatterns& sBoard, const i
                 sBoard.undo_move(*iter);
                 
                 //interrupt search
-                if(abort.load() || thread_should_stop(threadID))
+                if(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))
                     return INTERRUPT_SEARCH;
                 
                 if (iter->score > bestscore) {
@@ -546,21 +546,22 @@ int RXEngine::PVS_last_ply(const unsigned int threadID, RXBBPatterns& sBoard, co
     //synchronized access
     RXHashValue entry;
     if(hTable_shallow->get(hash_code, board, entry)) {
-        if(entry.depth >= depth) {
+        if(!pv && entry.depth >= depth) {
             
-            if (upper > entry.upper) {
+            if (entry.lower > lower) {
+                lower = entry.lower;
+                if (lower >= upper)
+                    return lower;
+            }
+            if (entry.upper < upper) {
                 upper = entry.upper;
                 if (upper <= lower)
                     return upper;
             }
-            
-            if (!pv && entry.lower >= upper) {
-                return entry.lower;
-            }
-            
-            bestmove = entry.move;
 
         }
+        
+        bestmove = entry.move;
 
     }
     
@@ -743,21 +744,25 @@ int RXEngine::alphabeta_last_three_ply(const unsigned int threadID, RXBBPatterns
     if (hTable_shallow->get(hash_code, board, entry)) {
         //if(entry.depth >= 3) { //always true
         
-        if (upper > entry.upper) {
-            upper = entry.upper;
-            if (upper <= lower)
-                return upper;
-        }
-        
-        if (!pv && entry.lower >= upper) {
-            return entry.lower;
-        }
+        if(!pv) {
+            
+            if (entry.lower > lower) {
+                lower = entry.lower;
+                if (lower >= upper)
+                    return lower;
+            }
+            if (entry.upper < upper) {
+                upper = entry.upper;
+                if (upper <= lower)
+                    return upper;
+            }
 
-        //}
+        }
         
         bestmove = entry.move;
+
     }
-    
+
     int bestscore = UNDEF_SCORE;
     
     if (bestmove != PASS) {
@@ -850,7 +855,7 @@ int RXEngine::alphabeta_last_two_ply(const unsigned int threadID, RXBBPatterns& 
             RXSquareList* empties_1 = board.empties_list;
             do { /* order JWC */
                 empties_1 = empties_1->next;
-                const int pos_1              = empties_1->position;
+                const int pos_1 = empties_1->position;
                 const unsigned long long bit_1 = 0x1ULL << pos_1;
 
                 if (legal_movesBB_1 & bit_1) {
@@ -1604,7 +1609,7 @@ void* RXEngine::run() {
             iterative_deepening(search_sBoard, list, MG_selectivity, depth, max_depth);
         }
         
-        if (!abort.load() && search_depth > (search_sBoard.board.n_empty-(USE_PV_EXTENSION ? 10: 6))) {
+        if (!abort.load(std::memory_order_relaxed) && search_depth > (search_sBoard.board.n_empty-(USE_PV_EXTENSION ? 10: 6))) {
             
             //coherence selectivty et end_selectivity
             int end_selectivity = search_depth < search_sBoard.board.n_empty? EG_HIGH_SELECT:search_selectivity;
@@ -1752,7 +1757,7 @@ void RXEngine::determine_move_time(RXBitBoard& board) {
         
         int n_empty_before_solved = std::max(2, board.n_empty-(24+static_cast<int>(activeThreads)/4)); //M3 Pro solved at 24 empties // 1 minute 26 empties
         
-        float n_remaining_moves = std::floor((n_empty_before_solved)/2.0);
+        float n_remaining_moves = std::floor((n_empty_before_solved)/2.0f);
         
         //Midgame mode
         tMove = static_cast<int>((1+(n_remaining_moves-1)/n_remaining_moves)*(tRemaining-time_Safety) / n_remaining_moves);
@@ -1931,10 +1936,12 @@ void* RXEngine::idle_loop(unsigned int threadID, RXSplitPoint* waitSp) {
         if(threads[threadID].state == RXThread::WORKISWAITING) {
             
             RXSplitPoint* splitPoint;   // déclaration hors scope
+            unsigned int spMaster;
             {
                 std::lock_guard<std::mutex> lk(threads[threadID].lock);
                 threads[threadID].state = RXThread::SEARCHING;
                 splitPoint = threads[threadID].splitPoint;   // assignation, pas de redéclaration
+                spMaster = splitPoint->master;
             }
 
             
@@ -1974,9 +1981,9 @@ void* RXEngine::idle_loop(unsigned int threadID, RXSplitPoint* waitSp) {
             
             // je dois proteger l'acces
             {
-                std::lock_guard<std::mutex> lk(threads[splitPoint->master].lock);
-                if (threadID != splitPoint->master && threads[splitPoint->master].state == RXThread::AVAILABLE) {
-                    threads[splitPoint->master].cond.notify_one();
+                std::lock_guard<std::mutex> lk(threads[spMaster].lock);
+                if (threadID != spMaster && threads[spMaster].state == RXThread::AVAILABLE) {
+                    threads[spMaster].cond.notify_one();
                 }
             }
             
@@ -2047,7 +2054,7 @@ bool RXEngine::thread_is_available(unsigned int slave, unsigned int master) {
     //    }
     
     //copy local (argh... bug 25/01/2010)
-    const unsigned int localActiveSplitPoints = threads[slave].activeSplitPoints;
+    const unsigned int localActiveSplitPoints = threads[slave].activeSplitPoints.load(std::memory_order_relaxed);
     
 #ifndef USE_IMPROVE_HELPFUL_MASTER_CONCEPT
     
@@ -2149,7 +2156,7 @@ bool RXEngine::split(RXBBPatterns& sBoard, bool pv, int pvDev,
     {
         std::lock_guard<std::mutex> lk_sync(MP_sync);
         
-        threads[master].activeSplitPoints++;
+        threads[master].activeSplitPoints.fetch_add(1, std::memory_order_relaxed);
         splitPoint.parent = threads[master].splitPoint;
         
         splitPoint.explored = false;
@@ -2224,7 +2231,7 @@ bool RXEngine::split(RXBBPatterns& sBoard, bool pv, int pvDev,
     std::lock_guard<std::mutex> lk_sync(MP_sync);
 
     threads[master].splitPoint = splitPoint.parent;
-    threads[master].activeSplitPoints--;
+    threads[master].activeSplitPoints.fetch_sub(1, std::memory_order_relaxed);
     
     return true;
 }

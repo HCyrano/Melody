@@ -32,7 +32,6 @@
     #include <intrin.h>
     #define RX_ALWAYS_INLINE __forceinline
     #define RX_LAMBDA_INLINE [[msvc::forceinline]]
-    #define RX_RESTRICT      __restrict
     #if defined(_M_ARM64)
         #define RX_PREFETCH(addr) __prefetch(addr)
     #else
@@ -42,14 +41,14 @@
 #elif defined(__clang__)
     #define RX_ALWAYS_INLINE __attribute__((always_inline)) inline
     #define RX_LAMBDA_INLINE [[clang::always_inline]]
-    #define RX_RESTRICT      __restrict__
     #define RX_PREFETCH(addr) __builtin_prefetch(addr, 0, 3)
 #else
     #define RX_ALWAYS_INLINE __attribute__((always_inline)) inline
     #define RX_LAMBDA_INLINE [[gnu::always_inline]]
-    #define RX_RESTRICT      __restrict__
     #define RX_PREFETCH(addr) __builtin_prefetch(addr, 0, 3)
 #endif
+
+#define RX_RESTRICT __restrict
 
 static inline unsigned long long _bsrll(const unsigned long long Mask) {
     if (Mask == 0)

@@ -20,9 +20,10 @@
 
 RXHashShallow::RXHashShallow(unsigned int nBitsTable) : table(0), date(0) {
     
-    _maskTable = (1UL<<nBitsTable) -1;
-    table.resize(1UL<<nBitsTable);
-    
+    const size_t size = size_t{1} << nBitsTable;   // 64 bits sur x64, quel que soit l'OS
+    _maskTable = size - 1;
+    table.resize(size);
+
 }
 
 

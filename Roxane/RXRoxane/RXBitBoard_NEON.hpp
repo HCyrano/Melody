@@ -19,12 +19,12 @@ struct NeonBoardCtx {
     uint64x2_t PP, rPP, OO, rOO, one;
 
     // Constructeur : initialise tout proprement à la création
-    inline NeonBoardCtx(uint64_t P, uint64_t O) {
+    inline NeonBoardCtx(unsigned long long P, unsigned long long O) {
         PP  = vdupq_n_u64(P);
         OO  = vdupq_n_u64(O);
         one = vdupq_n_u64(1);
 
-        // Ton excellente astuce d'inversion SIMD
+        // astuce d'inversion SIMD
         uint64x2_t OP  = vzip1q_u64(PP, OO); // [ O | P ]
         uint64x2_t rOP = vreinterpretq_u64_u8(
                             vrev64q_u8(
@@ -43,7 +43,7 @@ struct NeonBoardCtx {
 };
 
 // forward declaration - définie dans RXBBDoFlips_NEON.cpp
-unsigned long long flips_NEON(const NeonBoardCtx *ctx, int pos);
+//unsigned long long flips_NEON(const NeonBoardCtx *ctx, int pos);
 
 inline unsigned int RXBitBoard::count_stable_edge(const unsigned long long P, const unsigned long long O) {
     return std::popcount(RXBitBoard::get_stable_edge(P, O));

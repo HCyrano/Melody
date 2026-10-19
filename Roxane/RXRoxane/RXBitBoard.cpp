@@ -19,14 +19,16 @@
 #include "RXBitBoard.hpp"
 #include "RXTools.hpp"
 
-#if ARCH == ARCH_X86_AVX2
+#define RX_UNITY_BUILD   // les .cpp ci-dessous sont inclus ici, pas compilés seuls
+
+#ifdef ARCH_X86_AVX2
     #include "RXBBDoFlips_AVX2.cpp"
     #include "RXBBCountFlips_AVX2.cpp"
-#elif ARCH == ARCH_ARM_NEON
+#elifdef ARCH_ARM_NEON
     #include "RXBBDoFlips_NEON.cpp"
     #include "RXBBCountFlips_NEON.cpp"
 #else
-    #error "Unsupported architecture — define ARCH in RXSetting.hpp"
+    #error "Unsupported architecture (AVX2 or ARM Neon required)."
 #endif
 
 
@@ -176,7 +178,7 @@ void RXBitBoard::static_init() {
 }
 
 
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
 
 
 ////not very efficient

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include <fstream>
 #include <iomanip>
 
@@ -61,7 +62,7 @@ sockbuf::~sockbuf() {
 		delete [] buf;
 }
 
-int sockbuf::connect(const std::string& sServer, int nPort) {
+int sockbuf::connect(const std::string& sServer, uint16_t nPort) {
     
     const int RECV_TIMEOUT_SEC = 90;
     const int SEND_TIMEOUT_SEC = 10;
@@ -322,8 +323,8 @@ int sockbuf::overflow(int c) {
         return EOF;
     
     // Envoi du buffer principal en boucle (gère les envois partiels)
-    long nSend     = pptr() - pbase();
-    long nTotalSent = 0;
+    std::streamsize nSend     = pptr() - pbase();
+    std::streamsize nTotalSent = 0;
     
     while (nTotalSent < nSend) {
         ssize_t_compat nSent = send(sock, pbase() + nTotalSent,

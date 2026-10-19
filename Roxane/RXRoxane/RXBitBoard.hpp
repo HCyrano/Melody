@@ -29,19 +29,20 @@
 #include <string>
 #include <bit>
 #include <array>
+#include <cstdint>
 
 #include "RXTools.hpp"
 #include "RXConstantes.hpp"
 #include "RXMove.hpp"
 #include "RXSetting.hpp"
 
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
 #include <arm_acle.h>
 #define CRC32C_U64(crc, data)  __crc32cd(crc, data)
 #include "arm_neon.h"
-#elif ARCH == ARCH_X86_AVX2
+#elifdef ARCH_X86_AVX2
 #include <nmmintrin.h>
-#define CRC32C_U64(crc, data)  ((uint32_t)_mm_crc32_u64(crc, data))
+#define CRC32C_U64(crc, data) (static_cast<uint32_t>(_mm_crc32_u64(crc, data)))
 #else
 #error "CRC32C hardware not available - need ARM CRC32 or x86 SSE4.2"
 #endif
@@ -73,7 +74,7 @@ class alignas(32) RXBitBoard {
 
 
     // move functions
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
         
     static int count_flips_NEON(int pos, unsigned long long P);
     void generate_flips_NEON(const int pos, RXMove& move) const;
@@ -142,7 +143,7 @@ class alignas(32) RXBitBoard {
         
     
     
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
     
     
     static inline uint64x2_t dual_legal_moves(const unsigned long long P, const unsigned long long O);
@@ -182,7 +183,7 @@ class alignas(32) RXBitBoard {
     
 
     static inline int get_mobility(const unsigned long long discs_player, const unsigned long long discs_opponent);
-    static inline int get_corner_stability(const unsigned long long& discs_player);
+    static inline int get_corner_stability(const unsigned long long discs_player);
     static inline int get_edge_stability(const unsigned long long  discs_player, const unsigned long long discs_opponent);
     static unsigned long long get_stable_edge(const unsigned long long  discs_player, const unsigned long long discs_opponent);
     inline int get_stability(const int player) const;
@@ -228,12 +229,12 @@ class alignas(32) RXBitBoard {
     
 };
 
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
     #include "RXBitBoard_NEON.hpp"
-#elif ARCH == ARCH_X86_AVX2
+#elifdef ARCH_X86_AVX2
     #include "RXBitBoard_x86.hpp"
 #else
-    #error "Unsupported architecture — define ARCH in RXSetting.hpp"
+    #error "Unsupported architecture (AVX2 or ARM Neon required)."
 #endif
 
 
@@ -305,8 +306,7 @@ RX_ALWAYS_INLINE unsigned long long RXBitBoard::hashcode(const unsigned long lon
     uint32_t res2 = CRC32C_U64(0,    O);
     res1          = CRC32C_U64(res1, O);
     res2          = CRC32C_U64(res2, P);
-    return ((unsigned long long)res1 << 32) | res2;
-
+    return (static_cast<uint64_t>(res1) << 32) | res2;
 }
 
 
@@ -351,7 +351,7 @@ inline unsigned long long RXBitBoard::get_legal_moves() const {
 
 // dispatch count_flips
 RX_ALWAYS_INLINE int RXBitBoard::count_flips(const int pos, const unsigned long long P) {
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
     return count_flips_NEON(pos, P);
 #else
     return count_flips_AVX2(pos, P);
@@ -360,7 +360,7 @@ RX_ALWAYS_INLINE int RXBitBoard::count_flips(const int pos, const unsigned long 
 
 // dispatch generate_flips
 RX_ALWAYS_INLINE void RXBitBoard::generate_flips(const int pos, RXMove& move) const {
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
     generate_flips_NEON(pos, move);
 #else
     generate_flips_AVX2(pos, move);
@@ -369,7 +369,7 @@ RX_ALWAYS_INLINE void RXBitBoard::generate_flips(const int pos, RXMove& move) co
 
 // dispatch do_flips
 RX_ALWAYS_INLINE unsigned long long RXBitBoard::do_flips(const int pos, unsigned long long P, unsigned long long O) {
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
     return RXBitBoard::do_flips_NEON(pos, P, O);
 #else
     return RXBitBoard::do_flips_AVX2(pos, P, O);
@@ -378,7 +378,7 @@ RX_ALWAYS_INLINE unsigned long long RXBitBoard::do_flips(const int pos, unsigned
 
 // dispatch do_flips
 RX_ALWAYS_INLINE unsigned long long RXBitBoard::do_flips(const int pos1, const int pos2, const unsigned long long P, const unsigned long long O, unsigned long long& flipped_2) {
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
     return RXBitBoard::do_flips_NEON(pos1, pos2, P, O, flipped_2);
 #else
     return RXBitBoard::do_flips_AVX2(pos1, pos2, P, O, flipped_2);
@@ -397,7 +397,7 @@ RX_ALWAYS_INLINE unsigned long long RXBitBoard::do_flips(const int pos1, const i
 inline int RXBitBoard::get_mobility(const unsigned long long P, const unsigned long long O) {
     
     const unsigned long long legals = get_legal_moves(P, O);
-    return std::popcount(legals)  +  std::popcount(legals & 0x8100000000000081ULL);
+    return std::popcount(legals) + std::popcount(legals & 0x8100000000000081ULL);
     
 }
 
@@ -433,11 +433,11 @@ RX_ALWAYS_INLINE unsigned long long RXBitBoard::get_stable_edge(const unsigned l
         return ((x & 0x8080808080808080ULL) * 0x0002040810204081ULL) >> 56;
     };
     
-    auto unpackA2A7 = []RX_LAMBDA_INLINE (const unsigned long long x) noexcept {
+    auto unpackA2A7 = [] RX_LAMBDA_INLINE (const unsigned long long x) noexcept {
         return ((x & 0x7eULL) * 0x0000040810204080ULL) & 0x0001010101010100ULL;
     };
     
-    auto unpackH2H7 = []RX_LAMBDA_INLINE (const unsigned long long x) noexcept {
+    auto unpackH2H7 = [] RX_LAMBDA_INLINE (const unsigned long long x) noexcept {
         return ((x & 0x7eULL) * 0x0002040810204000ULL) & 0x0080808080808000ULL;
     };
     
@@ -452,7 +452,7 @@ RX_ALWAYS_INLINE int RXBitBoard::get_edge_stability(const unsigned long long P, 
 }
 
 
-RX_ALWAYS_INLINE int RXBitBoard::get_corner_stability(const unsigned long long& discs_player) {
+RX_ALWAYS_INLINE int RXBitBoard::get_corner_stability(const unsigned long long discs_player) {
     
 //    unsigned long long stables = discs_player & 0x8100000000000081ULL;
 //    
@@ -686,14 +686,14 @@ inline int RXBitBoard::final_score_2(const unsigned long long discs_player, cons
 //    int n_flips, bestscore = UNDEF_SCORE;
 //    ++n_nodes;
 //    
-//#if ARCH == ARCH_ARM_NEON
+//#if ARCH_ARM_NEON
 //    NeonBoardCtx ctx(discs_player, discs_opponent);
 //#else
 //    __m256i PP = _mm256_set1_epi64x(discs_player);
 //    __m256i OO = _mm256_set1_epi64x(discs_opponent);
 //#endif
 //
-//#if ARCH == ARCH_ARM_NEON
+//#if ARCH_ARM_NEON
 //    if((discs_opponent & NEIGHBOR[idSquare1]) && (flipped = do_flip_NEON(&ctx, idSquare1)))
 //#else
 //    if((discs_opponent & NEIGHBOR[idSquare1]) && (flipped = mm_flip(PP, OO, idSquare1)))
@@ -730,7 +730,7 @@ inline int RXBitBoard::final_score_2(const unsigned long long discs_player, cons
 //        
 //    }
 //    
-//#if ARCH == ARCH_ARM_NEON
+//#if ARCH_ARM_NEON
 //    if((discs_opponent & NEIGHBOR[idSquare2]) && (flipped = do_flip_NEON(&ctx, idSquare2)))
 //#else
 //    if((discs_opponent & NEIGHBOR[idSquare2]) && (flipped = mm_flip(PP, OO, idSquare2)))
@@ -772,13 +772,13 @@ inline int RXBitBoard::final_score_2(const unsigned long long discs_player, cons
 //    if(bestscore == UNDEF_SCORE) {
 //        
 //        //inverse the context for the position
-//#if ARCH == ARCH_ARM_NEON
+//#if ARCH_ARM_NEON
 //        ctx.swap_sides();
 //#else
 //        std::swap(PP, OO);
 //#endif
 //
-//#if ARCH == ARCH_ARM_NEON
+//#if ARCH_ARM_NEON
 //        if((flipped = do_flip_NEON(&ctx, idSquare1)))
 //#else
 //        if((flipped = mm_flip(PP, OO, idSquare1)))
@@ -816,7 +816,7 @@ inline int RXBitBoard::final_score_2(const unsigned long long discs_player, cons
 //            
 //        }
 //        
-//#if ARCH == ARCH_ARM_NEON
+//#if ARCH_ARM_NEON
 //        if((flipped = do_flip_NEON(&ctx, idSquare2)))
 //#else
 //        if((flipped = mm_flip(PP, OO, idSquare2)))

@@ -26,8 +26,8 @@ const int RXEngine::MG_DEEP_TO_SHALLOW = 4;
 const int RXEngine::MG_MOVING_WINDOW = 4; //4
 
 #ifdef USE_LMR
-    const int RXEngine::LMR_MIN_DEPTH = 8; //standard 10
-    const int RXEngine::LMR_DEEP_DEPTH = 16; //standard 20
+const int RXEngine::LMR_MIN_DEPTH = 10; //8; //standard 10
+const int RXEngine::LMR_DEEP_DEPTH = 20; //16; //standard 20
 #endif
 
 
@@ -91,7 +91,7 @@ void RXEngine::iterative_deepening(RXBBPatterns& sBoard, RXMove* list, int selec
             int score = list->next->score;
             
             if(entry.lower == entry.upper) {
-                if(abort.load())
+                if(abort.load(std::memory_order_relaxed))
                     type = INTERRUPT;
                 
                 if(score >= 64){
@@ -120,7 +120,7 @@ void RXEngine::iterative_deepening(RXBBPatterns& sBoard, RXMove* list, int selec
         
         best_answer.nodes += sBoard.board.n_nodes;
         
-        if(abort.load() )
+        if(abort.load(std::memory_order_relaxed) )
             break;
         
         //update probable time for next depth
@@ -164,7 +164,7 @@ void RXEngine::aspiration_search(RXBBPatterns& sBoard, const int selectivity, co
     int left = 2;
     int right = 2;
     
-    while (!abort.load()  && !(alpha < list->next->score && list->next->score < beta)) {
+    while (!abort.load(std::memory_order_relaxed)  && !(alpha < list->next->score && list->next->score < beta)) {
         
         //        *log << "                  MG research : [" << alpha << " < " << list->next->score << " < " << beta << "]" <<std::endl;
         
@@ -222,7 +222,7 @@ void RXEngine::MG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
     
     sBoard.undo_move(*iter);
     
-    if(!abort.load()  && std::abs(bestscore) != INTERRUPT_SEARCH) {
+    if(!abort.load(std::memory_order_relaxed)  && std::abs(bestscore) != INTERRUPT_SEARCH) {
         
         
         if(search_client == RXSearch::kGGSMode) {	// GGS mode
@@ -242,13 +242,13 @@ void RXEngine::MG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
         //other moves
         first_move.store(false);
         int score;
-        for(iter = iter->next; !abort.load()  && lower<upper && iter != nullptr; iter = iter->next) {
+        for(iter = iter->next; !abort.load(std::memory_order_relaxed)  && lower<upper && iter != nullptr; iter = iter->next) {
             
             
 #ifdef USE_SPLIT_AT_ROOT
             
             // Split?
-            if(activeThreads > 1 && iter->next != nullptr && depth>(MIN_DEPTH_SPLITPOINT+3) && !abort.load()
+            if(activeThreads > 1 && iter->next != nullptr && depth>(MIN_DEPTH_SPLITPOINT+3) && !abort.load(std::memory_order_relaxed)
                && !thread_should_stop(0) && idle_thread_exists(0)
                && split(sBoard, true, 0, depth, selectivity, lower, upper, bestscore, bestmove, iter, 0, RXSplitPoint::MID_ROOT)) {
                 
@@ -262,7 +262,7 @@ void RXEngine::MG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
             score = -MG_PVS_deep(0, sBoard, false, selectivity, depth-1, -lower-1, -lower, false); //change
             
             
-            if(!abort.load()  && lower < score && score < upper) {
+            if(!abort.load(std::memory_order_relaxed)  && lower < score && score < upper) {
                 
                 if(search_client == RXSearch::kGGSMode) {	// GGS mode
                     if(dependent_time && depth>13)
@@ -276,7 +276,7 @@ void RXEngine::MG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
                 --extra_time;
                 //                *log << "                  [extra time end :" << extra_time << "]" << std::endl;
                 
-                if(search_client == RXSearch::kGGSMode && !abort.load()) {    // GGS mode
+                if(search_client == RXSearch::kGGSMode && !abort.load(std::memory_order_relaxed)) {    // GGS mode
                     if(dependent_time && depth>13 && score <= bestscore)
                         manager->sendMsg("         " + RXMove::index_to_coord(iter->position) + " refuted ");
                 }
@@ -288,7 +288,7 @@ void RXEngine::MG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
             
             sBoard.undo_move(*iter);
             
-            if (!abort.load() && std::abs(score) != INTERRUPT_SEARCH) {
+            if (!abort.load(std::memory_order_relaxed) && std::abs(score) != INTERRUPT_SEARCH) {
                 
                 if(score > bestscore) {
                     
@@ -337,7 +337,7 @@ void RXEngine::MG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
     RXBitBoard& board = sBoard.board;
     
     //here sp->beta is const
-    while(sp->alpha < sp->beta && !abort.load() && !thread_should_stop(threadID)) {
+    while(sp->alpha.load(std::memory_order_relaxed) < sp->beta && !abort.load(std::memory_order_relaxed) && !thread_should_stop(threadID)) {
         
         RXMove* move = nullptr;
         {
@@ -347,7 +347,7 @@ void RXEngine::MG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
             sp->list = move;
         }
 
-        const int alpha = sp->alpha; //local copy
+        const int alpha = sp->alpha.load(std::memory_order_relaxed); //local copy
         int depth = sp->depth;
         
         sBoard.do_move(*move);
@@ -355,7 +355,7 @@ void RXEngine::MG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
         
         int score = -MG_PVS_deep(threadID, sBoard, false, sp->selectivity, depth-1, -alpha-1, -alpha, false); //change
         
-        if (!(abort.load() || thread_should_stop(threadID)) && alpha < score && score < sp->beta) {
+        if (!(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID)) && alpha < score && score < sp->beta) {
             
             ++extra_time;
             
@@ -365,8 +365,8 @@ void RXEngine::MG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
             score = -MG_PVS_deep(threadID, sBoard, true, sp->selectivity, depth-1, -sp->beta, -alpha, false);
             
             
-            if(search_client == RXSearch::kGGSMode && !(abort.load() || thread_should_stop(threadID))) {    // GGS mode
-                if(dependent_time && depth>13 && score <= sp->bestscore)
+            if(search_client == RXSearch::kGGSMode && !(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))) {    // GGS mode
+                if(dependent_time && depth>13 && score <= sp->bestscore.load(std::memory_order_relaxed))
                     manager->sendMsg("         " + RXMove::index_to_coord(move->position) + " refuted ");
             }
             
@@ -377,31 +377,31 @@ void RXEngine::MG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
         
         sBoard.undo_move(*move);
         
-//        if(abort.load() || thread_should_stop(threadID))
+//        if(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))
 //            break;
         
         //first without mutex
-        if(score > sp->bestscore) {
+        if(score > sp->bestscore.load(std::memory_order_relaxed)) {
             
             //update
             std::lock_guard<std::mutex> lk(sp->lock);
 
-            if(sp->explored == false) {
+            if(!sp->explored.load(std::memory_order_relaxed)) {
                 
                 // New best move?
-                if(score > sp->bestscore) {
-                    sp->bestscore = score;
+                if(score > sp->bestscore.load(std::memory_order_relaxed)) {
+                    sp->bestscore.store(score, std::memory_order_relaxed);
                     sp->bestmove = move->position;
                     
                     if(dependent_time && depth>13)
-                        manager->sendMsg(showBestmove(depth, sp->selectivity, sp->alpha, sp->beta, sp->bestscore, sp->bestmove));
+                        manager->sendMsg(showBestmove(depth, sp->selectivity, sp->alpha.load(std::memory_order_relaxed), sp->beta, sp->bestscore.load(std::memory_order_relaxed), sp->bestmove));
                     
-                    if(score > sp->alpha) {
+                    if(score > sp->alpha.load(std::memory_order_relaxed)) {
                         
                         if(score >= sp->beta) {
-                            sp->explored = true;
+                            sp->explored.store(true, std::memory_order_release);
                         } else {
-                            sp->alpha = score;
+                            sp->alpha.store(score, std::memory_order_relaxed);
                         }
                         
                     }
@@ -429,14 +429,15 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
     if(depth <= MG_DEEP_TO_SHALLOW)
        return MG_PVS_shallow(threadID, sBoard, pv, depth, alpha, beta, passed);
 
-    //time gestion
-    if(dependent_time && get_current_dependentTime() > time_limit())
-        abort.store(true);
- 
-    if(abort.load()  || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed)  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
-    
+    //time gestion
+    if(dependent_time && threadID == 0 && get_current_dependentTime() > time_limit()) {
+        abort.store(true);
+        return INTERRUPT_SEARCH;
+    }
+
     RXBitBoard& board = sBoard.board;
     
     unsigned int bestmove = NOMOVE;
@@ -450,7 +451,7 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
         if (board.n_empty < EG_MEDIUM_HI_TO_LOW)
             return EG_PVS_ETC_LTT(threadID, board, true, lower, upper, passed);
         
-        return EG_PVS_ETC_mobility(threadID, sBoard, true, lower, upper, passed);
+        return EG_PVS_ETC_mobility(threadID, board, true, lower, upper, passed);
         
     }
 #endif
@@ -460,22 +461,21 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
     const unsigned long long hash_code = board.hashcode();
     if(hTable->get(hash_code, board, type_hashtable, entry)) {
         
-        if(entry.selectivity >= selectivity && entry.depth >= depth) {
+        if(!pv && entry.selectivity >= selectivity && entry.depth >= depth) {
             
-            if(entry.lower > lower) {
-                
+            if (entry.lower > lower) {
                 lower = entry.lower;
-                if(lower >= upper)
+                if (lower >= upper)
                     return lower;
-                
             }
-            
-            if(!pv && entry.upper <= lower) {
-                return  entry.upper;
+            if (entry.upper < upper) {
+                upper = entry.upper;
+                if (upper <= lower)
+                    return upper;
             }
             
         }
-        
+            
         bestmove = entry.move;
     }
     
@@ -484,7 +484,7 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
         
         MG_PVS_deep(threadID, sBoard, pv, selectivity, depth - 2, -MAX_SCORE, MAX_SCORE, passed); //lower, upper,
         
-        if(abort.load() || thread_should_stop(threadID))
+        if(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))
             return INTERRUPT_SEARCH;
         
         if(hTable->get(hash_code, board, type_hashtable, entry)){
@@ -775,7 +775,7 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                 if(move->next != nullptr) {	//more than 1 move
                     
                     // Split?
-                    if(activeThreads > 1 && depth>MIN_DEPTH_SPLITPOINT && !abort.load()
+                    if(activeThreads > 1 && depth>MIN_DEPTH_SPLITPOINT && !abort.load(std::memory_order_relaxed)
                        && !thread_should_stop(threadID) && idle_thread_exists(threadID)
                        && split(sBoard, pv, 1, depth, selectivity, lower, upper, bestscore, bestmove, list, threadID, RXSplitPoint::MID_PVS)) {
                         
@@ -825,7 +825,7 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
     
     
     //interrupt search
-    if(abort.load()  || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed)  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
         
     hTable->update(   hash_code, board, type_hashtable, selectivity, depth, alpha, upper,  bestscore, bestmove);
@@ -851,7 +851,7 @@ void RXEngine::MG_SP_search_deep(RXSplitPoint* sp, const unsigned int threadID) 
     RXBitBoard& board = sBoard.board;
     
     //here sp->beta is const
-    while(sp->alpha < sp->beta && !abort.load()  && !thread_should_stop(threadID)) {
+    while(sp->alpha.load(std::memory_order_relaxed) < sp->beta && !abort.load(std::memory_order_relaxed)  && !thread_should_stop(threadID)) {
         
         RXMove* move = nullptr;
         {
@@ -862,7 +862,7 @@ void RXEngine::MG_SP_search_deep(RXSplitPoint* sp, const unsigned int threadID) 
         }
 
         int score;
-        const int alpha = sp->alpha; //local copy
+        const int alpha = sp->alpha.load(std::memory_order_relaxed); //local copy
         
         sBoard.do_move(*move);
         
@@ -871,7 +871,7 @@ void RXEngine::MG_SP_search_deep(RXSplitPoint* sp, const unsigned int threadID) 
             score = -MG_NWS_XProbCut(threadID, sBoard, sp->pvDev, sp->selectivity, sp->depth-1, -alpha-1, false);
             
             if(alpha < score && score < sp->beta)
-                score = -MG_PVS_deep(threadID, sBoard, sp->pv, sp->selectivity, sp->depth-1, -sp->beta, -sp->alpha, false);
+                score = -MG_PVS_deep(threadID, sBoard, sp->pv, sp->selectivity, sp->depth-1, -sp->beta, -sp->alpha.load(std::memory_order_relaxed), false);
 
         } else {
             
@@ -886,24 +886,24 @@ void RXEngine::MG_SP_search_deep(RXSplitPoint* sp, const unsigned int threadID) 
         
         
         //first without mutex
-        if(score > sp->bestscore) {
+        if(score > sp->bestscore.load(std::memory_order_relaxed)) {
             
             //update
             std::lock_guard<std::mutex> lk(sp->lock);
 
             
-            if(sp->explored == false) {
+            if(!sp->explored.load(std::memory_order_relaxed)) {
                 
                 // New best move?
-                if(score > sp->bestscore) {
-                    sp->bestscore = score;
+                if(score > sp->bestscore.load(std::memory_order_relaxed)) {
+                    sp->bestscore.store(score, std::memory_order_relaxed);
                     sp->bestmove = move->position;
-                    if(score > sp->alpha) {
+                    if(score > sp->alpha.load(std::memory_order_relaxed)) {
                         
                         if(score >= sp->beta) {
-                            sp->explored =true;
+                            sp->explored.store(true, std::memory_order_release);
                         } else {
-                            sp->alpha = score;
+                            sp->alpha.store(score, std::memory_order_relaxed);
                         }
                     }
                 }
@@ -990,7 +990,7 @@ int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, 
         if (board.n_empty < EG_MEDIUM_HI_TO_LOW)
             return EG_PVS_ETC_LTT(threadID, board, true, alpha, beta, passed);
         
-        return EG_PVS_ETC_mobility(threadID, sBoard, true, alpha, beta, passed);
+        return EG_PVS_ETC_mobility(threadID, board, true, alpha, beta, passed);
         
     }
 #endif
@@ -1003,24 +1003,23 @@ int RXEngine::MG_PVS_shallow(const unsigned int threadID, RXBBPatterns& sBoard, 
     RXHashValue entry;
     if(hTable->get(hash_code, board, type_hashtable, entry)) {
         
-        if(entry.selectivity == NO_SELECT && entry.depth >= depth) {
+        if(!pv && entry.selectivity == NO_SELECT && entry.depth >= depth) {
             
-            if(entry.lower > lower) {
-                
+            if (entry.lower > lower) {
                 lower = entry.lower;
-                if(lower >= upper)
+                if (lower >= upper)
                     return lower;
-                
+            }
+            if (entry.upper < upper) {
+                upper = entry.upper;
+                if (upper <= lower)
+                    return upper;
             }
             
-            if(!pv && entry.upper <= lower) {
-                return  entry.upper;
-            }
-            
-            bestmove = entry.move;
-
         }
-        
+
+        bestmove = entry.move;
+
     }
     
     
@@ -1156,14 +1155,15 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
     if(depth == DEPTH_3)
        return alphabeta_last_three_ply(threadID, sBoard, false, alpha, alpha+1, passed);
 
-    //time gestion
-    if (dependent_time && get_current_dependentTime() > time_limit())
-        abort.store(true);
- 
-    if(abort.load() || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed)  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
-    
+    //time gestion
+    if(dependent_time && threadID == 0 && get_current_dependentTime() > time_limit()) {
+        abort.store(true);
+        return INTERRUPT_SEARCH;
+    }
+
     RXBitBoard& board = sBoard.board;
     
     unsigned int bestmove = NOMOVE;
@@ -1360,8 +1360,8 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
         for(RXMove* iter = list->next; bestscore<=alpha && iter != nullptr; iter = iter->next, list = list->next) {
             
             // Split?
-            if(activeThreads > 1 && (depth-depth_reduction)>MIN_DEPTH_SPLITPOINT && iter->next != nullptr && !abort.load()
-               && !thread_should_stop(threadID && idle_thread_exists(threadID))
+            if(activeThreads > 1 && (depth-depth_reduction)>MIN_DEPTH_SPLITPOINT && iter->next != nullptr && !abort.load(std::memory_order_relaxed)
+               && !thread_should_stop(threadID) && idle_thread_exists(threadID)
                && split(sBoard, false, pvDev+1, depth, selectivity, alpha, (alpha+1), bestscore, bestmove, list, threadID, RXSplitPoint::MID_XPROBCUT)) {
                 
                 break;
@@ -1370,11 +1370,11 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
 #ifdef USE_LMR
             
             //before pvDev+1
-            if(pvDev>1) {
+            if(pvDev>2) {
                 ++n_moves;
                 if(n_moves>3 && depth>LMR_MIN_DEPTH) {
                     depth_reduction = DEPTH_2;
-                    if(pvDev>2 && n_moves>5 && depth>LMR_DEEP_DEPTH) {
+                    if(pvDev>3 && n_moves>5 && depth>LMR_DEEP_DEPTH) {
                         depth_reduction = DEPTH_4;
                     }
                 }
@@ -1401,7 +1401,7 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
     
     
     //interrupt search
-    if(abort.load()  || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed)  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
     hTable->update(hash_code, board, type_hashtable, selectivity, depth, alpha, bestscore, bestmove);
@@ -1431,12 +1431,11 @@ void RXEngine::MG_SP_search_XProbcut(RXSplitPoint* sp, const unsigned int thread
     sBoard = *(sp->sBoard);                                 //operator=
     RXBitBoard& board = sBoard.board;
     
-    unsigned int depth_reduction = LMR_NO_REDUCTION;
-
-    unsigned int n_moves = 1;
+//    unsigned int depth_reduction = LMR_NO_REDUCTION;
+//    unsigned int n_moves = 1;
     
     //here sp->alpha is const
-    while(sp->bestscore <= sp->alpha && !abort.load()  && !thread_should_stop(threadID)) {
+    while(sp->bestscore.load(std::memory_order_relaxed) <= sp->alpha.load(std::memory_order_relaxed) && !abort.load(std::memory_order_relaxed)  && !thread_should_stop(threadID)) {
         
         RXMove* move = nullptr;
         {
@@ -1446,51 +1445,51 @@ void RXEngine::MG_SP_search_XProbcut(RXSplitPoint* sp, const unsigned int thread
             sp->list = move;
         }
  
-#ifdef USE_LMR
-        
-        //after pvDev+1
+//#ifdef USE_LMR
+//        
+//        //after pvDev+1
+//
+//        //LMR
+//        if(sp->pvDev > 3) {
+//            ++n_moves;
+//
+//            if(n_moves>3 && sp->depth>LMR_MIN_DEPTH) {
+//                depth_reduction = DEPTH_2;
+//                if(sp->pvDev>4 && n_moves>5 && sp->depth>LMR_DEEP_DEPTH) {
+//                    depth_reduction = DEPTH_4;
+//                }
+//            }
+//        }
+//        
+//#endif
 
-        //LMR
-        if(sp->pvDev > 2) {
-            ++n_moves;
-
-            if(n_moves>3 && sp->depth>LMR_MIN_DEPTH) {
-                depth_reduction = DEPTH_2;
-                if(sp->pvDev>3 && n_moves>5 && sp->depth>LMR_DEEP_DEPTH) {
-                    depth_reduction = DEPTH_4;
-                }
-            }
-        }
-        
-#endif
-
-        const int alpha = sp->alpha; //local copy
+        const int alpha = sp->alpha.load(std::memory_order_relaxed); //local copy
 
         sBoard.do_move(*move);
         
         // here depth > MIN_DEPTH_SPLITPOINT <=> depth > 7
-        int score = -MG_NWS_XProbCut(threadID, sBoard, sp->pvDev, sp->selectivity, sp->depth-1-depth_reduction, -alpha-1, false);
-#ifdef USE_LMR
-        if(depth_reduction > LMR_NO_REDUCTION && score>alpha)
-            score = -MG_NWS_XProbCut(threadID, sBoard, sp->pvDev, sp->selectivity, sp->depth-1, -alpha-1, false);
-#endif
+        int score = -MG_NWS_XProbCut(threadID, sBoard, sp->pvDev, sp->selectivity, sp->depth-1/*-depth_reduction*/, -alpha-1, false);
+//#ifdef USE_LMR
+//        if(depth_reduction > LMR_NO_REDUCTION && score>alpha)
+//            score = -MG_NWS_XProbCut(threadID, sBoard, sp->pvDev, sp->selectivity, sp->depth-1, -alpha-1, false);
+//#endif
 
         sBoard.undo_move(*move);
         
         //first without mutex
-        if(score > sp->bestscore) {
+        if(score > sp->bestscore.load(std::memory_order_relaxed)) {
             
             //update
             std::lock_guard<std::mutex> lk(sp->lock);
 
-            if(sp->explored == false) {
+            if(!sp->explored.load(std::memory_order_relaxed)) {
                                 
                 // New best move?
-                if(score > sp->bestscore) {
-                    sp->bestscore = score;
+                if(score > sp->bestscore.load(std::memory_order_relaxed)) {
+                    sp->bestscore.store(score, std::memory_order_relaxed);
                     sp->bestmove = move->position;
-                    if(score > sp->alpha) {
-                        sp->explored =true;
+                    if(score > sp->alpha.load(std::memory_order_relaxed)) {
+                        sp->explored.store(true, std::memory_order_release);
                     }
                 }
             }

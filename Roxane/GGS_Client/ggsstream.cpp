@@ -101,7 +101,7 @@ void ggsstream::DisableAutoReconnect() {
     fAutoReconnect = false;
 }
 
-int ggsstream::Connect(const std::string& sServer, int nPort) {
+int ggsstream::Connect(const std::string& sServer, uint16_t nPort) {
     
     // 1. ARRÊTER le heartbeat avant toute chose pour libérer le socket
     StopHeartbeat();
@@ -162,7 +162,7 @@ bool ggsstream::TryReconnect() {
     
     
     nCurrentRetry = 0;
-    int currentWorkDelay = nReconnectDelayMs;
+    uint32_t currentWorkDelay = nReconnectDelayMs;
     
     while (nCurrentRetry < nMaxRetries) {
         nCurrentRetry++;

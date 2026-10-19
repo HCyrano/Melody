@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cstdint>
 
 #include "types.hpp"
 #include "sockcompat.hpp"   // sock_t, CLOSESOCK, sock_errno, WinsockInit, ...
@@ -57,7 +58,7 @@ public:
     
     bool IsConnected() const;
     
-    int connect(const std::string& sServer, int nPort);
+    int connect(const std::string& sServer, uint16_t nPort);
     int disconnect();
     
 protected:

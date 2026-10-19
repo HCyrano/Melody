@@ -29,23 +29,24 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // LocalTT — table de transposition locale par thread, sans spinlock
 // Adapted from acepck's pull request for Egaroucid.
+// bestmove testé dans Entry : aucun gain, voire dégradation → non retenu.
 //
-// Couvre les Methodes EG_alphabeta_parity < n_empty <= EG_PVS_ETC_LTT
-// soit typiquement 5 < n_empty <= 13
+// Couvre les Methodes EG_alphabeta_parity <= n_empty <= EG_PVS_ETC_LTT
+// soit typiquement 5 <= n_empty <= 13
 //
 // Dimensionnement :
-//   DEPTH_RANGE = EG_MEDIUM_HI_TO_LOW_MAX - EG_MEDIUM_TO_SHALLOW_MAX -1
-//               = 14 - 7 - 1 = 8 niveaux  (indices 0..7 pour n_empty 6..13)
-//   SIZE        = 2048 entrées par niveau (~384 ko par thread, 0 contention)
+//   DEPTH_RANGE = EG_MEDIUM_HI_TO_LOW - 5
+//               = 14 - 5 = 9 niveaux  (indices 0..8 pour n_empty 5..13)
+//   SIZE        = 2048 entrées par niveau (~432 ko par thread, 0 contention)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // RXEngine constants mirror (required for compilation)
-static constexpr int LTT_END_FAST  = RXEngine::EG_MEDIUM_TO_SHALLOW-1; // 7-1 = 6
+static constexpr int LTT_END_FAST  = 5; //RXEngine::EG_MEDIUM_TO_SHALLOW-1; // 7-1 = 6
 static constexpr int LTT_END_DEEP  = RXEngine::EG_MEDIUM_HI_TO_LOW;  // 14
 
 struct LocalTT {
 
-    static constexpr int DEPTH_RANGE = LTT_END_DEEP - LTT_END_FAST; // 8 niveaux : 6-13 cases vides
+    static constexpr int DEPTH_RANGE = LTT_END_DEEP - LTT_END_FAST; // 9 niveaux : 5-13 cases vides
     static constexpr int SIZE        = 2048;
     static constexpr int MASK        = SIZE - 1;
 
@@ -167,22 +168,32 @@ const int RXEngine::stability_threshold[] =
  * \return        the final score, as a disc difference.
  */
 
-int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board, int alpha, int beta, const bool passed) {
+int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board, const int alpha, const int beta, const bool passed) {
     
-    int score, bestscore = UNDEF_SCORE;
+    
+    int lower = alpha;
+    int upper = beta;
+
     
 #ifdef USE_STABILITY
-    if ( !passed && beta >= stability_threshold[board.n_empty]) {
+    if ( !passed && upper >= stability_threshold[board.n_empty]) {
         
         int stability_bound = 64- 2 * board.get_stability(board.player^1);
-        if ( stability_bound <= alpha )
+        if ( stability_bound <= lower )
             return stability_bound;
-        if ( stability_bound < beta )
-            beta = stability_bound;
+        if ( stability_bound < upper )
+            upper = stability_bound;
     }
 #endif
-    
-    
+
+    const unsigned long long  hash_code = board.hashcode();
+
+    // TT local (no lock)
+    auto ltt = LocalTT::probe(board, hash_code, lower, upper);
+    if (lower == upper-1 && ltt.cutoff) return ltt.score;
+
+    int score, bestscore = UNDEF_SCORE;
+
     unsigned long long legal_movesBB = board.get_legal_moves();
     
     if(legal_movesBB) {
@@ -206,9 +217,10 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                     
                 int diff_discs = 60 - 2*std::popcount(next_P);
                     
-                if ((alpha <= -stability_threshold[4]) || (alpha <= 0 && (diff_discs >= (alpha + 6)))){
+                if ((lower <= -stability_threshold[4]) || (lower <= 0 && (diff_discs >= (lower + 6)))){
                     int stability_bound = 2 * board.get_stability(next_O, next_P) - 64;
-                    if ( stability_bound >= beta ) {
+                    if ( stability_bound >= upper ) {
+//                        LocalTT::store(ltt.entry, hash_code, board, stability_bound, alpha, upper);
                         return stability_bound;
                     }
                 }
@@ -217,7 +229,7 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
 
                 RXSquareList *empties = board.position_to_empties[pos];
                 empties->previous->next = empties->next;
-                bestscore = -board.final_score_4(next_P, next_O, -beta, -alpha);
+                bestscore = -board.final_score_4(next_P, next_O, -upper, -lower);
                 empties->previous->next = empties;
 
                 
@@ -236,9 +248,10 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                     
                     int diff_discs = 60 - 2*std::popcount(next_P);
                     
-                    if ((alpha <= -stability_threshold[4]) || (alpha <= 0 && (diff_discs >= (alpha + 6)))){
+                    if ((lower <= -stability_threshold[4]) || (lower <= 0 && (diff_discs >= (lower + 6)))){
                         score = 2 * board.get_stability(next_O, next_P) - 64;
-                        if ( score >= beta ) {
+                        if ( score >= upper ) {
+//                            LocalTT::store(ltt.entry, hash_code, board, score, alpha, upper);
                             return true;
                         }
                     }
@@ -246,16 +259,16 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
 #endif
                     
                     empties->previous->next = empties->next;
-                    score = -board.final_score_4(next_P, next_O, -beta, -alpha);
+                    score = -board.final_score_4(next_P, next_O, -upper, -lower);
                     empties->previous->next = empties;
                     
-                    if (score >= beta)
+                    if (score >= upper)
                         return true; // Beta cut-off
                     
                     if (score > bestscore) {
                         bestscore = score;
-                        if (bestscore > alpha)
-                            alpha = bestscore;
+                        if (bestscore > lower)
+                            lower = bestscore;
                     }
                     
                     return false;
@@ -282,9 +295,11 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                         continue;
                     }
                     
-                    if (move_final_score_5(empties, pos, bit))
+                    if (move_final_score_5(empties, pos, bit)){
+//                        LocalTT::store(ltt.entry, hash_code, board, score, alpha, upper);
                         return score;
-                    
+                    }
+
                 }
                 
                 // second loop: even parity case
@@ -293,8 +308,10 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                     const int pos = empties->position;
                     const unsigned long long bit = 0x1ULL << pos;
                     
-                    if (move_final_score_5(empties, pos, bit))
+                    if (move_final_score_5(empties, pos, bit)){
+//                        LocalTT::store(ltt.entry, hash_code, board, score, alpha, upper);
                         return score;
+                    }
                 }
            }
 
@@ -318,16 +335,16 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                         board.generate_flips(pos, move);
                         
                         board.do_move(move);
-                        score = -EG_alphabeta_parity(threadID, board, -beta, -alpha, false);
+                        score = -EG_alphabeta_parity(threadID, board, -upper, -lower, false);
                         board.undo_move(move);
                         
-                        if (score >= beta)
+                        if (score >= upper)
                             return score;
                         
                         if (score > bestscore) {
                             bestscore = score;
-                            if (bestscore > alpha) {
-                                alpha = bestscore;
+                            if (bestscore > lower) {
+                                lower = bestscore;
                             }
                         }
                     }
@@ -351,16 +368,16 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                             board.generate_flips(pos, move);
                             
                             board.do_move(move);
-                            score = -EG_alphabeta_parity(threadID, board, -beta, -alpha, false);
+                            score = -EG_alphabeta_parity(threadID, board, -upper, -lower, false);
                             board.undo_move(move);
                             
-                            if (score >= beta)
+                            if (score >= upper)
                                 return score;
                             
                             if (score > bestscore) {
                                 bestscore = score;
-                                if (bestscore > alpha) {
-                                    alpha = bestscore;
+                                if (bestscore > lower) {
+                                    lower = bestscore;
                                 }
                             }
                         }
@@ -377,11 +394,13 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
             bestscore = board.final_score();
         } else {
             board.do_pass();
-            bestscore = -EG_alphabeta_parity(threadID, board, -beta, -alpha, true);
+            bestscore = -EG_alphabeta_parity(threadID, board, -upper, -lower, true);
             board.do_pass();
         }
     }
-    
+
+    LocalTT::store(ltt.entry, hash_code, board, bestscore, alpha, upper);
+
     return bestscore;
 }
 
@@ -461,7 +480,7 @@ int RXEngine::EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, c
                 if (lower <= -stability_threshold[etc_depth]) {
                     int stability_bound = 2 * board.get_stability(next_O, next_P) - 64;
                     if ( stability_bound >= upper ) {
-                        LocalTT::store(ltt.entry, hash_code, board, stability_bound, alpha, upper);
+//                        LocalTT::store(ltt.entry, hash_code, board, stability_bound, alpha, upper);
                         return stability_bound;
                     }
                 }
@@ -470,7 +489,7 @@ int RXEngine::EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, c
                 move->score =
                   (RXBitBoard::count_potential_moves(next_P, next_O)<<4)
                 - (RXBitBoard::get_edge_stability(next_O, next_P)<<2)
-                - (((board.parity & RXBitBoard::QUADRANT_ID[pos])>>RXBitBoard::QUADRANT_SHIFT[pos])<<4)
+                - (((board.parity & RXBitBoard::QUADRANT_ID[pos])>>RXBitBoard::QUADRANT_SHIFT[pos])<<3)
                 + ((move->square & 0x8100000000000081) != 0);
                 
                 previous = previous->next = move++;
@@ -587,7 +606,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
         
         if(std::popcount(legal_movesBB) == 1) { //only 1 move
             
-            int pos = std::countr_zero(legal_movesBB);  // Get the index of the lowest set bit
+            const int pos = std::countr_zero(legal_movesBB);  // Get the index of the lowest set bit
 
             board.generate_flips(pos, *move);
             
@@ -622,7 +641,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
                 if (lower <= -stability_threshold[etc_depth]) {
                     int stability_bound = 2 * board.get_stability(next_O, next_P) - 64;
                     if ( stability_bound >= upper ) {
-                        LocalTT::store(ltt.entry, hash_code, board, stability_bound, alpha, upper);
+//                        LocalTT::store(ltt.entry, hash_code, board, stability_bound, alpha, upper);
                         return stability_bound;
                     }
                 }
@@ -637,7 +656,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
                     if (etc_ltt.entry) {
 //                        if(-etc_ltt.beta>lower) {
                             if(-etc_ltt.beta>=upper) {
-                                LocalTT::store(ltt.entry, hash_code, board, -etc_ltt.beta, alpha, upper);
+//                                LocalTT::store(ltt.entry, hash_code, board, -etc_ltt.beta, alpha, upper);
                                 return -etc_ltt.beta;
                             }
 //                            lower = -etc_ltt.beta;
@@ -668,7 +687,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
             
             move = list->next;
 
-            if((list->next)->next != nullptr) { //nb moves > 1
+            if(move->next != nullptr) { //nb moves > 1
                 
                 //sort list by mobility
                 for(RXMove* iter = list->next; iter != nullptr; iter = iter->next) {
@@ -691,22 +710,14 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
             
                         
             board.do_move(*move);
-            int score = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -lower, false);
+            bestscore = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -lower, false);
             board.undo_move(*move);
             
-            if (score > bestscore) {
-                bestscore = score;
-                if (bestscore > lower)
-                    lower = bestscore;
-            }
-
-            // next move
-            list = list->next;
-            
-            
+            if (bestscore > lower)
+                lower = bestscore;
             
             // other moves : try to refute the first/best one
-            for(; lower < upper && list->next != nullptr; list = list->next) {
+            for(list = list->next; lower < upper && list->next != nullptr; list = list->next) {
                 
                 move = list->next;
                 if(move->next != nullptr)
@@ -714,7 +725,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
                 
                 board.do_move(*move);
                 
-                score = -EG_PVS_ETC_LTT(threadID, board, false, -lower-1, -lower, false);
+                int score = -EG_PVS_ETC_LTT(threadID, board, false, -lower-1, -lower, false);
                 if (lower < score && score < upper)
                     score = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -score, false);
                 
@@ -753,7 +764,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
  * order to diminish the size of the tree to analyse, but at the expense of a
  * slower speed.
  *
- * \param sBoard      sBoard : just for conformity with split method.
+ * \param board     othellier
  * \param alpha      lower bound.
  * \param beta       upper bound.
  * \param passed     a flag indicating if previous move was a pass.
@@ -761,18 +772,17 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
  */
 
 // Implementing a skip move on TT in ETC is more complicated without any real benefit.
-int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int alpha, const int beta, const bool passed)
+int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBitBoard& board, const bool pv, const int alpha, const int beta, const bool passed)
 {
     
 
-    if (sBoard.board.n_empty < EG_MEDIUM_HI_TO_LOW)
-        return EG_PVS_ETC_LTT(threadID, sBoard.board, pv, alpha, beta, passed);
+    if (board.n_empty < EG_MEDIUM_HI_TO_LOW)
+        return EG_PVS_ETC_LTT(threadID, board, pv, alpha, beta, passed);
 
      
-    if(abort.load() || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
-    RXBitBoard& board = sBoard.board;
     const unsigned long long  hash_code = board.hashcode();
 
     unsigned int bestmove = NOMOVE;
@@ -783,16 +793,17 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
     RXHashValue entry;
     if(hTable->get(hash_code, board, type_hashtable, entry)) {
         
-        if( entry.selectivity == NO_SELECT && entry.depth >= board.n_empty) {
+        if(!pv && entry.selectivity == NO_SELECT && entry.depth >= board.n_empty) {
             
-            if (upper > entry.upper) {
-                upper = entry.upper;
-                if (upper <= lower) {
-                    return upper;
-                }
+            if (entry.lower > lower) {
+                lower = entry.lower;
+                if (lower >= upper)
+                    return lower;
             }
-            if (!pv && entry.lower >= upper) {
-                return entry.lower;
+            if (entry.upper < upper) {
+                upper = entry.upper;
+                if (upper <= lower)
+                    return upper;
             }
             
         }
@@ -858,7 +869,11 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
             const unsigned long long next_P = current_O ^ move->flipped;
             const unsigned long long next_O = current_P | (move->flipped | move->square);
             
-            
+//#ifdef USE_ETC
+//                next_hashcode = board.hashcode(next_P, next_O);
+//                hTable->entry_prefetch(next_hashcode, type_hashtable);
+//#endif
+
             
 #ifdef USE_ENHANCED_STABLILITY
             if (lower <= -stability_threshold[etc_depth]) {
@@ -867,9 +882,9 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
 //                    hTable->update(hash_code, board, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, stability_bound, bestmove);
                     return stability_bound;
                 }
-                if (stability_bound > lower) {
-                    lower = stability_bound;
-                }
+//                if (stability_bound > lower) {
+//                    lower = stability_bound;
+//                }
             }
 #endif
                         
@@ -915,7 +930,11 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
                 const unsigned long long next_P = current_O ^ move->flipped;
                 const unsigned long long next_O = current_P | (move->flipped | move->square);
                 
-                
+//#ifdef USE_ETC
+//                next_hashcode = board.hashcode(next_P, next_O);
+//                hTable->entry_prefetch(next_hashcode, type_hashtable);
+//#endif
+
 #ifdef USE_ENHANCED_STABLILITY
                 if (lower <= -stability_threshold[etc_depth]) {
                     int stability_bound = 2 * board.get_stability(next_O, next_P) - 64;
@@ -923,9 +942,9 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
 //                        hTable->update(hash_code, board, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, stability_bound, pos);
                         return stability_bound;
                     }
-                    if (stability_bound > lower) {
-                        lower = stability_bound;
-                    }
+//                    if (stability_bound > lower) {
+//                        lower = stability_bound;
+//                    }
                 }
 #endif
                 
@@ -966,7 +985,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
             return board.final_score();
         } else {
             board.do_pass();
-            bestscore = -EG_PVS_ETC_mobility(threadID, sBoard, pv, -upper, -lower, true);
+            bestscore = -EG_PVS_ETC_mobility(threadID, board, pv, -upper, -lower, true);
             board.do_pass();
             bestmove = PASS;
         }
@@ -978,7 +997,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
             list = list->next;
             
             board.do_move(*list);
-            bestscore = -EG_PVS_ETC_mobility(threadID, sBoard, pv, -upper, -lower, false);
+            bestscore = -EG_PVS_ETC_mobility(threadID, board, pv, -upper, -lower, false);
             board.undo_move(*list);
             
             //bestmove = list->position;
@@ -1016,7 +1035,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
                 RXMove* move = list->pick_next_promising_move();
                 
                 board.do_move(*move);
-                bestscore = -EG_PVS_ETC_mobility(threadID, sBoard, pv, -upper, -lower, false);
+                bestscore = -EG_PVS_ETC_mobility(threadID, board, pv, -upper, -lower, false);
                 board.undo_move(*move);
                 
                 bestmove = move->position;
@@ -1039,9 +1058,9 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
                     move = list->pick_next_promising_move();
 
                 board.do_move(*move);
-                score = -EG_PVS_ETC_mobility(threadID, sBoard, false, -lower-1, -lower, false);
+                score = -EG_PVS_ETC_mobility(threadID, board, false, -lower-1, -lower, false);
                 if (lower < score && score < upper)
-                    score = -EG_PVS_ETC_mobility(threadID, sBoard, pv, -upper, -score, false);
+                    score = -EG_PVS_ETC_mobility(threadID, board, pv, -upper, -score, false);
                 board.undo_move(*move);
                 
                 if (score > bestscore) {
@@ -1055,7 +1074,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBo
     }
     
     //interrupt search
-    if(abort.load()  || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed)  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
     hTable->update(hash_code, board, type_hashtable, NO_SELECT, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
@@ -1072,16 +1091,17 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
     
 
     if (sBoard.board.n_empty < EG_DEEP_TO_MEDIUM)
-        return EG_PVS_ETC_mobility(threadID, sBoard, pv, alpha, beta, passed);
+        return EG_PVS_ETC_mobility(threadID, sBoard.board, pv, alpha, beta, passed);
     
-    //time gestion
-    if(dependent_time && get_current_dependentTime() > time_limit())
-        abort.store(true);
-
-    if(abort.load() || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed)  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
-    
+    //time gestion
+    if(dependent_time && threadID == 0 && get_current_dependentTime() > time_limit()) {
+        abort.store(true);
+        return INTERRUPT_SEARCH;
+    }
+
     
     unsigned int bestmove = NOMOVE;
     int lower = alpha;
@@ -1095,17 +1115,18 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
     const unsigned long long hash_code = board.hashcode();
     if(hTable->get(hash_code, board, type_hashtable, entry)) {
         
-        if(entry.selectivity >= selectivity && entry.depth >= board.n_empty) {
+        if(!pv && entry.selectivity >= selectivity && entry.depth >= board.n_empty) {
             
-            if (upper > entry.upper) {
-
-               upper = entry.upper;
+            if (entry.lower > lower) {
+                lower = entry.lower;
+                if (lower >= upper)
+                    return lower;
+            }
+            if (entry.upper < upper) {
+                upper = entry.upper;
                 if (upper <= lower)
                     return upper;
             }
-
-            if (!pv && entry.lower >= upper)
-                return entry.lower;
             
         }
 
@@ -1140,14 +1161,14 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
 #endif
     
     //    IID & IIS
-    if(pv && bestmove == NOMOVE && board.n_empty >= EG_DEEP_TO_MEDIUM) {
+    if(pv && bestmove == NOMOVE) {
         
         if(selectivity > EG_HIGH_SELECT)
             EG_PVS_deep(threadID, sBoard, pv, selectivity-1, -MAX_SCORE, MAX_SCORE, passed); //lower, upper,
         else
             MG_PVS_deep(threadID, sBoard, pv, MG_SELECT, board.n_empty-(USE_PV_EXTENSION? 10 : 8), -MAX_SCORE, MAX_SCORE, passed); //lower, upper,
         
-        if(abort.load() || thread_should_stop(threadID))
+        if(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))
             return INTERRUPT_SEARCH;
         
         if(hTable->get(hash_code, board, type_hashtable, entry)) {
@@ -1189,9 +1210,9 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                 if ( stability_bound >= upper ) {
                     return stability_bound;
                 }
-                if (stability_bound > lower) {
-                    lower = stability_bound;
-                }
+//                if (stability_bound > lower) {
+//                    lower = stability_bound;
+//                }
             }
 #endif
             
@@ -1240,9 +1261,9 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                     if ( stability_bound >= upper ) {
                         return stability_bound;
                     }
-                    if (stability_bound > lower) {
-                        lower = stability_bound;
-                    }
+//                    if (stability_bound > lower) {
+//                        lower = stability_bound;
+//                    }
                 }
 #endif
                 
@@ -1471,7 +1492,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
                 if (move->next != nullptr) {
                     
                     // Split?
-                    if(activeThreads > 1  && !abort.load() && !thread_should_stop(threadID) && idle_thread_exists(threadID)
+                    if(activeThreads > 1 && board.n_empty > 19 && !abort.load(std::memory_order_relaxed) && !thread_should_stop(threadID) && idle_thread_exists(threadID)
                        && split(sBoard, pv, 1, board.n_empty, selectivity, lower, upper, bestscore, bestmove, list, threadID, RXSplitPoint::END_PVS)) {
                         
                         break;
@@ -1511,7 +1532,7 @@ int RXEngine::EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
     }
     
     //interrupt search
-    if(abort  || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed)  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
     hTable->update(   hash_code, board, type_hashtable, selectivity, DEPTH_BOOSTER+board.n_empty, alpha, upper, bestscore, bestmove);
@@ -1538,7 +1559,7 @@ void RXEngine::EG_SP_search_DEEP(RXSplitPoint* sp, const unsigned int threadID) 
     
     
     //here sp->beta is const
-    while(sp->alpha < sp->beta && !abort.load() && !thread_should_stop(threadID)) {
+    while(sp->alpha.load(std::memory_order_relaxed)< sp->beta && !abort.load(std::memory_order_relaxed) && !thread_should_stop(threadID)) {
         
         RXMove* move = nullptr;
         {
@@ -1549,7 +1570,7 @@ void RXEngine::EG_SP_search_DEEP(RXSplitPoint* sp, const unsigned int threadID) 
         }
         
         int score;
-        const int alpha = sp->alpha; //local copy
+        const int alpha = sp->alpha.load(std::memory_order_relaxed); //local copy
         
         
         sBoard.do_move(*move);
@@ -1559,7 +1580,7 @@ void RXEngine::EG_SP_search_DEEP(RXSplitPoint* sp, const unsigned int threadID) 
             score = -EG_NWS_XEndCut(threadID, sBoard, sp->pvDev, sp->selectivity, -alpha-1, false);
             
             if (alpha < score && score < sp->beta)
-                score = -EG_PVS_deep(threadID, sBoard, sp->pv, sp->selectivity, -sp->beta, -sp->alpha, false);
+                score = -EG_PVS_deep(threadID, sBoard, sp->pv, sp->selectivity, -sp->beta, -sp->alpha.load(std::memory_order_relaxed), false);
             
         } else {
             
@@ -1573,24 +1594,24 @@ void RXEngine::EG_SP_search_DEEP(RXSplitPoint* sp, const unsigned int threadID) 
         sBoard.undo_move(*move);
         
         //first without mutex
-        if(score > sp->bestscore) {
+        if(score > sp->bestscore.load(std::memory_order_relaxed)) {
             
             //update
             std::lock_guard<std::mutex> lk(sp->lock);
 
-            if(sp->explored == false) {
+            if(!sp->explored.load(std::memory_order_relaxed)) {
                 
                 
                 // New best move?
-                if(score > sp->bestscore) {
-                    sp->bestscore = score;
+                if(score > sp->bestscore.load(std::memory_order_relaxed)) {
+                    sp->bestscore.store(score, std::memory_order_relaxed);
                     sp->bestmove = move->position;
-                    if(score > sp->alpha) {
+                    if(score > sp->alpha.load(std::memory_order_relaxed)) {
                         
                         if(score >= sp->beta) {
-                            sp->explored = true;
+                            sp->explored.store(true, std::memory_order_release);
                         } else {
-                            sp->alpha = score;
+                            sp->alpha.store(score, std::memory_order_relaxed);
                         }
                     }
                 }
@@ -1616,12 +1637,16 @@ void RXEngine::EG_SP_search_DEEP(RXSplitPoint* sp, const unsigned int threadID) 
  */
 int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, const int pvDev, const int selectivity, const int alpha, const bool passed) {
     
-    //time gestion
-    if(dependent_time && get_current_dependentTime() > time_limit())
-        abort.store(true);
 
-    if(abort.load()  || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed)  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
+    
+    //time gestion
+    if(dependent_time && threadID == 0 && get_current_dependentTime() > time_limit()) {
+        abort.store(true);
+        return INTERRUPT_SEARCH;
+    }
+
 
     RXBitBoard& board = sBoard.board;
     
@@ -1630,22 +1655,25 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
     
     //synchronized acces
     RXHashValue entry;
+    bool TTHit = false;
     const unsigned long long hash_code = board.hashcode();
-    if(hTable->get(hash_code, board, type_hashtable, entry)) {
+    if((TTHit = hTable->get(hash_code, board, type_hashtable, entry))) {
         
-        if(entry.selectivity >= selectivity && entry.depth>=board.n_empty) {
+        if(entry.depth>=board.n_empty) {
             
-            if(entry.lower > alpha)
-                 return entry.lower;
-            
-            if(entry.upper <= alpha)
-                return  entry.upper;
+            if(entry.selectivity >= selectivity) {
+                
+                if(entry.lower > alpha)
+                    return entry.lower;
+                
+                if(entry.upper <= alpha)
+                    return  entry.upper;
+            }
             
             bestmove = entry.move;
 
         }
 
-        
     }
     
 #ifdef USE_STABILITY
@@ -1662,23 +1690,23 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
 /* *******************************************************************************
     Disable Not efficient : zero cutoff on Fforum-01-79
    ******************************************************************************* */
-//    //param mpc
-//    int lower_probcut, upper_probcut;
-//    int depth_probcut = (board.n_empty/4)*2 + (board.n_empty & 0x1UL);
-//    probcut_bounds(board, selectivity, board.n_empty, depth_probcut, pvDev, alpha, alpha+1, lower_probcut, upper_probcut);
-//
-//    if(bestmove != NOMOVE && entry.selectivity >= selectivity && entry.depth>=depth_probcut) {
-//        
-//        if(entry.lower >= upper_probcut) {
-//            return alpha+2 -(alpha & 1); //05/05/2026
-//        }
-//#ifdef USE_PROBCUT_ALPHA
-//        if(entry.upper <= lower_probcut) {
-//            alpha -(alpha & 1);
-//        }
-//#endif
-//        
-//    }
+    //param mpc
+    int lower_probcut, upper_probcut;
+    int depth_probcut = (board.n_empty/4)*2 + (board.n_empty & 0x1UL);
+    probcut_bounds(board, selectivity, board.n_empty, depth_probcut, pvDev, alpha, alpha+1, lower_probcut, upper_probcut);
+
+    if(TTHit && entry.selectivity >= selectivity && entry.depth>=depth_probcut) {
+
+        if(entry.lower >= upper_probcut) {
+            return alpha+2 -(alpha & 1); //05/05/2026
+        }
+#ifdef USE_PROBCUT_ALPHA
+        if(entry.upper <= lower_probcut) {
+            alpha -(alpha & 1);
+        }
+#endif
+        
+    }
 
     
     RXMove* list = threads[threadID]._move[board.n_empty];
@@ -1832,10 +1860,10 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
         
     } else {
 
-        //param mpc
-        int lower_probcut, upper_probcut;
-        const int depth_probcut = (board.n_empty/4)*2 + (board.n_empty & 0x1UL);
-        probcut_bounds(board, selectivity, board.n_empty, depth_probcut, pvDev, alpha, alpha+1, lower_probcut, upper_probcut);
+//        //param mpc
+//        int lower_probcut, upper_probcut;
+//        const int depth_probcut = (board.n_empty/4)*2 + (board.n_empty & 0x1UL);
+//        probcut_bounds(board, selectivity, board.n_empty, depth_probcut, pvDev, alpha, alpha+1, lower_probcut, upper_probcut);
 
         //XProbcut
         int type_probcut = probcut(threadID, sBoard, selectivity, alpha, board.n_empty, depth_probcut, lower_probcut, upper_probcut, list, bestmove != NOMOVE);
@@ -1857,7 +1885,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
         
         if(board.n_empty<MIN_DEPTH_USE_ENDCUT) {
             board.do_move(*move);
-            bestscore = -EG_PVS_ETC_mobility(threadID, sBoard, false, -alpha-1, -alpha, false);
+            bestscore = -EG_PVS_ETC_mobility(threadID, board, false, -alpha-1, -alpha, false);
             board.undo_move(*move);
         } else {
             sBoard.do_move(*move);
@@ -1874,7 +1902,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
         for(RXMove* iter = list->next; bestscore<=alpha && iter != nullptr; iter = iter->next, list = list->next) {
             
             if(activeThreads > 1 && board.n_empty>=MIN_DEPTH_USE_ENDCUT && iter->next != nullptr
-               && !abort.load() && !thread_should_stop(threadID) &&  idle_thread_exists(threadID)
+               && !abort.load(std::memory_order_relaxed) && !thread_should_stop(threadID) &&  idle_thread_exists(threadID)
                && split(sBoard, false, pvDev+1, board.n_empty, selectivity,
                         alpha, (alpha + 1), bestscore, bestmove, list, threadID, RXSplitPoint::END_XPROBCUT)) {
              
@@ -1884,7 +1912,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
             
             if(board.n_empty < MIN_DEPTH_USE_ENDCUT) {
                 board.do_move(*iter);
-                score = -EG_PVS_ETC_mobility(threadID, sBoard, false, -alpha-1, -alpha, false);
+                score = -EG_PVS_ETC_mobility(threadID, board, false, -alpha-1, -alpha, false);
                 board.undo_move(*iter);
             } else {
                 sBoard.do_move(*iter);
@@ -1902,7 +1930,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
     
     
     //interrupt search
-    if(abort.load()  || thread_should_stop(threadID))
+    if(abort.load(std::memory_order_relaxed)  || thread_should_stop(threadID))
         return INTERRUPT_SEARCH;
     
     hTable->update(hash_code, board, type_hashtable, hash_select, hash_depth, alpha, bestscore, bestmove);
@@ -1932,7 +1960,7 @@ void RXEngine::EG_SP_search_XEndcut(RXSplitPoint* sp, const unsigned int threadI
     RXBitBoard& board = sBoard.board;
     
     //here sp->alpha is const
-    while(sp->bestscore <= sp->alpha && !abort.load()  && !thread_should_stop(threadID)) {
+    while(sp->bestscore.load(std::memory_order_relaxed) <= sp->alpha.load(std::memory_order_relaxed) && !abort.load(std::memory_order_relaxed)  && !thread_should_stop(threadID)) {
         
         RXMove* move = nullptr;
         {
@@ -1942,7 +1970,7 @@ void RXEngine::EG_SP_search_XEndcut(RXSplitPoint* sp, const unsigned int threadI
             sp->list = move;
         }
         
-        const int alpha = sp->alpha; //local copy
+        const int alpha = sp->alpha.load(std::memory_order_relaxed); //local copy
         
         sBoard.do_move(*move);
         int score = -EG_NWS_XEndCut(threadID, sBoard, sp->pvDev, sp->selectivity, -alpha-1, false);
@@ -1950,20 +1978,20 @@ void RXEngine::EG_SP_search_XEndcut(RXSplitPoint* sp, const unsigned int threadI
         
         
         //first without mutex
-        if(score > sp->bestscore) {
+        if(score > sp->bestscore.load(std::memory_order_relaxed)) {
             
             std::lock_guard<std::mutex> lk(sp->lock);
 
             //update SplitPoint
-            if(sp->explored == false) {
+            if(!sp->explored.load(std::memory_order_relaxed)) {
                 
                 
                 // New best move?
-                if(score > sp->bestscore) {
-                    sp->bestscore = score;
+                if(score > sp->bestscore.load(std::memory_order_relaxed)) {
+                    sp->bestscore.store(score, std::memory_order_relaxed);
                     sp->bestmove = move->position;
-                    if(score > sp->alpha) {
-                        sp->explored = true;
+                    if(score > sp->alpha.load(std::memory_order_relaxed)) {
+                        sp->explored.store(true, std::memory_order_release);
                     }
                 }
             }
@@ -2037,14 +2065,14 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
     } else if (board.n_empty < EG_MEDIUM_HI_TO_LOW) {
         bestscore = -EG_PVS_ETC_LTT(0, board, true, -upper, -lower, false);
     } else  if (board.n_empty < EG_DEEP_TO_MEDIUM) {
-        bestscore = -EG_PVS_ETC_mobility(0, sBoard, true, -upper, -lower, false);
+        bestscore = -EG_PVS_ETC_mobility(0, board, true, -upper, -lower, false);
     } else {
         bestscore = -EG_PVS_deep(0, sBoard, true, selectivity, -upper, -lower, false);
     }
 
     sBoard.undo_move(*iter);
     
-    if(!abort.load() && std::abs(bestscore) != INTERRUPT_SEARCH) {
+    if(!abort.load(std::memory_order_relaxed) && std::abs(bestscore) != INTERRUPT_SEARCH) {
         
         if(search_client == RXSearch::kGGSMode) {	// GGS mode
             
@@ -2063,12 +2091,12 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
         int score;
         first_move.store(false);
         
-        for (iter = iter->next; !abort.load()  && lower < upper && iter != nullptr; iter = iter->next) {
+        for (iter = iter->next; !abort.load(std::memory_order_relaxed)  && lower < upper && iter != nullptr; iter = iter->next) {
             
 #ifdef USE_SPLIT_AT_ROOT
             
             if(activeThreads > 1 && iter->next != nullptr && board.n_empty >= EG_DEEP_TO_MEDIUM
-               && !abort.load() && idle_thread_exists(0) && !thread_should_stop(0)
+               && !abort.load(std::memory_order_relaxed) && idle_thread_exists(0) && !thread_should_stop(0)
                && split(sBoard, true, 0, board.n_empty, selectivity,
                         lower, upper, bestscore, bestmove, iter, 0, RXSplitPoint::END_ROOT)) {
                 
@@ -2094,12 +2122,12 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
                 else if (board.n_empty < EG_MEDIUM_HI_TO_LOW)
                     score = -EG_PVS_ETC_LTT(0, board, false, -lower-1, -lower, false);
                 else if (board.n_empty < EG_DEEP_TO_MEDIUM)
-                    score = -EG_PVS_ETC_mobility(0, sBoard, false, -lower-1, -lower, false); //simple-PV pv == false ????
+                    score = -EG_PVS_ETC_mobility(0, board, false, -lower-1, -lower, false); //simple-PV pv == false ????
                 else
                     score = -EG_PVS_deep(0, sBoard, false, selectivity, -lower-1, -lower, false); //simple-PV pv == false ????
                 
                 
-                if (!abort.load() && board.n_empty > 4 && lower < score && score < upper) {
+                if (!abort.load(std::memory_order_relaxed) && board.n_empty > 4 && lower < score && score < upper) {
                     
                     if(search_client == RXSearch::kGGSMode) {	// GGS mode
                         
@@ -2113,14 +2141,14 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
                     else if (board.n_empty < EG_MEDIUM_HI_TO_LOW)
                         score = -EG_PVS_ETC_LTT(0, board, true, -upper, -score, false);
                     else if (board.n_empty < EG_DEEP_TO_MEDIUM)
-                        score = -EG_PVS_ETC_mobility(0, sBoard, true, -upper, -score, false);
+                        score = -EG_PVS_ETC_mobility(0, board, true, -upper, -score, false);
                     else {
                         ++extra_time;
                         //                        *log << "                  [extra time > :" << extra_time << "]" << std::endl;
                         
                         score = -EG_PVS_deep(0, sBoard, true, selectivity, -upper, -score, false);
                         
-                        if(search_client == RXSearch::kGGSMode && !abort.load()) {    // GGS mode
+                        if(search_client == RXSearch::kGGSMode && !abort.load(std::memory_order_relaxed)) {    // GGS mode
                             if(dependent_time && board.n_empty>19 && score <= bestscore)
                                 manager->sendMsg("         " + RXMove::index_to_coord(iter->position) + " refuted ");
                         }
@@ -2143,7 +2171,7 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
             sBoard.undo_move(*iter);
             
             
-            if (!abort.load()  && std::abs(score) != INTERRUPT_SEARCH) {
+            if (!abort.load(std::memory_order_relaxed)  && std::abs(score) != INTERRUPT_SEARCH) {
                 
                 if(score > bestscore) {
                     
@@ -2198,7 +2226,7 @@ void RXEngine::EG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
     RXBitBoard& board = sBoard.board;
     
     //here sp->beta is const
-    while(sp->alpha < sp->beta && !abort.load() && !thread_should_stop(threadID)) {
+    while(sp->alpha.load(std::memory_order_relaxed)< sp->beta && !abort.load(std::memory_order_relaxed) && !thread_should_stop(threadID)) {
         
         RXMove* move = nullptr;
         {
@@ -2208,14 +2236,14 @@ void RXEngine::EG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
             sp->list = move->next;
         }
 
-        const int alpha = sp->alpha; //local copy
+        const int alpha = sp->alpha.load(std::memory_order_relaxed); //local copy
         
         sBoard.do_move(*move);
         
         
         int score = -EG_PVS_deep(threadID, sBoard, false, sp->selectivity, -alpha-1, -alpha, false);
         
-        if (!(abort.load() || thread_should_stop(threadID)) && alpha < score && score < sp->beta) {
+        if (!(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID)) && alpha < score && score < sp->beta) {
             
             ++extra_time;
             
@@ -2223,12 +2251,12 @@ void RXEngine::EG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
                 manager->sendMsg("         " + RXMove::index_to_coord(move->position) + " maybe better? ");
             
             if(sp->selectivity != NO_SELECT)
-                score = -EG_PVS_deep(threadID, sBoard, true, sp->selectivity, -sp->beta, -sp->alpha, false);
+                score = -EG_PVS_deep(threadID, sBoard, true, sp->selectivity, -sp->beta, -sp->alpha.load(std::memory_order_relaxed), false);
             else
                 score = -EG_PVS_deep(threadID, sBoard, true, sp->selectivity, -sp->beta, -score, false);
             
-            if(search_client == RXSearch::kGGSMode && !(abort.load() || thread_should_stop(threadID))) {    // GGS mode
-                if(dependent_time && board.n_empty>19 && score <= sp->bestscore)
+            if(search_client == RXSearch::kGGSMode && !(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))) {    // GGS mode
+                if(dependent_time && board.n_empty>19 && score <= sp->bestscore.load(std::memory_order_relaxed))
                     manager->sendMsg("         " + RXMove::index_to_coord(move->position) + " refuted ");
             }
             
@@ -2240,26 +2268,26 @@ void RXEngine::EG_SP_search_root(RXSplitPoint* sp, const unsigned int threadID) 
         sBoard.undo_move(*move);
         
         //first without mutex
-        if(score > sp->bestscore) {
+        if(score > sp->bestscore.load(std::memory_order_relaxed)) {
             //update
             std::lock_guard<std::mutex> lk(sp->lock);
 
-            if(sp->explored == false) {
+            if(!sp->explored.load(std::memory_order_relaxed)) {
                 
                 // New best move?
-                if(score > sp->bestscore) {
-                    sp->bestscore = score;
+                if(score > sp->bestscore.load(std::memory_order_relaxed)) {
+                    sp->bestscore.store(score, std::memory_order_relaxed);
                     sp->bestmove = move->position;
                     
                     if(dependent_time && board.n_empty>19)
-                        manager->sendMsg(showBestmove(board.n_empty, sp->selectivity, sp->alpha, sp->beta, sp->bestscore, sp->bestmove));
+                        manager->sendMsg(showBestmove(board.n_empty, sp->selectivity, sp->alpha.load(std::memory_order_relaxed), sp->beta, sp->bestscore.load(std::memory_order_relaxed), sp->bestmove));
                     
-                    if(score > sp->alpha) {
+                    if(score > sp->alpha.load(std::memory_order_relaxed)) {
                         
                         if(score >= sp->beta) {
-                            sp->explored = true;
+                            sp->explored.store(true, std::memory_order_release);
                         } else {
-                            sp->alpha = score;
+                            sp->alpha.store(score, std::memory_order_relaxed);
                         }
                         
                     }
@@ -2318,9 +2346,9 @@ void RXEngine::EG_driver(RXBBPatterns& sBoard, int selectivity, int end_selectiv
     s_beta  = std::min( 64, s_beta);
     
 #ifdef SOLVER_DRIVER
-    for(selectivity = 2; !abort.load()  && selectivity <= end_selectivity; selectivity+=(selectivity == NO_SELECT? 1:(NO_SELECT-selectivity)))
+    for(selectivity = 2; !abort.load(std::memory_order_relaxed)  && selectivity <= end_selectivity; selectivity+=(selectivity == NO_SELECT? 1:(NO_SELECT-selectivity)))
 #else
-    for(; !abort.load()  && selectivity <= end_selectivity; selectivity++)
+    for(; !abort.load(std::memory_order_relaxed)  && selectivity <= end_selectivity; selectivity++)
 #endif
     {
         
@@ -2375,7 +2403,7 @@ void RXEngine::EG_driver(RXBBPatterns& sBoard, int selectivity, int end_selectiv
         int left = 2;
         int right = 2;
         
-        while (!abort.load() && !(alpha < score && score < beta)) {
+        while (!abort.load(std::memory_order_relaxed) && !(alpha < score && score < beta)) {
             
             //std::cout << "                  EG research : [" << alpha << " < " << list->next->score << " < " << beta << "]" <<std::endl;
             
@@ -2443,7 +2471,7 @@ void RXEngine::EG_driver(RXBBPatterns& sBoard, int selectivity, int end_selectiv
             
             score = list->next->score;
             if(entry.lower == entry.upper) {
-                if(abort.load())
+                if(abort.load(std::memory_order_relaxed))
                     type = INTERRUPT;
             } else if(list->next->score == entry.lower || entry.upper ==  MAX_SCORE) {
                 type = SUPERIOR;
@@ -2460,7 +2488,7 @@ void RXEngine::EG_driver(RXBBPatterns& sBoard, int selectivity, int end_selectiv
         
         //check PV at 100%
 #ifdef EG_CHECK_PV
-        if(!abort.load() && sBoard.board.n_empty-6 > 0 && selectivity == NO_SELECT && s_alpha <= list->next->score && list->next->score <= s_beta) {
+        if(!abort.load(std::memory_order_relaxed) && sBoard.board.n_empty-6 > 0 && selectivity == NO_SELECT && s_alpha <= list->next->score && list->next->score <= s_beta) {
             RXSearch::t_client save_client = search_client;
             search_client = RXSearch::kPrivate;
             EG_check_PV(search_sBoard, list->next->score);
@@ -2469,7 +2497,7 @@ void RXEngine::EG_driver(RXBBPatterns& sBoard, int selectivity, int end_selectiv
 #endif
 
         
-        if(abort.load() )
+        if(abort.load(std::memory_order_relaxed) )
             break;
         
         time_nextLevel = pTime_next_level(sBoard.board, eTime - eTime_start_level);

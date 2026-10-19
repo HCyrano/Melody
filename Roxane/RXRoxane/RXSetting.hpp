@@ -19,30 +19,25 @@
 #ifndef RXSETTING_HPP
 #define RXSETTING_HPP
 
-#define ARCH_X86_AVX2    0
-#define ARCH_ARM_NEON    1
-
-#ifndef ARCH
-    // 1. Détection des architectures x86 / x64
-    #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
-        #ifdef __AVX2__
-            #define ARCH ARCH_X86_AVX2
-        #else
-            // Sécurité absolue pour Windows / Linux : on refuse de compiler sans AVX2
-            #error "Erreur: AVX2 est le minimum requis pour cette architecture. Activez /arch:AVX2 sous MSVC ou -mavx2 sous GCC/Clang."
-        #endif
-
-    // 2. Détection des architectures ARM / ARM64
-    #elif defined(__aarch64__) || defined(_M_ARM64) || defined(__arm__) || defined(_M_ARM)
-        #define ARCH ARCH_ARM_NEON
-
-    // 3. Cas inconnu
+// 1. Détection des architectures x86 / x64
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+    #ifdef __AVX2__
+        #define ARCH_X86_AVX2
     #else
-        #error "Architecture non supportée (AVX2 ou ARM Neon requis)."
+        // Sécurité absolue pour Windows / Linux : on refuse de compiler sans AVX2
+        #error "Erreur: AVX2 est le minimum requis pour cette architecture. Activez /arch:AVX2 sous MSVC ou -mavx2 sous GCC/Clang."
     #endif
+
+// 2. Détection des architectures ARM / ARM64
+#elif defined(__aarch64__) || defined(_M_ARM64) || defined(__arm__) || defined(_M_ARM)
+    #define ARCH_ARM_NEON
+
+// 3. Cas inconnu
+#else
+    #error "Unsupported architecture (AVX2 or ARM Neon required)."
 #endif
 
-//login ON / OFF
+//logging ON / OFF
 #define LOGGING_ON
 
 //Matchs avec / sans alpha_cut 91/157/49 [297]
@@ -57,10 +52,37 @@
 #define USE_SPLIT_AT_ROOT
 
 //not efficient
+//--- Calculateur de Performance ELO + SPRT (W/D/L) ---
+//Nombre de Victoires (W) : 2073
+//Nombre de Nuls (D)      : 3927
+//Nombre de Défaites (L)  : 2000
+//--------------------------------------------------
+//Performance ELO : +3 pts
+//Incertitude (σ) : 6 pts
+//Plage de confiance (95%) : [-9 , 15]
+//--------------------------------------------------
+//SPRT (H0: Elo=0, H1: Elo=+5, α=0.05, β=0.05)
+//LLR        : 0.4365  (bornes : [-2.9444, 2.9444])
+//Progression: 57.4%  vers la décision
+//Verdict    : ⏳ INDÉCIS      — continuer les tests
+//--------------------------------------------------
 //#define PV_EXTENSION
 
 //LMR 10/20
-//ELO +13 ±8 LLR 3,1078 (4000 games)
+//--- Calculateur de Performance ELO + SPRT (W/D/L) ---
+//Nombre de Victoires (W) : 871
+//Nombre de Nuls (D)      : 2376
+//Nombre de Défaites (L)  : 753
+//--------------------------------------------------
+//Performance ELO : +10 pts
+//Incertitude (σ) : 7 pts
+//Plage de confiance (95%) : [-4 , 24]
+//--------------------------------------------------
+//SPRT (H0: Elo=0, H1: Elo=+5, α=0.05, β=0.05)
+//LLR        : 3.1691  (bornes : [-2.9444, 2.9444])
+//Progression: 103.8%  vers la décision
+//Verdict    : ✅ H1 ACCEPTÉE  — amélioration significative détectée
+//--------------------------------------------------
 #define USE_LMR
 
 #define USE_ETC
@@ -89,11 +111,16 @@
 
 // type of coefficients probcut
 //#define SIGMA_1ZONE
+//#define SIGMA_2ZONES
+#define SIGMA_3ZONES
+
+#if defined(SIGMA_1ZONE) + defined(SIGMA_2ZONES) + defined(SIGMA_3ZONES) != 1
+#error "Exactement une option SIGMA_xZONE doit être définie"
+#endif
+
 #ifdef SIGMA_1ZONE
 #define PROBCUT_x2 // undefined use PROBCUT_x3
 #endif
-//#define SIGMA_2ZONES
-#define SIGMA_3ZONES
 
 //factorisation machine
 #define FACT_MACH

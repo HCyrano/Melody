@@ -20,6 +20,7 @@
 
 #include <algorithm> //std::min
 #include <atomic>
+#include <cstdint>
 
 #include "RXTools.hpp"
 #include "RXConstantes.hpp"
@@ -27,9 +28,9 @@
 #include "RXPattern.hpp"
 #include "RXEvaluation.hpp"
 
-#if ARCH ==  ARCH_ARM_NEON
+#ifdef  ARCH_ARM_NEON
     #include <arm_neon.h>
-#elif ARCH == ARCH_X86_AVX2
+#elifdef ARCH_X86_AVX2
     #if defined(_MSC_VER)
         // Windows avec MSVC ou Clang-cl
         #include <intrin.h>
@@ -94,7 +95,7 @@ class RXBBPatterns {
     
     void reset();
     
-    double get_n_nodes() const { return board.get_n_nodes(); }
+    unsigned long long get_n_nodes() const { return board.get_n_nodes(); }
     int get_n_empty() const { return board.n_empty; }
     
     int final_score() const;
@@ -181,7 +182,7 @@ template <const bool UseFM = true,
           int FM_STAGE_SWAP = 33>
 inline int acc_score(const int   stage,
                           const int   color,
-                          const int*  __restrict p,
+                          const int*  RX_RESTRICT p,
                           const int   mob_Player,
                           const int   mob_Opponent,
                           const auto& tab_eval,
@@ -190,20 +191,20 @@ inline int acc_score(const int   stage,
 {
     using enum RXEvaluation::Feature;
     
-    const short* __restrict const mob_P  = tab_eval[MOB_P];
-    const short* __restrict const mob_O  = tab_eval[MOB_O];
-    const short* __restrict const diag5  = tab_eval[DIAG5];
-    const short* __restrict const diag6  = tab_eval[DIAG6];
-    const short* __restrict const diag7  = tab_eval[DIAG7];
-    const short* __restrict const diag8  = tab_eval[DIAG8];
-    const short* __restrict const edge1  = tab_eval[EDGE1];
-    const short* __restrict const edge2  = tab_eval[EDGE2];
-    const short* __restrict const edge3  = tab_eval[EDGE3];
-    const short* __restrict const edge4  = tab_eval[EDGE4];
-    const short* __restrict const hv2    = tab_eval[HV2];
-    const short* __restrict const hv3    = tab_eval[HV3];
-    const short* __restrict const hv4    = tab_eval[HV4];
-    const short* __restrict const corner = tab_eval[CORNER];
+    const short* RX_RESTRICT const mob_P  = tab_eval[MOB_P];
+    const short* RX_RESTRICT const mob_O  = tab_eval[MOB_O];
+    const short* RX_RESTRICT const diag5  = tab_eval[DIAG5];
+    const short* RX_RESTRICT const diag6  = tab_eval[DIAG6];
+    const short* RX_RESTRICT const diag7  = tab_eval[DIAG7];
+    const short* RX_RESTRICT const diag8  = tab_eval[DIAG8];
+    const short* RX_RESTRICT const edge1  = tab_eval[EDGE1];
+    const short* RX_RESTRICT const edge2  = tab_eval[EDGE2];
+    const short* RX_RESTRICT const edge3  = tab_eval[EDGE3];
+    const short* RX_RESTRICT const edge4  = tab_eval[EDGE4];
+    const short* RX_RESTRICT const hv2    = tab_eval[HV2];
+    const short* RX_RESTRICT const hv3    = tab_eval[HV3];
+    const short* RX_RESTRICT const hv4    = tab_eval[HV4];
+    const short* RX_RESTRICT const corner = tab_eval[CORNER];
     
     // -------------------------------------------------------------------------
     // Precomputed indices (Calculated once, reused by both linear and FM stages)
@@ -215,15 +216,15 @@ inline int acc_score(const int   stage,
     const unsigned long long maskD = filled & 0x8040000000004080ULL;
     
     // Selection of branch-friendly table
-    const short* __restrict const edgeA = maskA? edge1 : edge2;
-    const short* __restrict const edgeB = maskB? edge1 : edge2;
-    const short* __restrict const edgeC = maskC? edge1 : edge2;
-    const short* __restrict const edgeD = maskD? edge1 : edge2;
+    const short* RX_RESTRICT const edgeA = maskA? edge1 : edge2;
+    const short* RX_RESTRICT const edgeB = maskB? edge1 : edge2;
+    const short* RX_RESTRICT const edgeC = maskC? edge1 : edge2;
+    const short* RX_RESTRICT const edgeD = maskD? edge1 : edge2;
     
     
     const int mask = color >> 31;   // 0x00000000 si color=+1, 0xFFFFFFFF si color=-1
     
-#if ARCH ==  ARCH_ARM_NEON
+#ifdef  ARCH_ARM_NEON
     
     // ── Calcul SIMD des (50+2) 50 cp = (patt[i] ^ mask) - mask ────────────────
     // patt[] est int[64], on charge en int32x4, on XOR+SUB vectoriellement
@@ -281,7 +282,7 @@ inline int acc_score(const int   stage,
     const int cp48 = vgetq_lane_s32(vcp48_51,  0), cp49 = vgetq_lane_s32(vcp48_51,  1);
     //    const int cp50 = vgetq_lane_s32(vcp48_51,  2), cp51 = vgetq_lane_s32(vcp48_51,  3); //padding
 
-#elif ARCH == ARCH_X86_AVX2
+#elifdef ARCH_X86_AVX2
 
     // ── Calcul AVX2 des 50 cp = (patt[i] ^ mask) - mask ──────────────────────
     // AVX2 traite 8 int32 à la fois (256 bits / 32 bits)
@@ -390,7 +391,7 @@ inline int acc_score(const int   stage,
             
             eval += RXEvaluation::eval_w0[stage];
             
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
             
             // OPTIMIZATION
             // Version 1
@@ -413,7 +414,7 @@ inline int acc_score(const int   stage,
             int32x4_t sumsq_2 = vdupq_n_s32(0);
             int32x4_t sumsq_3 = vdupq_n_s32(0);
             
-            auto acc = [&] RX_LAMBDA_INLINE (const Vec_short* __restrict V, int idx) {
+            auto acc = [&] RX_LAMBDA_INLINE (const Vec_short* RX_RESTRICT V, int idx) {
                 const Vec_short& v_ref = V[idx];
                 
                 // accumulation (48 fois) :
@@ -429,7 +430,7 @@ inline int acc_score(const int   stage,
                 
             };
             
-#elif ARCH == ARCH_X86_AVX2
+#elifdef ARCH_X86_AVX2
 
             // RANK=16 : sum_vx et sum_vx_sq en 2 registres __m256i (16 × int16)
             // sum en int16 (bounds garantis par la conception des vecteurs latents)
@@ -439,7 +440,7 @@ inline int acc_score(const int   stage,
             __m256i sumsq_0 = _mm256_setzero_si256();  // 8  × int32 : -Σ x_i² lanes 0..7
             __m256i sumsq_1 = _mm256_setzero_si256();  // 8  × int32 : -Σ x_i² lanes 8..15
             
-            auto acc = [&] RX_LAMBDA_INLINE (const Vec_short* __restrict V, int idx) {
+            auto acc = [&] RX_LAMBDA_INLINE (const Vec_short* RX_RESTRICT V, int idx) {
                 const Vec_short& v_ref = V[idx];
                 
                 // sumsq -= x² (équivalent NEON version 2 : sumsq = -Σx²)
@@ -483,10 +484,10 @@ inline int acc_score(const int   stage,
             
             
             // Selection of branch-friendly table
-            const Vec_short* __restrict const vEdgeA = maskA ? vEdge1 : vEdge2;
-            const Vec_short* __restrict const vEdgeB = maskB ? vEdge1 : vEdge2;
-            const Vec_short* __restrict const vEdgeC = maskC ? vEdge1 : vEdge2;
-            const Vec_short* __restrict const vEdgeD = maskD ? vEdge1 : vEdge2;
+            const Vec_short* RX_RESTRICT const vEdgeA = maskA ? vEdge1 : vEdge2;
+            const Vec_short* RX_RESTRICT const vEdgeB = maskB ? vEdge1 : vEdge2;
+            const Vec_short* RX_RESTRICT const vEdgeC = maskC ? vEdge1 : vEdge2;
+            const Vec_short* RX_RESTRICT const vEdgeD = maskD ? vEdge1 : vEdge2;
             
             
             // mobilités
@@ -510,7 +511,7 @@ inline int acc_score(const int   stage,
             acc(vCorner,cp46); acc(vCorner,cp47); acc(vCorner,cp48); acc(vCorner,cp49);
             
             
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
             
 
             // widening multiply-accumulate depuis int16 (sum est encore int16x8_t)
@@ -526,7 +527,7 @@ inline int acc_score(const int   stage,
                                                       vaddq_s32(res2, res3))
                                             );
 
-#elif ARCH == ARCH_X86_AVX2
+#elifdef ARCH_X86_AVX2
             
             // Étape 1 : sq via madd (évite cvtepi16 + mullo)
             // sum est __m256i int16 → on travaille directement dessus
@@ -589,7 +590,7 @@ inline int RXBBPatterns::get_score() const
     
     const unsigned long long filled = board.discs[board.player] | board.discs[board.player^1];
 
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
 
     uint64x2_t mob  = board.dual_count_legal_moves();
     const int mob_P = std::min(23, (int)vgetq_lane_u64(mob, 0));
@@ -635,7 +636,7 @@ inline int RXBBPatterns::get_score(const RXMove& move) const
     
     const unsigned long long filled = discs_player | discs_opponent;
 
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
 
     uint64x2_t mob  = RXBitBoard::dual_count_legal_moves(discs_player, discs_opponent);
     const int mob_P = std::min(23, (int)vgetq_lane_u64(mob, 0));

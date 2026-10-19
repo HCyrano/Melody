@@ -18,6 +18,8 @@
 #include <iostream> // pour std::cout eventuel
 #include <sstream>
 #include <algorithm>
+#include <cstdint>
+
 
 #include "RXHashTable.hpp"
 #include "RXEngine.hpp"
@@ -46,18 +48,21 @@ RXHashValue::RXHashValue(unsigned long long packed) {
 
 RXHashTable::RXHashTable(unsigned int nBitsTable) : table(0),  _shared(true) {
 
+    const size_t size = size_t{1} << nBitsTable;
+    const size_t half = size >> 1;                 // = 1 << (nBitsTable-1), sans le risque si nBitsTable == 0
+
     _offsetTable[HASH_SHARED] = 0;
-    _offsetTable[HASH_BLACK] = 0;
-    _offsetTable[HASH_WHITE] = 1<<(nBitsTable-1);
-    
-    _maskTable[HASH_SHARED] = (1<<nBitsTable)-1;
-    _maskTable[HASH_BLACK] = (1<<(nBitsTable-1))-1;
-    _maskTable[HASH_WHITE] = (1<<(nBitsTable-1))-1;
-    
-    table.resize(1UL<<nBitsTable);
-         
+    _offsetTable[HASH_BLACK]  = 0;
+    _offsetTable[HASH_WHITE]  = half;
+
+    _maskTable[HASH_SHARED] = size - 1;
+    _maskTable[HASH_BLACK]  = half - 1;
+    _maskTable[HASH_WHITE]  = half - 1;
+
+    table.resize(size);
+
     date[0] = date[1] = 0;
-    
+
     
 }
 
@@ -101,8 +106,8 @@ void RXHashTable::reset() {
 void RXHashTable::update(const unsigned long long hash_code, const RXBitBoard& board, const t_hash type_hashtable,
                          const unsigned char selectivity, const unsigned char depth, const int alpha, const int beta, const int score, const char move) {
 
-    const unsigned int base_date = date[_shared ? 0 : (type_hashtable == HASH_WHITE ? WHITE : BLACK)];
-    unsigned int _date = base_date;
+    const unsigned char base_date = date[_shared ? 0 : (type_hashtable == HASH_WHITE ? WHITE : BLACK)];
+    unsigned char _date = base_date;
     
     if(alpha < score && score < beta)
         ++_date; // bonus pour score exact
@@ -486,7 +491,7 @@ void RXHashTable::copyPV(RXBitBoard& board, const t_hash from_hashtable, const t
             
             // 1. Calcul de l'index de destination
             const unsigned long long hash_code = board.hashcode();
-            const uint32_t idx = _offsetTable[to_hashtable] | (static_cast<unsigned int>(hash_code >> 32) & _maskTable[to_hashtable]);
+            const uint64_t idx = _offsetTable[to_hashtable] | (static_cast<unsigned int>(hash_code >> 32) & _maskTable[to_hashtable]);
             RXHashEntry& entry_to = table[idx];
             
             // 2. Verrouillage de l'entrée de destination
@@ -536,7 +541,7 @@ void RXHashTable::copyPV(RXHashTable* from_hash, const t_hash from_type_hash, RX
             
             // 1. Calcul de l'index de destination
             const unsigned long long hash_code = board.hashcode();
-            const uint32_t idx = _offsetTable[to_type_hash] | (static_cast<unsigned int>(hash_code >> 32) & _maskTable[to_type_hash]);
+            const uint64_t idx = _offsetTable[to_type_hash] | (static_cast<unsigned int>(hash_code >> 32) & _maskTable[to_type_hash]);
             RXHashEntry& entry_to = table[idx];
             
             // 2. Verrouillage de l'entrée de destination

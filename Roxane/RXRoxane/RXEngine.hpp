@@ -35,7 +35,7 @@
 #include <cstddef>
 #include <array>
 
-
+#include "RXSetting.hpp"
 #include "RXBBPatterns.hpp"
 #include "RXBitBoard.hpp"
 #include "RXMove.hpp"
@@ -98,8 +98,9 @@ public:
     int pvDev;
     int depth;
     int selectivity;
-    int alpha, beta, bestscore, bestmove;
+    int beta, bestmove;
     
+    std::atomic<int> alpha, bestscore;
     
     mutable std::mutex lock;
     
@@ -107,44 +108,50 @@ public:
     unsigned int master;
     std::atomic<unsigned int> n_Slaves;
     
-    std::vector<bool>  slaves;
+    unsigned int maxThreads;
+    std::unique_ptr<std::atomic<bool>[]> slaves;
     
     std::atomic_bool explored;
     
-    RXSplitPoint(int maxThreads) : parent(nullptr), sBoard(nullptr), sBoardStack(maxThreads), slaves(maxThreads),
-    list(nullptr) {
+    RXSplitPoint(unsigned int _maxThreads)
+        : parent(nullptr), sBoard(nullptr), sBoardStack(_maxThreads),
+          list(nullptr), maxThreads(_maxThreads),
+          slaves(std::make_unique<std::atomic<bool>[]>(_maxThreads))
+    {
         n_Slaves = 0;
         explored = false;
+        for (unsigned int i = 0; i < _maxThreads; ++i)
+            slaves[i].store(false, std::memory_order_relaxed);
     }
-    
-    // Copy constructor — called once at init by std::vector(count, value), never at runtime
+
+    // Copy constructor — appelé une seule fois à l'init par vector(count, value)
     RXSplitPoint(const RXSplitPoint& o) :
         parent(o.parent), sBoard(o.sBoard), sBoardStack(o.sBoardStack),
         list(o.list), CBSearch(o.CBSearch),
         pv(o.pv), pvDev(o.pvDev), depth(o.depth), selectivity(o.selectivity),
-        alpha(o.alpha), beta(o.beta), bestscore(o.bestscore), bestmove(o.bestmove),
+        alpha(o.alpha.load()), beta(o.beta), bestscore(o.bestscore.load()), bestmove(o.bestmove),
         master(o.master), n_Slaves(o.n_Slaves.load()),
-        slaves(o.slaves), explored(o.explored.load())
+        maxThreads(o.maxThreads),
+        slaves(std::make_unique<std::atomic<bool>[]>(o.maxThreads)),
+        explored(o.explored.load())
     {
-        // lock est reconstruit par défaut plutôt que copié — correct,
-        // std::mutex n'est de toute façon pas copiable
+        for (unsigned int i = 0; i < maxThreads; ++i)
+            slaves[i].store(o.slaves[i].load(std::memory_order_relaxed), std::memory_order_relaxed);
     }
-    
-    // Move constructor
-    // Uses std::move() on vectors to transfer memory without copying (more efficient)
-    // noexcept is required so that STL containers (std::vector) can use this constructor during reallocation
+
+    // Move constructor — noexcept requis pour vector<RXSplitPoint>
     RXSplitPoint(RXSplitPoint&& o) noexcept :
         parent(o.parent), sBoard(o.sBoard), sBoardStack(std::move(o.sBoardStack)),
         list(o.list), CBSearch(o.CBSearch),
         pv(o.pv), pvDev(o.pvDev), depth(o.depth), selectivity(o.selectivity),
-        alpha(o.alpha), beta(o.beta), bestscore(o.bestscore), bestmove(o.bestmove),
+        alpha(o.alpha.load()), beta(o.beta), bestscore(o.bestscore.load()), bestmove(o.bestmove),
         master(o.master), n_Slaves(o.n_Slaves.load()),
-        slaves(std::move(o.slaves)), explored(o.explored.load())
+        maxThreads(o.maxThreads),
+        slaves(std::move(o.slaves)),        // déplacement du pointeur, trivial, noexcept
+        explored(o.explored.load())
     {
-        // std::mutex n'est pas déplaçable non plus : lock reste simplement
-        // un mutex neuf construit par défaut, comme dans le copy constructor.
     }
-
+    
     // Required by std::vector<RXSplitPoint>, never called at runtime
     RXSplitPoint& operator=(const RXSplitPoint&) = delete;
     
@@ -170,7 +177,7 @@ public:
     
     RXSplitPoint* splitPoint;
     
-    unsigned int activeSplitPoints;
+    std::atomic<unsigned int> activeSplitPoints;
     
     //non copiableAssignable, mais il n'y a pas de redimensionnenent (semble fonctionner)
     //soluce : remplacer le vector par un tableau static a taille fixe :-(
@@ -198,7 +205,7 @@ public:
     // Déplaçable pour permettre emplace_back
     RXThread(RXThread&& o) noexcept :
         splitPoint(o.splitPoint),
-        activeSplitPoints(o.activeSplitPoints),
+        activeSplitPoints(o.activeSplitPoints.load()),
         splitPointStack(std::move(o.splitPointStack)),
         state(o.state.load())
     {
@@ -376,8 +383,8 @@ class RXEngine: public Runnable {
 
 public :
     static constexpr int EG_DEEP_TO_MEDIUM = 17;
-    static constexpr int EG_MEDIUM_HI_TO_LOW = 14;
-    static constexpr int EG_MEDIUM_TO_SHALLOW = 7; //8
+    static constexpr int EG_MEDIUM_HI_TO_LOW = 13; //14
+    static constexpr int EG_MEDIUM_TO_SHALLOW = 7;
     static constexpr int MIN_DEPTH_USE_ENDCUT = 16;
 
 private:
@@ -398,11 +405,11 @@ private:
     int  EG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int selectivity, const int alpha, const int beta, const bool passed);
     void EG_SP_search_DEEP(RXSplitPoint* sp, const unsigned int threadID);
     
-    int EG_PVS_ETC_mobility(const unsigned int threadID, RXBBPatterns& sBoard, const bool pv, const int alpha, const int beta, const bool passed);
+    int EG_PVS_ETC_mobility(const unsigned int threadID, RXBitBoard& board, const bool pv, const int alpha, const int beta, const bool passed);
     
     int EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, const int alpha, const int beta, const bool passed);
     int EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, const int alpha, const int beta, const bool passed);
-    int EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board, int alpha, int beta, const bool passed);
+    int EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board, const int alpha, const int beta, const bool passed);
     
     int EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, const int pvDev, const int selectivity, const int alpha, const bool passed);
     void EG_SP_search_XEndcut(RXSplitPoint* sp, const unsigned int threadID);
@@ -442,7 +449,10 @@ private:
     bool split(RXBBPatterns& sBoard, bool pv, int pvDev,
                int depth, int selectivity, int alpha, int beta, int& bestscore, unsigned int& bestmove,
                RXMove* list, unsigned int master, RXSplitPoint::t_callBackSearch callback);
-   
+
+    
+#ifdef SIGMA_3ZONES
+
     // Table de lookup statique (partagée par toutes les instances)
     struct alignas(64) WeightLUT {
         static constexpr int MAX_EMPTY = 60;
@@ -471,7 +481,8 @@ private:
     
     // Instance statique unique de la table
     static inline const WeightLUT s_weight_lut;
-
+    
+#endif
     
 public:
     
@@ -563,7 +574,7 @@ inline int RXEngine::time_limit() const {
 
 #ifdef SIGMA_3ZONES
 
-#if ARCH == ARCH_ARM_NEON
+#ifdef ARCH_ARM_NEON
 
 //borner sur [2.7f : 30.0f]
 inline float RXEngine::sigma(const int n_empty, const int depth, const int depth_probcut) const {
@@ -572,13 +583,13 @@ inline float RXEngine::sigma(const int n_empty, const int depth, const int depth
     constexpr int mid   = 1;
     constexpr int end   = 2;
     
-    alignas(16) constexpr float probcut_a[] = {0.29736871, 0.09169649, 0.41091810, 0.0f};
-    alignas(16) constexpr float probcut_b[] = {-0.15243659, -0.08251643, -0.44106809, 0.0f};
-    alignas(16) constexpr float probcut_c[] = {0.36970516, 0.08281715, -0.00975311, 0.0f};
-    alignas(16) constexpr float probcut_d[] = {0.01847852, 1.44446884, 0.06738396, 0.0f};
-    alignas(16) constexpr float probcut_e[] = {-1.10292167, -15.87003934, -0.77841377, 0.0f};
-    alignas(16) constexpr float probcut_f[] = {21.26408154, 57.60294113, 2.90508020, 0.0f};
-    alignas(16) constexpr float probcut_g[] = {-130.30442704, -69.06822646, 8.92764751, 0.0f};
+    alignas(16) constexpr float probcut_a[] = {0.29736871f, 0.09169649f, 0.41091810f, 0.0f};
+    alignas(16) constexpr float probcut_b[] = {-0.15243659f, -0.08251643f, -0.44106809f, 0.0f};
+    alignas(16) constexpr float probcut_c[] = {0.36970516f, 0.08281715f, -0.00975311f, 0.0f};
+    alignas(16) constexpr float probcut_d[] = {0.01847852f, 1.44446884f, 0.06738396f, 0.0f};
+    alignas(16) constexpr float probcut_e[] = {-1.10292167f, -15.87003934f, -0.77841377f, 0.0f};
+    alignas(16) constexpr float probcut_f[] = {21.26408154f, 57.60294113f, 2.90508020f, 0.0f};
+    alignas(16) constexpr float probcut_g[] = {-130.30442704f, -69.06822646f, 8.92764751f, 0.0f};
 
     
     // Récupérer les poids depuis la LUT
@@ -745,7 +756,7 @@ inline float RXEngine::sigma(const int n_empty, const int depth, const int depth
     float w_end   = 1.0 - s1;
 
     // Fonction polynomiale par zone
-    auto sigma = [&](int i) RX_LAMBDA_INLINE {
+    auto sigma = [&] RX_LAMBDA_INLINE (int i) {
         float r = probcut_a[i] * n_empty + probcut_b[i] * depth_probcut + probcut_c[i] * depth;
         return probcut_d[i] * r * r * r +
                probcut_e[i] * r * r +
@@ -882,7 +893,7 @@ inline bool RXEngine::thread_should_stop(unsigned int threadID) {
     RXSplitPoint* sp = threads[threadID].splitPoint;
     
     //emptie loop
-    while(sp != nullptr && sp->explored == false)
+    while(sp != nullptr && !sp->explored.load(std::memory_order_relaxed))
         sp = sp->parent;
     
     return sp != nullptr;
