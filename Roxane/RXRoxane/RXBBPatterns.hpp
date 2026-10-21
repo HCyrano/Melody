@@ -65,7 +65,7 @@ class RXBBPatterns {
 #undef func
     
     static type_update_patterns const update_patterns[][2];
-
+    
 
     public :
 
@@ -179,12 +179,13 @@ inline int RXBBPatterns::final_score() const {
 template <const bool UseFM = true,
           int FM_STAGE_MIN  = 9,
           int FM_STAGE_MAX  = 55,
-          int FM_STAGE_SWAP = 33>
+          int FM_STAGE_SWAP = 33,
+          unsigned int MOB_MAX = 23>
 inline int acc_score(const int   stage,
                           const int   color,
                           const int*  RX_RESTRICT p,
-                          const int   mob_Player,
-                          const int   mob_Opponent,
+                          unsigned int   mob_Player,
+                          unsigned int   mob_Opponent,
                           const auto& tab_eval,
                           const unsigned long long filled
                      )
@@ -353,6 +354,9 @@ inline int acc_score(const int   stage,
     const int cp46 = cp(46), cp47 = cp(47), cp48 = cp(48), cp49 = cp(49);
     
 #endif
+    
+    mob_Player   = std::min(MOB_MAX, mob_Player);
+    mob_Opponent = std::min(MOB_MAX, mob_Opponent);
     
     // -------------------------------------------------------------------------
     // Linear Evaluation: Standard weight accumulation for mobility and patterns
@@ -593,15 +597,15 @@ inline int RXBBPatterns::get_score() const
 #ifdef ARCH_ARM_NEON
 
     uint64x2_t mob  = board.dual_count_legal_moves();
-    const int mob_P = std::min(23, (int)vgetq_lane_u64(mob, 0));
-    const int mob_O = std::min(23, (int)vgetq_lane_u64(mob, 1));
+    int mob_P = static_cast<unsigned int>(vgetq_lane_u64(mob, 0));
+    int mob_O = static_cast<unsigned int>(vgetq_lane_u64(mob, 1));
 
 #else
     
     unsigned int mob_P = 0;
     unsigned int mob_O = 0;
     board.dual_count_legal_moves(mob_P, mob_O);
-    
+
 #endif
 
     return acc_score<UseFM>(stage, color, pattern->patt,
@@ -639,8 +643,8 @@ inline int RXBBPatterns::get_score(const RXMove& move) const
 #ifdef ARCH_ARM_NEON
 
     uint64x2_t mob  = RXBitBoard::dual_count_legal_moves(discs_player, discs_opponent);
-    const int mob_P = std::min(23, (int)vgetq_lane_u64(mob, 0));
-    const int mob_O = std::min(23, (int)vgetq_lane_u64(mob, 1));
+    unsigned int mob_P = static_cast<unsigned int>(vgetq_lane_u64(mob, 0));
+    unsigned int mob_O = static_cast<unsigned int>(vgetq_lane_u64(mob, 1));
 
 #else
     
