@@ -396,79 +396,51 @@ inline int acc_score(const int   stage,
             eval += RXEvaluation::eval_w0[stage];
             
 #ifdef ARCH_ARM_NEON
-            
-            // OPTIMIZATION
-            // Version 1
-            // sumsq += x²   (48×)
-            // res = -sumsq + sum² /* 4 instructions vnegq_s32 */
-            //     = -Σx² + sum²
-            
-            // Version 2
-            // sumsq -= x²   (48×)  →  sumsq = -Σx²
-            // res = sumsq + sum²
-            //     = -Σx² + sum²
-            
+                         
             // OPTIMIZATION: Total accumulated sum remains within the short integer bounds.
             // Ensure this holds true after any changes to the latent vectors.
             int16x8_t sum_lo = vdupq_n_s16(0);   // lanes 0..7
             int16x8_t sum_hi = vdupq_n_s16(0);   // lanes 8..15
             
-            int32x4_t sumsq_0 = vdupq_n_s32(0);
-            int32x4_t sumsq_1 = vdupq_n_s32(0);
-            int32x4_t sumsq_2 = vdupq_n_s32(0);
-            int32x4_t sumsq_3 = vdupq_n_s32(0);
+            int sum_norm2 = 0;
             
             auto acc = [&] RX_LAMBDA_INLINE (const Vec_short* RX_RESTRICT V, int idx) {
                 const Vec_short& v_ref = V[idx];
                 
-                // accumulation (48 fois) :
-                sumsq_0 = vsubq_s32(sumsq_0, vld1q_s32(v_ref.squares    ));
-                sumsq_1 = vsubq_s32(sumsq_1, vld1q_s32(v_ref.squares + 4));
-                sumsq_2 = vsubq_s32(sumsq_2, vld1q_s32(v_ref.squares + 8));
-                sumsq_3 = vsubq_s32(sumsq_3, vld1q_s32(v_ref.squares +12));
-
                 // OPTIMIZATION: Total accumulated sum remains within the short integer bounds.
                 // Ensure this holds true after any changes to the latent vectors.
                 sum_lo = vaddq_s16(sum_lo, vld1q_s16(v_ref.data    ));
                 sum_hi = vaddq_s16(sum_hi, vld1q_s16(v_ref.data + 8));
                 
+                sum_norm2 += v_ref.norm2;
+                
             };
             
 #elifdef ARCH_X86_AVX2
 
-            // RANK=16 : sum_vx et sum_vx_sq en 2 registres __m256i (16 × int16)
-            // sum en int16 (bounds garantis par la conception des vecteurs latents)
-            // sumsq en int32 pour éviter l'overflow (50 acc × valeurs int16²)
-            
-            __m256i sum     = _mm256_setzero_si256();  // 16 × int16 : Σ x_i
-            __m256i sumsq_0 = _mm256_setzero_si256();  // 8  × int32 : -Σ x_i² lanes 0..7
-            __m256i sumsq_1 = _mm256_setzero_si256();  // 8  × int32 : -Σ x_i² lanes 8..15
-            
+            // RANK=16 : somme des vecteurs latents en int16 (bornes garanties par la conception des V)
+            // Σ_i ‖v_i‖² accumulé en scalaire (norm2 précalculé au chargement)
+            __m256i sum = _mm256_setzero_si256();   // 16 × int16 : Σ x_i
+            int sum_norm2 = 0;                      // Σ_i Σ_r x_ir²
+
             auto acc = [&] RX_LAMBDA_INLINE (const Vec_short* RX_RESTRICT V, int idx) {
                 const Vec_short& v_ref = V[idx];
-                
-                // sumsq -= x² (équivalent NEON version 2 : sumsq = -Σx²)
-                sumsq_0 = _mm256_sub_epi32(sumsq_0, _mm256_loadu_si256((__m256i*)(v_ref.squares    )));
-                sumsq_1 = _mm256_sub_epi32(sumsq_1, _mm256_loadu_si256((__m256i*)(v_ref.squares + 8)));
-                
-                // sum += x (int16 × 16)
-                sum     = _mm256_add_epi16(sum, _mm256_loadu_si256((__m256i*)v_ref.data));
+                sum = _mm256_add_epi16(sum, _mm256_loadu_si256((const __m256i*)v_ref.data));
+                sum_norm2 += v_ref.norm2;
             };
-
             
 #else
             
-            int sum_vx[RANK]    = {};
-            int sum_vx_sq[RANK] = {};
-            
+            int sum_vx[RANK] = {};   // Σ_i x_ir, par composante r (int32)
+            int sum_norm2    = 0;    // Σ_i ‖v_i‖²
+
             auto acc = [&](const Vec_short* V, int idx) RX_LAMBDA_INLINE {
                 const Vec_short& vec = V[idx];
-                for (unsigned int f = 0; f < RANK; ++f) {
-                    sum_vx[f]    += vec.data[f];    // Addition simple
-                    sum_vx_sq[f] += vec.squares[f]; // Addition simple (plus de multiplication !)
-                }
+                for (unsigned int r = 0; r < RANK; ++r)
+                    sum_vx[r] += vec.data[r];
+                sum_norm2 += vec.norm2;
             };
-            
+
 #endif  // __ARM_NEON
             
             const Vec_short* const& vMob_P  = RXEvaluation::gVMob_P[id];
@@ -521,40 +493,28 @@ inline int acc_score(const int   stage,
             // widening multiply-accumulate depuis int16 (sum est encore int16x8_t)
             // vmlal_s16 : res += (int16 * int16) avec widening automatique
             // Optimisation : vmlal_high_s16 évite les vget_high
-            int32x4_t res0 = vmlal_s16     (sumsq_0, vget_low_s16(sum_lo), vget_low_s16(sum_lo));
-            int32x4_t res1 = vmlal_high_s16(sumsq_1, sum_lo, sum_lo);   // ← smlal2
-            int32x4_t res2 = vmlal_s16     (sumsq_2, vget_low_s16(sum_hi), vget_low_s16(sum_hi));
-            int32x4_t res3 = vmlal_high_s16(sumsq_3, sum_hi, sum_hi);   // ← smlal2
-
-            int fm_interaction = vaddvq_s32(
-                                            vaddq_s32(vaddq_s32(res0, res1),
-                                                      vaddq_s32(res2, res3))
-                                            );
-
+            int32x4_t r = vmull_s16(vget_low_s16(sum_lo), vget_low_s16(sum_lo));
+            r = vmlal_high_s16(r, sum_lo, sum_lo);
+            r = vmlal_s16(r, vget_low_s16(sum_hi), vget_low_s16(sum_hi));
+            r = vmlal_high_s16(r, sum_hi, sum_hi);
+            int fm_interaction = vaddvq_s32(r) - sum_norm2;
+            
 #elifdef ARCH_X86_AVX2
             
-            // Étape 1 : sq via madd (évite cvtepi16 + mullo)
-            // sum est __m256i int16 → on travaille directement dessus
+            // sq[i] = sum[2i]² + sum[2i+1]²  (8 × int32)
             __m256i sq = _mm256_madd_epi16(sum, sum);
-            // sq contient 8×int32 : sq[i] = sum[2i]² + sum[2i+1]²
 
-            // Étape 2 : fusionner sumsq (sumsq_0 et sumsq_1 doivent être sur 8 lanes chacun)
-            __m256i sumsq = _mm256_add_epi32(sumsq_0, sumsq_1);
-
-            // Étape 3 : res = sq + sumsq
-            __m256i res = _mm256_add_epi32(sq, sumsq);
-
-            // Étape 4 : réduction (inchangée, déjà optimale sur Intel)
-            __m128i r = _mm_add_epi32(_mm256_castsi256_si128(res),
-                                        _mm256_extracti128_si256(res, 1));
+            // réduction horizontale
+            __m128i r = _mm_add_epi32(_mm256_castsi256_si128(sq),
+                                      _mm256_extracti128_si256(sq, 1));
             r = _mm_add_epi32(r, _mm_shuffle_epi32(r, 0x4E));
             r = _mm_add_epi32(r, _mm_shuffle_epi32(r, 0xB1));
-            int fm_interaction = _mm_cvtsi128_si32(r);
-            
+
+            int fm_interaction = _mm_cvtsi128_si32(r) - sum_norm2;
 #else
-            int fm_interaction = 0;
-            for (unsigned int f = 0; f < RANK; ++f)
-                fm_interaction += sum_vx[f] * sum_vx[f] - sum_vx_sq[f];
+            int fm_interaction = -sum_norm2;
+            for (unsigned int r = 0; r < RANK; ++r)
+                fm_interaction += sum_vx[r] * sum_vx[r];
 #endif
             
             //eval += ((fm_interaction/2)+128) / 256;

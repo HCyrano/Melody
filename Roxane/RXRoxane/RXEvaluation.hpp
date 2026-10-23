@@ -31,12 +31,13 @@
 static constexpr unsigned int RANK = 16;
 
 struct alignas(64) Vec_short {
-    int squares[RANK]; // Precomputed square of each factor:
+    int norm2; // Σ_r data[r]²:
     short data[RANK];
     
     //short& operator[](int i)             { return data[i]; }
     const short& operator[](int i) const { return data[i]; }
 };
+static_assert(sizeof(Vec_short) == 64, "Vec_short doit tenir sur une ligne de cache");
 
 #endif
 

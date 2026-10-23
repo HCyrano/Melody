@@ -26,7 +26,7 @@
 class RXHashShallow {
     
     std::vector<RXHashEntry> table;
-    unsigned long _maskTable;
+    unsigned long long _maskTable;
     
     unsigned char date;
     

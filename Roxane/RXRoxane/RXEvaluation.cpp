@@ -16,6 +16,9 @@
  */
 
 #include <fstream>
+#include <iomanip>
+#include <cmath>
+#include <algorithm>
 
 #include "RXEvaluation.hpp"
 
@@ -79,7 +82,7 @@ void RXEvaluation::load() {
 
     // Après load(), pour chaque feature :
     for (Feature f : all_features) {
-        iint interval = (f == MOB_P || f == MOB_O) ? 0 : sizes[f] / 2;;
+        int interval = (f == MOB_P || f == MOB_O) ? 0 : sizes[f] / 2;;
         long long zeros = 0, total = 0;
         short fmin = 32767, fmax = -32768;
         
@@ -145,11 +148,13 @@ void RXEvaluation::load() {
                 from_V.read(reinterpret_cast<char*>(eval_V[stage][f][i].data), sizeof(short) * RANK);
                 check_read(from_V, filename_V, f);
                 
-                // Précalculer les carrés
-                for (unsigned int r = 0; r < RANK; ++r) {
+                // Précalculer les norm2
+                int n2 = 0;
+                for (unsigned r = 0; r < RANK; ++r) {
                     short v = eval_V[stage][f][i].data[r];
-                    eval_V[stage][f][i].squares[r] = static_cast<int>(v) * v;
+                    n2 += int(v) * v;
                 }
+                eval_V[stage][f][i].norm2 = n2;
             }
             
             if (f != MOB_P && f != MOB_O)
