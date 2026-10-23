@@ -79,12 +79,12 @@ void RXEvaluation::load() {
 
     // Après load(), pour chaque feature :
     for (Feature f : all_features) {
-        int interval = sizes[f] / 2;
+        iint interval = (f == MOB_P || f == MOB_O) ? 0 : sizes[f] / 2;;
         long long zeros = 0, total = 0;
         short fmin = 32767, fmax = -32768;
         
         for (int stage = 0; stage < 60; stage++) {
-            for (int idx = -interval; idx <= interval; idx++) {
+            for (int idx = -interval; idx <= (int)(sizes[f] - 1 - interval); idx++) {
                 short v = eval_w[stage][f][idx];
                 if (v == 0) zeros++;
                 total++;
