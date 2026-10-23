@@ -1706,7 +1706,7 @@ int RXEngine::EG_NWS_XEndCut(const unsigned int threadID, RXBBPatterns& sBoard, 
         }
 #ifdef USE_PROBCUT_ALPHA
         if(entry.upper <= lower_probcut) {
-            alpha -(alpha & 1);
+            return alpha -(alpha & 1);
         }
 #endif
         

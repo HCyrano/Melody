@@ -1165,9 +1165,9 @@ void RXEngine::stop(std::string msg) {
         if (threadMain.joinable()) {
             threadMain.join();
         }
+        hash_code_search = 0;
     }
 
-    hash_code_search = 0;
         
 }
 
