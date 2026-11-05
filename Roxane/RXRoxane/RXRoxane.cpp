@@ -1089,8 +1089,10 @@ void* RXRoxane::run() {
             
         } else if(s.clientMode == RXSearch::kIOStd) {
             
-            IOClient->Print("move " + RXMove::index_to_coord(s.bestMove.position));
-            
+            IOClient->Print(
+                            "move " + RXMove::index_to_coord(s.bestMove.position) +
+                            " score " + std::to_string(s.bestMove.score));
+
         }
     } else { //test bug
        std::cerr << "run(): move suppressed by resume_flag"
