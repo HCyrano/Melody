@@ -88,7 +88,7 @@ void RXHashTable::reset() {
     // "Pour chaque entrée par référence dans la table"
     for (auto& entry : table) {
         
-        entry.spin.store(0, std::memory_order_relaxed);
+        entry.spin.clear(std::memory_order_relaxed);
 
         entry.deepest.packed  = 0x0ULL;
         entry.deepest.discs_P = 0x0ULL;

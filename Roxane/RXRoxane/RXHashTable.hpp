@@ -163,85 +163,69 @@ static_assert(std::is_trivially_copyable_v<RXHashRecord>,
 // Entry de 64 octets (1 Cache Line)
 class alignas(64) RXHashEntry {
     
-    public :
-        mutable std::atomic<int> spin{0};
-        
-        RXHashRecord deepest;
-        RXHashRecord newest;
-                
-        // 1. Default constructor (RAII)
-        RXHashEntry() : deepest(), newest() {
-            spin.store(0, std::memory_order_relaxed);
+public :
+    // std::atomic_flag est garanti sans verrou (lock-free) sur toutes les architectures
+    mutable std::atomic_flag spin = ATOMIC_FLAG_INIT;
+    
+    RXHashRecord deepest;
+    RXHashRecord newest;
+            
+    // 1. Constructeur par défaut
+    RXHashEntry() = default;
+
+    // 2. Suppression de la copie
+    RXHashEntry(const RXHashEntry&) = delete;
+    RXHashEntry& operator=(const RXHashEntry&) = delete;
+
+    // 3. Constructeur de déplacement pour le std::vector
+    RXHashEntry(RXHashEntry&& other) noexcept
+        : deepest(std::move(other.deepest)),
+          newest(std::move(other.newest)) {
+        if (other.spin.test(std::memory_order_relaxed)) {
+            spin.test_and_set(std::memory_order_relaxed);
+        } else {
+            spin.clear(std::memory_order_relaxed);
         }
+        other.spin.clear(std::memory_order_relaxed);
+    }
 
-        // 2. Required by std::vector, never called at runtime
-        RXHashEntry(const RXHashEntry& other) {
-            assert(false && "RXHashEntry ne doit pas être copié à runtime");
-
-            spin.store(0, std::memory_order_relaxed); // Le verrou copié naît libre !
-            deepest = other.deepest;
-            newest = other.newest;
+    RXHashEntry& operator=(RXHashEntry&& other) noexcept {
+        if (this != &other) {
+            if (other.spin.test(std::memory_order_relaxed)) {
+                spin.test_and_set(std::memory_order_relaxed);
+            } else {
+                spin.clear(std::memory_order_relaxed);
+            }
+            deepest = std::move(other.deepest);
+            newest = std::move(other.newest);
+            other.spin.clear(std::memory_order_relaxed);
         }
-
-        // 3. Required by std::vector, never called at runtime
-        RXHashEntry& operator=(const RXHashEntry& other) = delete;
-    
-//        // 3. Opérateur d'assignation explicite
-//        RXHashEntry& operator=(const RXHashEntry& other) {
-//            if (this != &other) {
-//                spin.store(0, std::memory_order_relaxed); // On réinitialise le verrou
-//                deepest = other.deepest;
-//                newest = other.newest;
-//            }
-//            return *this;
-//        }
-    
-    
-//    void lock() const {
-//        for (;;) {
-//            // Tente de prendre le lock (Ecriture atomique)
-//            if (spin.exchange(1, std::memory_order_acquire) == 0) {
-//                return;
-//            }
-//
-//            // Si échoué, boucle de lecture seule (ne pollue pas le bus mémoire)
-//            while (spin.load(std::memory_order_relaxed) == 1) {
-//#if defined(__x86_64__) || defined(_M_X64)
-//                _mm_pause(); // Spécifique x86
-//#elif defined(__aarch64__) || defined(__arm__)
-//                asm volatile("yield"); // Spécifique ARM (AArch64)
-//#endif
-//            }
-//        }
-//    }
-
+        return *this;
+    }
     
     void lock() const noexcept {
         for (;;) {
-            // Relaxed load : avoid costly RMW exchange while lock is held
-            if (spin.load(std::memory_order_relaxed)) {
-                do {
-    #if defined(__x86_64__) || defined(_M_X64)
-                    _mm_pause();
-    #elif defined(__aarch64__) || defined(__arm__)
-                    // "memory" clobber : mandatory compiler barrier
-                    asm volatile("yield" ::: "memory");
-    #endif
-                } while (spin.load(std::memory_order_relaxed));
+            // Test-and-Test-and-Set : lecture seule en boucle tant que c'est verrouillé
+            while (spin.test(std::memory_order_relaxed)) {
+#if defined(__x86_64__) || defined(_M_X64)
+                _mm_pause();
+#elif defined(__aarch64__) || defined(__arm__)
+                asm volatile("yield" ::: "memory");
+#endif
             }
 
-            // acquire exchange : synchronizes with the release in unlock()
-            if (spin.exchange(1, std::memory_order_acquire) == 0) {
+            // test_and_set() met à true et retourne l'ancienne valeur.
+            // Si l'ancienne valeur était false (!true), on a réussi à acquérir le verrou.
+            if (!spin.test_and_set(std::memory_order_acquire)) {
                 return;
             }
         }
     }
     
-    void unlock() const {
-        spin.store(0, std::memory_order_release);
+    void unlock() const noexcept {
+        spin.clear(std::memory_order_release);
     }
 };
-
 
 class RXHashTable {
     
