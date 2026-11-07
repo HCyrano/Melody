@@ -24,7 +24,24 @@ import time
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_ENGINE = os.path.join(SCRIPT_DIR, "build", "Release", "Melody")
 
-POS_RE = re.compile(r"^[XO\-]{64} [XO]$")
+POS_RE = re.compile(r"^[xXbB\*oOwW\.\-]{64} [xXbB\*oOwW]$")
+
+
+def parse_board(raw_text):
+    """
+    Extrait systématiquement la grille de 64 caractères et le joueur,
+    qu'il s'agisse d'une chaîne linéaire ou d'un bloc multi-lignes.
+    """
+    valid_chars = re.findall(r"[XxbB\*OowW\.-]", raw_text)
+    
+    if len(valid_chars) < 65:
+        # Retourne le texte brut s'il est trop court, pour laisser la regex globale échouer proprement
+        return raw_text.strip()
+    
+    board_str = "".join(valid_chars[:64])
+    player_str = valid_chars[64]
+    
+    return f"{board_str} {player_str}"
 
 
 class IOStdEngine:
@@ -102,10 +119,10 @@ def main():
     ap.add_argument("-e", "--engine", default=DEFAULT_ENGINE,
                     help="exécutable Melody (défaut : <dossier du script>/build/Release/Melody)")
     ap.add_argument("position", nargs="?",
-                    help='"<64 cases> <X|O>" (entre guillemets)')
+                    help='"<64 cases> <X|O>" ou bloc multi-lignes entre guillemets')
     ap.add_argument("depth_pos", nargs="?", type=int, help="profondeur")
     ap.add_argument("precision_pos", nargs="?", type=int, help="précision")
-    ap.add_argument("-f", "--file", help="fichier de positions (une par ligne)")
+    ap.add_argument("-f", "--file", help="fichier de positions")
     ap.add_argument("-d", "--depth", type=int, help="profondeur (mode fichier)")
     ap.add_argument("-p", "--precision", type=int, help="précision (mode fichier)")
     ap.add_argument("--cwd", default=None,
@@ -122,18 +139,21 @@ def main():
         if depth is None or precision is None:
             ap.error("--depth et --precision requis avec --file")
         with open(args.file) as f:
-            # Format OBF : on ne garde que les 66 premiers caractères
-            # (64 cases + espace + camp), le reste de la ligne est ignoré
-            positions = [l[:66] for l in f if l.strip()]
+            content = f.read()
+        
+        # Si le fichier contient des blocs multi-lignes séparés par des crochets fermants
+        # ou des lignes simples, on peut adapter le découpage. 
+        # Ici, si chaque ligne est déjà une position (standard ou lue globalement) :
+        positions = [parse_board(l) for l in content.splitlines() if l.strip()]
     else:
         if args.position is None or args.depth_pos is None or args.precision_pos is None:
-            ap.error("usage : \"<position> <X|O>\" depth precision")
-        positions = [args.position.strip()]
+            ap.error("usage : \"<position>\" depth precision")
+        positions = [parse_board(args.position)]
         depth, precision = args.depth_pos, args.precision_pos
 
     for p in positions:
         if not POS_RE.match(p):
-            sys.exit(f"Position invalide (attendu 64 cases X/O/- + ' ' + X|O) : {p!r}")
+            sys.exit(f"Position invalide après parsing : {p!r}")
 
     eng = IOStdEngine(args.engine, args.engine_args.split(), args.cwd)
     try:
