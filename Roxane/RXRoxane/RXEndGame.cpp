@@ -91,9 +91,13 @@ struct LocalTT {
         if (e->lower >= beta)     return {e, alpha, beta, true,  e->lower};
         if (e->upper <= alpha)    return {e, alpha, beta, true,  e->upper};
 
-        int new_alpha = (e->lower > alpha) ? e->lower : alpha;
-        int new_beta  = (e->upper < beta)  ? e->upper : beta;
-        return {e, new_alpha, new_beta, false, 0};
+        // Pas de resserrement de la fenêtre [alpha, beta]
+        // ne concerne que les nœuds PV et le gain n'est pas démontré
+//        int new_alpha = (e->lower > alpha) ? e->lower : alpha;
+//        int new_beta  = (e->upper < beta)  ? e->upper : beta;
+//        return {e, new_alpha, new_beta, false, 0};
+        
+        return {e, alpha, beta, false, 0};
     }
 
     // Retourne l'entrée si hit, nullptr si miss
@@ -181,8 +185,12 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
         int stability_bound = 64- 2 * board.get_stability(board.player^1);
         if ( stability_bound <= lower )
             return stability_bound;
-        if ( stability_bound < upper )
-            upper = stability_bound;
+        
+        // Pas de resserrement de la fenêtre [alpha, beta]
+        // ne concerne que les nœuds PV et le gain n'est pas démontré
+
+//        if ( stability_bound < upper )
+//            upper = stability_bound;
     }
 #endif
 
@@ -420,8 +428,11 @@ int RXEngine::EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, c
         if ( stability_bound <= lower )
             return stability_bound;
         
-        if ( stability_bound < upper )
-            upper = stability_bound;
+        // Pas de resserrement de la fenêtre [alpha, beta]
+        // ne concerne que les nœuds PV et le gain n'est pas démontré
+
+//        if ( stability_bound < upper )
+//            upper = stability_bound;
         
     }
 #endif
@@ -488,7 +499,8 @@ int RXEngine::EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, c
 
                 move->score =
                   (RXBitBoard::count_potential_moves(next_P, next_O)<<4)
-                - (RXBitBoard::get_edge_stability(next_O, next_P)<<2)
+                /*- (RXBitBoard::get_edge_stability(next_O, next_P)<<2)*/
+                - (RXBitBoard::get_corner_stability(next_O)<<2)
                 - (((board.parity & RXBitBoard::QUADRANT_ID[pos])>>RXBitBoard::QUADRANT_SHIFT[pos])<<3)
                 + ((move->square & 0x8100000000000081) != 0);
                 
@@ -582,8 +594,11 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
         if ( stability_bound <= lower )
             return stability_bound;
         
-        if ( stability_bound < upper )
-            upper = stability_bound;
+        // Pas de resserrement de la fenêtre [alpha, beta]
+        // ne concerne que les nœuds PV et le gain n'est pas démontré
+
+//        if ( stability_bound < upper )
+//            upper = stability_bound;
         
     }
 #endif
@@ -654,14 +669,10 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
                     
                     auto etc_ltt = LocalTT::probe(next_P, next_O, etc_depth, next_hashcode, lower, upper);
                     if (etc_ltt.entry) {
-//                        if(-etc_ltt.beta>lower) {
                             if(-etc_ltt.beta>=upper) {
 //                                LocalTT::store(ltt.entry, hash_code, board, -etc_ltt.beta, alpha, upper);
                                 return -etc_ltt.beta;
                             }
-//                            lower = -etc_ltt.beta;
-//                            bestscore = -etc_ltt.beta;
-//                        }
                         //remove from list
                         else if(-etc_ltt.alpha <= lower) {
                             if(bestscore < -etc_ltt.alpha)
