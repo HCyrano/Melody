@@ -60,7 +60,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-h 24 -t 1"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-metrix 10 54"
@@ -68,7 +68,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-h 24 -t 16"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/caussebruno/Desktop/bug_endgame.txt"

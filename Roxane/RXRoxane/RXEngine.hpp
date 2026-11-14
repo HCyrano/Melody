@@ -244,8 +244,9 @@ class RXEngine: public Runnable {
         GGS_MSG
     };
     
+    static constexpr unsigned int masterID = 0;
     static constexpr bool WITHOUT_FM = false;
-    
+
     static const int CONFIDENCE[];
     static const float PERCENTILE[];
     static const int DEPTH_BOOSTER;

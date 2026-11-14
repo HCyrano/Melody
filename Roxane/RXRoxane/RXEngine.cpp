@@ -1556,7 +1556,7 @@ void* RXEngine::run() {
             
         }
                 
-        sort_moves(0, endgame_flag, search_sBoard, depth, selectivity, -MAX_SCORE, MAX_SCORE, list1);
+        sort_moves(masterID, endgame_flag, search_sBoard, depth, selectivity, -MAX_SCORE, MAX_SCORE, list1);
         
         //if no hashmove
         list1->next->score = 0;
@@ -2295,10 +2295,10 @@ void RXEngine::probcut_mid_data(RXHashTable* HT, RXHashTable* PV) {
                     
                     int score;
                     if(depth < DEPTH_4) {
-                        score = MG_PVS_shallow(0, sBoard, true, depth, -MAX_SCORE, MAX_SCORE, false);
+                        score = MG_PVS_shallow(masterID, sBoard, true, depth, -MAX_SCORE, MAX_SCORE, false);
                     } else {
                         wake_sleeping_threads();
-                        score = MG_PVS_deep(0, sBoard, true, NO_SELECT, depth, -MAX_SCORE, MAX_SCORE, false);
+                        score = MG_PVS_deep(masterID, sBoard, true, NO_SELECT, depth, -MAX_SCORE, MAX_SCORE, false);
                     }
                     
                     scores[depth] = score;
@@ -2393,14 +2393,14 @@ void RXEngine::probcut_end_data(RXHashTable* HT, RXHashTable* PV) {
                 } else if (board.n_empty == 4) {
                     score_at_depth = board.final_score_4(-MAX_SCORE, MAX_SCORE);
                 } else if (board.n_empty < EG_MEDIUM_TO_SHALLOW) {
-                    score_at_depth = EG_alphabeta_parity(0, board, -MAX_SCORE, MAX_SCORE, false);
+                    score_at_depth = EG_alphabeta_parity(masterID, board, -MAX_SCORE, MAX_SCORE, false);
                 } else if (board.n_empty < EG_MEDIUM_HI_TO_LOW) {
-                    score_at_depth = EG_PVS_ETC_LTT(0, board, true, -MAX_SCORE, MAX_SCORE, false);
+                    score_at_depth = EG_PVS_ETC_LTT(masterID, board, true, -MAX_SCORE, MAX_SCORE, false);
                 } else  if (board.n_empty < EG_DEEP_TO_MEDIUM) {
-                    score_at_depth = EG_PVS_ETC_mobility(0, sBoard, true, -MAX_SCORE, MAX_SCORE, false);
+                    score_at_depth = EG_PVS_ETC_mobility(masterID, sBoard, true, -MAX_SCORE, MAX_SCORE, false);
                 } else {
                     wake_sleeping_threads();
-                    score_at_depth = EG_PVS_deep(0, sBoard, true, NO_SELECT, -MAX_SCORE, MAX_SCORE, false);
+                    score_at_depth = EG_PVS_deep(masterID, sBoard, true, NO_SELECT, -MAX_SCORE, MAX_SCORE, false);
                 }
                 
                 hTable->reset();
@@ -2410,10 +2410,10 @@ void RXEngine::probcut_end_data(RXHashTable* HT, RXHashTable* PV) {
                     int score_at_shallow_depth;
                     
                     if(shallow_depth < DEPTH_4) {
-                        score_at_shallow_depth = MG_PVS_shallow(0, sBoard, true, shallow_depth, -MAX_SCORE, MAX_SCORE, false);
+                        score_at_shallow_depth = MG_PVS_shallow(masterID, sBoard, true, shallow_depth, -MAX_SCORE, MAX_SCORE, false);
                     } else {
                         wake_sleeping_threads();
-                        score_at_shallow_depth = MG_PVS_deep(0, sBoard, true, NO_SELECT, shallow_depth, -MAX_SCORE, MAX_SCORE, false);
+                        score_at_shallow_depth = MG_PVS_deep(masterID, sBoard, true, NO_SELECT, shallow_depth, -MAX_SCORE, MAX_SCORE, false);
                     }
                     
                     int diff_score_depth_score_shallow = (score_at_depth - score_at_shallow_depth);
@@ -2486,10 +2486,10 @@ void RXEngine::probcut_end2_data(const std::string& file_name, RXHashTable* HT, 
                 int score_at_shallow_depth;
                 
                 if(shallow_depth < DEPTH_4) {
-                    score_at_shallow_depth = MG_PVS_shallow(0, sBoard, true, shallow_depth, -MAX_SCORE, MAX_SCORE, false);
+                    score_at_shallow_depth = MG_PVS_shallow(masterID, sBoard, true, shallow_depth, -MAX_SCORE, MAX_SCORE, false);
                 } else {
                     wake_sleeping_threads();
-                    score_at_shallow_depth = MG_PVS_deep(0, sBoard, true, NO_SELECT, shallow_depth, -MAX_SCORE, MAX_SCORE, false);
+                    score_at_shallow_depth = MG_PVS_deep(masterID, sBoard, true, NO_SELECT, shallow_depth, -MAX_SCORE, MAX_SCORE, false);
                 }
                 
                 int diff_score_depth_score_shallow = (score_at_depth - score_at_shallow_depth);

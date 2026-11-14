@@ -218,7 +218,7 @@ void RXEngine::MG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
     
     sBoard.do_move(*iter);
     
-    int bestscore = -MG_PVS_deep(0, sBoard, true, selectivity, depth-1, -upper, -lower, false);
+    int bestscore = -MG_PVS_deep(masterID, sBoard, true, selectivity, depth-1, -upper, -lower, false);
     
     sBoard.undo_move(*iter);
     
@@ -249,7 +249,7 @@ void RXEngine::MG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
             
             // Split?
             if(activeThreads > 1 && iter->next != nullptr && depth>(MIN_DEPTH_SPLITPOINT+3) && !abort.load(std::memory_order_relaxed)
-               && !thread_should_stop(0) && idle_thread_exists(0)
+               && !thread_should_stop(masterID) && idle_thread_exists(masterID)
                && split(sBoard, true, 0, depth, selectivity, lower, upper, bestscore, bestmove, iter, 0, RXSplitPoint::MID_ROOT)) {
                 
                 break;
@@ -259,7 +259,7 @@ void RXEngine::MG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
             sBoard.do_move(*iter);
             
             //simple_PV pv == false ???
-            score = -MG_PVS_deep(0, sBoard, false, selectivity, depth-1, -lower-1, -lower, false); //change
+            score = -MG_PVS_deep(masterID, sBoard, false, selectivity, depth-1, -lower-1, -lower, false); //change
             
             
             if(!abort.load(std::memory_order_relaxed)  && lower < score && score < upper) {
@@ -272,7 +272,7 @@ void RXEngine::MG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
                 
                 ++extra_time;
                 //                *log << "                  [extra time >:" << extra_time << "]" << std::endl;
-                score = -MG_PVS_deep(0, sBoard, true, selectivity, depth-1, -upper, -lower , false);
+                score = -MG_PVS_deep(masterID, sBoard, true, selectivity, depth-1, -upper, -lower , false);
                 --extra_time;
                 //                *log << "                  [extra time end :" << extra_time << "]" << std::endl;
                 
@@ -433,7 +433,7 @@ int RXEngine::MG_PVS_deep(const unsigned int threadID, RXBBPatterns& sBoard, con
         return INTERRUPT_SEARCH;
     
     //time gestion
-    if(dependent_time && threadID == 0 && get_current_dependentTime() > time_limit()) {
+    if(dependent_time && threadID == masterID && get_current_dependentTime() > time_limit()) {
         abort.store(true);
         return INTERRUPT_SEARCH;
     }
@@ -1159,7 +1159,7 @@ int RXEngine::MG_NWS_XProbCut(const unsigned int threadID, RXBBPatterns& sBoard,
         return INTERRUPT_SEARCH;
     
     //time gestion
-    if(dependent_time && threadID == 0 && get_current_dependentTime() > time_limit()) {
+    if(dependent_time && threadID == masterID && get_current_dependentTime() > time_limit()) {
         abort.store(true);
         return INTERRUPT_SEARCH;
     }

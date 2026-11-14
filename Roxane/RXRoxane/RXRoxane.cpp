@@ -1094,6 +1094,7 @@ void* RXRoxane::run() {
                             " score " + std::to_string(s.bestMove.score));
 
         }
+        
     } else { //test bug
        std::cerr << "run(): move suppressed by resume_flag"
                  << " move=" << RXMove::index_to_coord(s.bestMove.position)
