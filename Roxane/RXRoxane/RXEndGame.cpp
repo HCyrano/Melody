@@ -119,11 +119,17 @@ struct LocalTT {
     // Passer alpha originale (avant resserrement), beta courant
     static void store(Entry* e, unsigned long long hash,
                       const RXBitBoard& board, int score, int alpha, int beta) {
-        if (!e) {
+        
+        const unsigned long long P = board.discs[board.player];
+        const unsigned long long O = board.discs[board.player^1];
+        
+        // cas PASS : même n_empty => même niveau, 1 chance sur SIZE que le fils écrase le slot
+        // du parent. On revalide e (P, O) avant la mise à jour incrémentale.
+        if (!e || e->player != P || e->opponent != O) {
             const int idx = board.n_empty - LTT_END_FAST;
             e = &table[idx][hash & MASK];
-            e->player   = board.discs[board.player];
-            e->opponent = board.discs[board.player^1];
+            e->player   = P;
+            e->opponent = O;
             e->lower    = -64;
             e->upper    =  64;
         }
@@ -198,7 +204,7 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
 
     // TT local (no lock)
     auto ltt = LocalTT::probe(board, hash_code, lower, upper);
-    if (lower == upper-1 && ltt.cutoff) return ltt.score;
+    if (ltt.cutoff) return ltt.score;
 
     int score, bestscore = UNDEF_SCORE;
 
@@ -304,7 +310,7 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                     }
                     
                     if (move_final_score_5(empties, pos, bit)){
-//                        LocalTT::store(ltt.entry, hash_code, board, score, alpha, upper);
+                        LocalTT::store(ltt.entry, hash_code, board, score, alpha, upper);
                         return score;
                     }
 
@@ -317,7 +323,7 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
                     const unsigned long long bit = 0x1ULL << pos;
                     
                     if (move_final_score_5(empties, pos, bit)){
-//                        LocalTT::store(ltt.entry, hash_code, board, score, alpha, upper);
+                        LocalTT::store(ltt.entry, hash_code, board, score, alpha, upper);
                         return score;
                     }
                 }
@@ -441,7 +447,7 @@ int RXEngine::EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, c
 
     // TT local (no lock)
     auto ltt = LocalTT::probe(board, hash_code, lower, upper);
-    if (!pv && ltt.cutoff) return ltt.score;
+    if (ltt.cutoff) return ltt.score;
 
     int bestscore = UNDEF_SCORE;
 //    unsigned int bestmove = NOMOVE;
@@ -607,7 +613,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
 
     // TT local (no lock)
     auto ltt = LocalTT::probe(board, hash_code, lower, upper);
-    if (!pv && ltt.cutoff) return ltt.score;
+    if (ltt.cutoff) return ltt.score;
 
     int bestscore = UNDEF_SCORE;
 
@@ -664,24 +670,21 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
                 
                                                 
 #ifdef USE_ETC
-                if(!pv) { //NWS
-                    
-                    const unsigned long long next_hashcode = board.hashcode(next_P, next_O);
-                    
-                    auto etc_ltt = LocalTT::probe(next_P, next_O, etc_depth, next_hashcode, lower, upper);
-                    if (etc_ltt.entry) {
-                        if(-etc_ltt.beta>=upper) {
-                            //                                LocalTT::store(ltt.entry, hash_code, board, -etc_ltt.beta, alpha, upper);
-                            return -etc_ltt.beta;
-                        }
-                        //remove from list
-                        else if(-etc_ltt.alpha <= lower) {
-                            if(bestscore < -etc_ltt.alpha)
-                                bestscore = -etc_ltt.alpha;
-                            continue;
-                        }
-                        
+                const unsigned long long next_hashcode = board.hashcode(next_P, next_O);
+                
+                auto etc_ltt = LocalTT::probe(next_P, next_O, etc_depth, next_hashcode, lower, upper);
+                if (etc_ltt.entry) {
+                    if(-etc_ltt.beta>=upper) {
+                        LocalTT::store(ltt.entry, hash_code, board, -etc_ltt.beta, alpha, upper);
+                        return -etc_ltt.beta;
                     }
+                    //remove from list
+                    else if(-etc_ltt.alpha <= lower) {
+                        if(bestscore < -etc_ltt.alpha)
+                            bestscore = -etc_ltt.alpha;
+                        continue;
+                    }
+                    
                 }
 #endif
                 

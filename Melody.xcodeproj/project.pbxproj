@@ -571,6 +571,7 @@
 					"-mcpu=native",
 					"-fno-stack-protector",
 					"-fomit-frame-pointer",
+					"-fprofile-update=atomic",
 				);
 				"OTHER_CPLUSPLUSFLAGS[arch=x86_64]" = (
 					"-mavx2",
