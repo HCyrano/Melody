@@ -91,13 +91,10 @@ struct LocalTT {
         if (e->lower >= beta)     return {e, alpha, beta, true,  e->lower};
         if (e->upper <= alpha)    return {e, alpha, beta, true,  e->upper};
 
-        // Pas de resserrement de la fenêtre [alpha, beta]
-        // ne concerne que les nœuds PV et le gain n'est pas démontré
-//        int new_alpha = (e->lower > alpha) ? e->lower : alpha;
-//        int new_beta  = (e->upper < beta)  ? e->upper : beta;
-//        return {e, new_alpha, new_beta, false, 0};
+        int new_alpha = (e->lower > alpha) ? e->lower : alpha;
+        int new_beta  = (e->upper < beta)  ? e->upper : beta;
+        return {e, new_alpha, new_beta, false, 0};
         
-        return {e, alpha, beta, false, 0};
     }
 
     // Retourne l'entrée si hit, nullptr si miss
@@ -115,7 +112,6 @@ struct LocalTT {
 
     }
 
-    // e == nullptr → collision (reset + réécriture), sinon mise à jour incrémentale
     // Passer alpha originale (avant resserrement), beta courant
     static void store(Entry* e, unsigned long long hash,
                       const RXBitBoard& board, int score, int alpha, int beta) {
@@ -181,15 +177,13 @@ const int RXEngine::stability_threshold[] =
 int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board, const int alpha, const int beta, const bool passed) {
     
     
-    int lower = alpha;
-    int upper = beta;
 
     
 #ifdef USE_STABILITY
-    if ( !passed && upper >= stability_threshold[board.n_empty]) {
+    if ( !passed && beta >= stability_threshold[board.n_empty]) {
         
         int stability_bound = 64- 2 * board.get_stability(board.player^1);
-        if ( stability_bound <= lower )
+        if ( stability_bound <= alpha )
             return stability_bound;
         
         // Pas de resserrement de la fenêtre [alpha, beta]
@@ -203,8 +197,10 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
     const unsigned long long  hash_code = board.hashcode();
 
     // TT local (no lock)
-    auto ltt = LocalTT::probe(board, hash_code, lower, upper);
+    auto ltt = LocalTT::probe(board, hash_code, alpha, beta);
     if (ltt.cutoff) return ltt.score;
+    int lower = ltt.alpha;
+    int upper = ltt.beta;
 
     int score, bestscore = UNDEF_SCORE;
 
@@ -421,17 +417,15 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
 
 //depth == 6 empty
 //Non recursive, called only one
-int RXEngine::EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, const int alpha, const int beta, const bool passed) {
+int RXEngine::EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, const int alpha, const int beta, const bool passed) {
 
 
-    int lower = alpha;
-    int upper = beta;
     
 #ifdef USE_STABILITY
-    if ( !passed && upper >= stability_threshold[board.n_empty] ) {
+    if ( !passed && beta >= stability_threshold[board.n_empty] ) {
         
         int stability_bound = 64- 2 * board.get_stability(board.player^1);
-        if ( stability_bound <= lower )
+        if ( stability_bound <= alpha )
             return stability_bound;
         
         // Pas de resserrement de la fenêtre [alpha, beta]
@@ -446,8 +440,10 @@ int RXEngine::EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, c
     const unsigned long long  hash_code = board.hashcode();
 
     // TT local (no lock)
-    auto ltt = LocalTT::probe(board, hash_code, lower, upper);
+    auto ltt = LocalTT::probe(board, hash_code, alpha, beta);
     if (ltt.cutoff) return ltt.score;
+    int lower = ltt.alpha;
+    int upper = ltt.beta;
 
     int bestscore = UNDEF_SCORE;
 //    unsigned int bestmove = NOMOVE;
@@ -547,7 +543,7 @@ int RXEngine::EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, c
          } else {
 //            bestmove = PASS;
             board.do_pass();
-            bestscore = -EG_alphabeta_LTT(threadID, board, pv, -upper, -lower, true);
+            bestscore = -EG_alphabeta_LTT(threadID, board, -upper, -lower, true);
             board.do_pass();
         }
     }
@@ -573,15 +569,13 @@ int RXEngine::EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, c
  */
 
 //n_empty =< 13 empty
-int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, const bool pv, const int alpha, const int beta, const bool passed)
+int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, /*const bool pv,*/ const int alpha, const int beta, const bool passed)
 {
     
     if (board.n_empty < EG_MEDIUM_TO_SHALLOW)
-        return EG_alphabeta_LTT(threadID, board, pv, alpha, beta, passed);
+        return EG_alphabeta_LTT(threadID, board, alpha, beta, passed);
 
     
-    int lower = alpha;
-    int upper = beta;
     
         
 #ifdef USE_STABILITY
@@ -594,10 +588,10 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
      */
     
     
-    if ( !passed && upper >= stability_threshold[board.n_empty] ) {
+    if ( !passed && beta >= stability_threshold[board.n_empty] ) {
         
         int stability_bound = 64- 2 * board.get_stability(board.player^1);
-        if ( stability_bound <= lower )
+        if ( stability_bound <= alpha )
             return stability_bound;
         
         // Pas de resserrement de la fenêtre [alpha, beta]
@@ -612,8 +606,10 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
     const unsigned long long  hash_code = board.hashcode();
 
     // TT local (no lock)
-    auto ltt = LocalTT::probe(board, hash_code, lower, upper);
+    auto ltt = LocalTT::probe(board, hash_code, alpha, beta);
     if (ltt.cutoff) return ltt.score;
+    int lower = ltt.alpha;
+    int upper = ltt.beta;
 
     int bestscore = UNDEF_SCORE;
 
@@ -632,7 +628,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
             board.generate_flips(pos, *move);
             
             board.do_move(*move);
-            bestscore = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -lower, false);
+            bestscore = -EG_PVS_ETC_LTT(threadID, board, -upper, -lower, false);
             board.undo_move(*move);
 
             
@@ -726,7 +722,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
             
                         
             board.do_move(*move);
-            int score = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -lower, false);
+            int score = -EG_PVS_ETC_LTT(threadID, board, -upper, -lower, false);
             board.undo_move(*move);
             
             // bestscore may have been set by ETC (upper bound of pruned moves): keep the max
@@ -745,9 +741,9 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
                 
                 board.do_move(*move);
                 
-                score = -EG_PVS_ETC_LTT(threadID, board, false, -lower-1, -lower, false);
+                score = -EG_PVS_ETC_LTT(threadID, board, -lower-1, -lower, false);
                 if (lower < score && score < upper)
-                    score = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -score, false);
+                    score = -EG_PVS_ETC_LTT(threadID, board, -upper, -score, false);
                 
                 board.undo_move(*move);
                 
@@ -765,7 +761,7 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, con
             return board.final_score();
         } else {
             board.do_pass();
-            bestscore = -EG_PVS_ETC_LTT(threadID, board, pv, -upper, -lower, true);
+            bestscore = -EG_PVS_ETC_LTT(threadID, board, -upper, -lower, true);
             board.do_pass();
         }
     }
@@ -797,7 +793,7 @@ int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBitBoard& board
     
 
     if (board.n_empty < EG_MEDIUM_HI_TO_LOW)
-        return EG_PVS_ETC_LTT(threadID, board, pv, alpha, beta, passed);
+        return EG_PVS_ETC_LTT(threadID, board, alpha, beta, passed);
 
      
     if(abort.load(std::memory_order_relaxed) || thread_should_stop(threadID))
@@ -2079,7 +2075,7 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
     } else if (board.n_empty < EG_MEDIUM_TO_SHALLOW) {
         bestscore = -EG_alphabeta_parity(masterID, board, -upper, -lower, false);
     } else if (board.n_empty < EG_MEDIUM_HI_TO_LOW) {
-        bestscore = -EG_PVS_ETC_LTT(masterID, board, true, -upper, -lower, false);
+        bestscore = -EG_PVS_ETC_LTT(masterID, board, -upper, -lower, false);
     } else  if (board.n_empty < EG_DEEP_TO_MEDIUM) {
         bestscore = -EG_PVS_ETC_mobility(masterID, board, true, -upper, -lower, false);
     } else {
@@ -2136,7 +2132,7 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
                 if (board.n_empty < EG_MEDIUM_TO_SHALLOW)
                     score = -EG_alphabeta_parity(masterID, board, -lower-1, -lower, false);
                 else if (board.n_empty < EG_MEDIUM_HI_TO_LOW)
-                    score = -EG_PVS_ETC_LTT(masterID, board, false, -lower-1, -lower, false);
+                    score = -EG_PVS_ETC_LTT(masterID, board, -lower-1, -lower, false);
                 else if (board.n_empty < EG_DEEP_TO_MEDIUM)
                     score = -EG_PVS_ETC_mobility(masterID, board, false, -lower-1, -lower, false); //simple-PV pv == false ????
                 else
@@ -2155,7 +2151,7 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
                     if (board.n_empty < EG_MEDIUM_TO_SHALLOW)
                         score = -EG_alphabeta_parity(masterID, board, -upper, -score, false);
                     else if (board.n_empty < EG_MEDIUM_HI_TO_LOW)
-                        score = -EG_PVS_ETC_LTT(masterID, board, true, -upper, -score, false);
+                        score = -EG_PVS_ETC_LTT(masterID, board, -upper, -score, false);
                     else if (board.n_empty < EG_DEEP_TO_MEDIUM)
                         score = -EG_PVS_ETC_mobility(masterID, board, true, -upper, -score, false);
                     else {
