@@ -175,10 +175,7 @@ const int RXEngine::stability_threshold[] =
  */
 
 int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board, const int alpha, const int beta, const bool passed) {
-    
-    
-
-    
+        
 #ifdef USE_STABILITY
     if ( !passed && beta >= stability_threshold[board.n_empty]) {
         
@@ -419,8 +416,6 @@ int RXEngine::EG_alphabeta_parity(const unsigned int threadID, RXBitBoard& board
 //Non recursive, called only one
 int RXEngine::EG_alphabeta_LTT(const unsigned int threadID, RXBitBoard& board, const int alpha, const int beta, const bool passed) {
 
-
-    
 #ifdef USE_STABILITY
     if ( !passed && beta >= stability_threshold[board.n_empty] ) {
         
@@ -791,7 +786,6 @@ int RXEngine::EG_PVS_ETC_LTT(const unsigned int threadID, RXBitBoard& board, /*c
 int RXEngine::EG_PVS_ETC_mobility(const unsigned int threadID, RXBitBoard& board, const bool pv, const int alpha, const int beta, const bool passed)
 {
     
-
     if (board.n_empty < EG_MEDIUM_HI_TO_LOW)
         return EG_PVS_ETC_LTT(threadID, board, alpha, beta, passed);
 
