@@ -97,6 +97,9 @@ alignas(64) const uint64x2_t MASK_LR_v4[64][4] = {
 
 static inline unsigned long long flips_NEON(const NeonBoardCtx *ctx, int pos)
 {
+    
+    const uint64x2_t one = vdupq_n_u64(1);
+
     uint64x2_t flip, oflank0, oflank1;
     
     const uint64x2x4_t m = vld1q_u64_x4(
@@ -115,22 +118,22 @@ static inline unsigned long long flips_NEON(const NeonBoardCtx *ctx, int pos)
     const uint64x2_t PPm1 = vandq_u64(ctx->PP, mask_l1);
 
     // --- right/bottom (bit-reversed) ---
-    oflank0 = vaddq_u64(vornq_u64(ctx->rOO, mask_r0), ctx->one);
-    oflank1 = vaddq_u64(vornq_u64(ctx->rOO, mask_r1), ctx->one);
+    oflank0 = vaddq_u64(vornq_u64(ctx->rOO, mask_r0), one);
+    oflank1 = vaddq_u64(vornq_u64(ctx->rOO, mask_r1), one);
     oflank0 = vandq_u64(rPPm0, oflank0);
     oflank1 = vandq_u64(rPPm1, oflank1);
-    oflank0 = vqsubq_u64(oflank0, ctx->one);
-    oflank1 = vqsubq_u64(oflank1, ctx->one);
+    oflank0 = vqsubq_u64(oflank0, one);
+    oflank1 = vqsubq_u64(oflank1, one);
     flip = vbslq_u64(mask_r1, oflank1, vandq_u64(mask_r0, oflank0));
     flip = vreinterpretq_u64_u8(vrev64q_u8(vrbitq_u8(vreinterpretq_u8_u64(flip))));
 
     // --- left/top (regular-bit) ---
-    oflank0 = vaddq_u64(vornq_u64(ctx->OO, mask_l0), ctx->one);
-    oflank1 = vaddq_u64(vornq_u64(ctx->OO, mask_l1), ctx->one);
+    oflank0 = vaddq_u64(vornq_u64(ctx->OO, mask_l0), one);
+    oflank1 = vaddq_u64(vornq_u64(ctx->OO, mask_l1), one);
     oflank0 = vandq_u64(PPm0, oflank0);
     oflank1 = vandq_u64(PPm1, oflank1);
-    oflank0 = vqsubq_u64(oflank0, ctx->one);
-    oflank1 = vqsubq_u64(oflank1, ctx->one);
+    oflank0 = vqsubq_u64(oflank0, one);
+    oflank1 = vqsubq_u64(oflank1, one);
     flip = vbslq_u64(mask_l1, oflank1, vbslq_u64(mask_l0, oflank0, flip));
 
     return vgetq_lane_u64(vorrq_u64(flip, vextq_u64(flip, flip, 1)), 0);

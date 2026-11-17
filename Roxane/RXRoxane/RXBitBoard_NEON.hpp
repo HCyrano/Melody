@@ -16,23 +16,25 @@
  */
 
 struct NeonBoardCtx {
-    uint64x2_t PP, rPP, OO, rOO, one;
+    uint64x2_t PP, rPP, OO, rOO;
 
     // Constructeur : initialise tout proprement à la création
     inline NeonBoardCtx(unsigned long long P, unsigned long long O) {
         PP  = vdupq_n_u64(P);
         OO  = vdupq_n_u64(O);
-        one = vdupq_n_u64(1);
+        rPP = vdupq_n_u64(__rbitll(P));
+        rOO = vdupq_n_u64(__rbitll(O));
 
-        // astuce d'inversion SIMD
-        uint64x2_t OP  = vzip1q_u64(PP, OO); // [ O | P ]
-        uint64x2_t rOP = vreinterpretq_u64_u8(
-                            vrev64q_u8(
-                                vrbitq_u8(
-                                    vreinterpretq_u8_u64(OP)))); // [ rO | rP ]
 
-        rPP = vdupq_lane_u64(vget_low_u64(rOP), 0);  // Duplique rP -> [ rP | rP ]
-        rOO = vdupq_lane_u64(vget_high_u64(rOP), 0); // Duplique rO -> [ rO | rO ]
+//        // astuce d'inversion SIMD
+//        uint64x2_t OP  = vzip1q_u64(PP, OO); // [ O | P ]
+//        uint64x2_t rOP = vreinterpretq_u64_u8(
+//                            vrev64q_u8(
+//                                vrbitq_u8(
+//                                    vreinterpretq_u8_u64(OP)))); // [ rO | rP ]
+//
+//        rPP = vdupq_lane_u64(vget_low_u64(rOP), 0);  // Duplique rP -> [ rP | rP ]
+//        rOO = vdupq_lane_u64(vget_high_u64(rOP), 0); // Duplique rO -> [ rO | rO ]
     }
 
     // Permet d'alterner les rôles Joueur/Adversaire instantanément
