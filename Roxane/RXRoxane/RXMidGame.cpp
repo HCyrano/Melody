@@ -250,7 +250,7 @@ void RXEngine::MG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
             // Split?
             if(activeThreads > 1 && iter->next != nullptr && depth>(MIN_DEPTH_SPLITPOINT+3) && !abort.load(std::memory_order_relaxed)
                && !thread_should_stop(masterID) && idle_thread_exists(masterID)
-               && split(sBoard, true, 0, depth, selectivity, lower, upper, bestscore, bestmove, iter, 0, RXSplitPoint::MID_ROOT)) {
+               && split(sBoard, true, 0, depth, selectivity, lower, upper, bestscore, bestmove, iter, masterID, RXSplitPoint::MID_ROOT)) {
                 
                 break;
             }

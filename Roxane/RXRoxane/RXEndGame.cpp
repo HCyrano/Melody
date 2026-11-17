@@ -2104,7 +2104,7 @@ void RXEngine::EG_PVS_root(RXBBPatterns& sBoard, const int selectivity, const in
             if(activeThreads > 1 && iter->next != nullptr && board.n_empty >= EG_DEEP_TO_MEDIUM
                && !abort.load(std::memory_order_relaxed) && idle_thread_exists(masterID) && !thread_should_stop(masterID)
                && split(sBoard, true, 0, board.n_empty, selectivity,
-                        lower, upper, bestscore, bestmove, iter, 0, RXSplitPoint::END_ROOT)) {
+                        lower, upper, bestscore, bestmove, iter, masterID, RXSplitPoint::END_ROOT)) {
                 
                 break;
             }
