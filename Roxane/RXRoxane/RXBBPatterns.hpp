@@ -331,7 +331,7 @@ inline int acc_score(const int   stage,
     const int cp48 = _mm256_extract_epi32(vcp48_51, 0), cp49 = _mm256_extract_epi32(vcp48_51, 1);
 
 #else
-    auto cp = [mask, p](int i) RX_LAMBDA_INLINE -> int {
+    auto cp = [mask, p] RX_LAMBDA_INLINE (int i) -> int {
         return (p[i] ^ mask) - mask;
     };
     
@@ -397,8 +397,8 @@ inline int acc_score(const int   stage,
             
 #ifdef ARCH_ARM_NEON
                          
-            // OPTIMIZATION: Total accumulated sum remains within the short integer bounds.
-            // Ensure this holds true after any changes to the latent vectors.
+            // RANK=16 : somme des vecteurs latents en int16 (bornes garanties par la conception des V)
+            // Σ_i ‖v_i‖² accumulé en scalaire (norm2 précalculé au chargement)
             int16x8_t sum_lo = vdupq_n_s16(0);   // lanes 0..7
             int16x8_t sum_hi = vdupq_n_s16(0);   // lanes 8..15
             
@@ -407,8 +407,6 @@ inline int acc_score(const int   stage,
             auto acc = [&] RX_LAMBDA_INLINE (const Vec_short* RX_RESTRICT V, int idx) {
                 const Vec_short& v_ref = V[idx];
                 
-                // OPTIMIZATION: Total accumulated sum remains within the short integer bounds.
-                // Ensure this holds true after any changes to the latent vectors.
                 sum_lo = vaddq_s16(sum_lo, vld1q_s16(v_ref.data    ));
                 sum_hi = vaddq_s16(sum_hi, vld1q_s16(v_ref.data + 8));
                 
