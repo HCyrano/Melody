@@ -17,12 +17,23 @@
  */
 
 #include <iostream>
+#include <sstream>
+
 
 #include "ODKStream.hpp"
 #include "GGSMessage.hpp"
 #include "OsMessage.hpp"
 #include "RXRoxane.hpp"
 #include "types.hpp"
+
+// Supprime les espaces, tabulations et retours à la ligne au début et à la fin d'une chaîne
+static std::string Trim(const std::string& str) {
+    size_t first = str.find_first_not_of(" \t\r\n");
+    if (first == std::string::npos) return "";
+    size_t last = str.find_last_not_of(" \t\r\n");
+    return str.substr(first, last - first + 1);
+}
+
 
 // Display message in console
 void CODKStream::HandleGGS(const CMsg* pmsg) {
@@ -36,29 +47,83 @@ void CODKStream::HandleGGSLogin() {
 }
 
 void CODKStream::HandleGGSTell(const CMsgGGSTell* pmsg) {
+    // Journalisation du message entrant
     std::cout << pmsg->sFrom << " " << pmsg->sText << "\n";
-	
-    //join
-	/**********************************************************************/
-	if(	(pmsg->sFrom=="romano"
-		 || pmsg->sFrom=="ohr"
-		 || pmsg->sFrom=="delorme") && ((pmsg->sText.substr(0,11) == "t /td join ") || (pmsg->sText.substr(0,14) == "tell /td join "))) {
-		
-		(*this) << pmsg->sText << "\n";
-		flush();
-	}
-	/**********************************************************************/
-	
-	if(pmsg->sFrom=="HCyrano") {
-		if (pmsg->sText=="quit") {
-            if(pComputer != nullptr)
+
+    // 1. Réception d'une demande "t /td join <id>" ou "tell /td join <id>"
+    if (pmsg->sText.starts_with("t /td join ") || pmsg->sText.starts_with("tell /td join ")) {
+        size_t prefixLen = (pmsg->sText.starts_with("t /td join ")) ? 11 : 14;
+        std::string id = Trim(pmsg->sText.substr(prefixLen));
+
+        if (!id.empty()) {
+            tournamentID = id;
+            tournamentDirector = pmsg->sFrom;
+
+            (*this) << "t /td finger " << id << "\n";
+            flush();
+        }
+    }
+    
+    // 2. Réception de la réponse de /td au "finger"
+    if (pmsg->sFrom == "/td") {
+        if(!tournamentID.empty() && pmsg->sText.find("director") != std::string::npos) {
+            std::string id;
+            std::string director;
+            std::string joining;
+            std::string type;
+            bool finished = (pmsg->sText.find("tournament has finished") != std::string::npos);
+    
+            std::istringstream stream(pmsg->sText);
+            std::string line;
+            while (std::getline(stream, line)) {
+                if (line.starts_with("id")) {
+                    size_t pos = line.find(':');
+                    if (pos != std::string::npos) id = Trim(line.substr(pos + 1));
+                }
+                else if (line.starts_with("director")) {
+                    size_t pos = line.find(':');
+                    if (pos != std::string::npos) director = Trim(line.substr(pos + 1));
+                }
+                else if (line.starts_with("joining")) {
+                    size_t pos = line.find(':');
+                    if (pos != std::string::npos) joining = Trim(line.substr(pos + 1));
+                }
+                else if (line.starts_with("type")) {
+                    size_t pos = line.find(':');
+                    if (pos != std::string::npos) type = Trim(line.substr(pos + 1));
+                }
+            }
+    
+            // Vérifications : bon ID + bon directeur + inscriptions ouvertes + non terminé + type s8r...
+            bool isValidTournament =
+                (id == tournamentID) &&
+                (tournamentDirector == director) &&
+                (joining == "open") &&
+                (!finished) &&
+                (type.starts_with("s8r"));
+    
+            if (isValidTournament) {
+                (*this) << "tell /td join " << id << "\n";
+                flush();
+            }
+        }
+
+        tournamentID.clear();
+        tournamentDirector.clear();
+    }
+    
+    
+    // Ton bloc existant pour HCyrano
+    if (pmsg->sFrom == "HCyrano") {
+        if (pmsg->sText == "quit") {
+            if (pComputer != nullptr)
                 pComputer->resume();
-			Logout();
-		} else {
-			(*this) << pmsg->sText << "\n";
-			flush();
-		}
-	}
+            Logout();
+        } else {
+            (*this) << pmsg->sText << "\n";
+            flush();
+        }
+    }
 }
 
 void CODKStream::HandleGGSUnknown(const CMsgGGSUnknown* pmsg) {

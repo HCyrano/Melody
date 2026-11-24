@@ -20,6 +20,7 @@
 #define ODK_ODKSTREAM_HPP
 
 #include "ggsstream.hpp"
+#include <string>
 
 class RXRoxane;
 
@@ -50,6 +51,8 @@ public:
 	virtual void SendMsg                (const std::string& msg);
     
 
+    std::string tournamentID;       // ID du tournoi en attente de vérification
+    std::string tournamentDirector; // Pseudo de celui qui a demandé "join"
 
 	
 	RXRoxane* pComputer;
